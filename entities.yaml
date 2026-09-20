@@ -1,0 +1,96 @@
+# Tinos entity registry — verified against diavgeia.gov.gr/opendata/organizations.json
+# Act counts from probe3.sh section E (2011-2026). Regenerate with: tinos entities verify
+version: 1
+in_scope:
+  - uid: "6296"
+    name: ΔΗΜΟΣ ΤΗΝΟΥ
+    afm: "800302968"
+    category: MUNICIPALITY
+    parent: null
+    active_years: [2010, 2026]
+    approx_acts: 48031
+    role: primary
+  - uid: "50256"
+    name: ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ
+    afm: "800300858"
+    category: NPDD
+    parent: "6296"
+    active_years: [2011, 2026]
+    approx_acts: 11053
+  - uid: "53404"
+    name: ΔΗΜΟΤΙΚΟ ΝΟΜΙΚΟ ΠΡΟΣΩΠΟ ΔΗΜΟΥ ΤΗΝΟΥ
+    afm: "800303062"
+    category: NPDD
+    parent: "6296"
+    active_years: [2011, 2023]
+    approx_acts: 3808
+    note: ceased publishing after 2023 — 2024 local-government reform
+  - uid: "53952"
+    name: ΚΟΙΝΩΦΕΛΗΣ ΕΠΙΧΕΙΡΗΣΗ ΥΠΗΡΕΣΙΩΝ ΔΗΜΟΥ ΤΗΝΟΥ
+    afm: "800303074"
+    category: NPDD
+    parent: "6296"
+    active_years: [2013, 2023]
+    approx_acts: 2950
+    note: ceased after 2023
+  - uid: "54500"
+    name: ΣΧΟΛΙΚΕΣ ΕΠΙΤΡΟΠΕΣ ΔΗΜΟΥ ΤΗΝΟΥ
+    afm: "800303105"
+    category: NPDD
+    parent: "6296"
+    active_years: [2012, 2024]
+    approx_acts: 1931
+  - uid: "55049"
+    name: ΠΝΕΥΜΑΤΙΚΟ ΕΚΠΟΛΙΤΙΣΤΙΚΟ ΚΕΝΤΡΟ ΠΑΝΟΡΜΟΥ «ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ»
+    afm: "800300300"
+    category: NPDD
+    parent: "6296"
+    active_years: [2012, 2024]
+    approx_acts: 1433
+  - uid: "100011442"
+    name: ΔΗΜΟΤΙΚΟ ΙΕΡΟ ΙΔΡΥΜΑ ΑΓΙΑΣ ΤΡΙΑΔΟΣ ΓΥΡΛΑΣ
+    afm: "090418019"
+    category: NPDD
+    parent: "6296"
+    active_years: [2015, 2026]
+    approx_acts: 1269
+  - uid: "100032995"
+    name: ΜΟΥΣΕΙΟ ΚΩΣΤΑ ΤΣΟΚΛΗ
+    afm: "997192815"
+    category: NPDD
+    parent: "6296"
+    active_years: [2017, 2026]
+    approx_acts: 919
+  - uid: "100011650"
+    name: ΔΗΜΟΤΙΚΗ ΕΠΙΧΕΙΡΗΣΗ ΣΦΑΓΕΙΟΥ ΕΛΑΙΟΤΡΙΒΕΙΟΥ ΝΗΣΟΥ ΤΗΝΟΥ
+    afm: "800301462"
+    category: NPID
+    parent: "6296"
+    active_years: [2017, 2025]
+    approx_acts: 218
+  - uid: "52103"
+    name: ΠΑΙΔΙΚΟΣ ΣΤΑΘΜΟΣ ΔΗΜΟΥ ΤΗΝΟΥ
+    afm: "090417810"
+    category: OTHERTYPE
+    parent: "6296"
+    active_years: [2011, 2011]
+    approx_acts: 19
+  - uid: "53752"
+    name: ΚΕΦΑΛΑΙΟ ΑΠΟΖΗΜΙΩΣΕΩΣ ΦΟΡΤΟΕΚΦΟΡΤΩΤΩΝ (ΚΑΦ) ΛΙΜΕΝΑ ΤΗΝΟΥ
+    afm: "800302606"
+    category: NPDD
+    parent: "6296"
+    active_years: [2011, 2014]
+    approx_acts: 17
+
+# Public bodies operating on Tinos that are NOT municipal. Deliberately excluded.
+out_of_scope:
+  - uid: "99206908"
+    name: ΠΑΝΕΛΛΗΝΙΟ ΙΕΡΟ ΙΔΡΥΜΑ ΕΥΑΓΓΕΛΙΣΤΡΙΑΣ ΤΗΝΟΥ
+    reason: constitutionally independent of the municipality; financially significant on Tinos
+  - uid: "14462"
+    name: ΕΙΡΗΝΟΔΙΚΕΙΟ ΤΗΝΟΥ
+    reason: Ministry of Justice
+  - uid: "99221451"
+    name: ΠΡΟΠΑΡΑΣΚΕΥΑΣΤΙΚΟ ΚΑΙ ΕΠΑΓΓΕΛΜΑΤΙΚΟ ΣΧΟΛΕΙΟ ΚΑΛΩΝ ΤΕΧΝΩΝ ΠΑΝΟΡΜΟΥ
+    reason: Ministry of Culture
