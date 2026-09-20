@@ -11,13 +11,24 @@ A result that doesn't name your filter in the echoed query is not filtered.
 ## Diavgeia
 - Base: `https://diavgeia.gov.gr/opendata` — keyless, `.json` suffix or Accept header.
 - `org=<uid>` works. It is the ONLY reliable filter besides dates and `type=`.
-- **`issueDate` range is clamped to 180 days.** Wider requests are silently truncated.
-  Backfill must walk in <=6-month windows.
+- **`issueDate` range is clamped to exactly `from + 180 days`.** Wider requests are
+  silently truncated. Verified: 2011-01-01 → 2011-06-30; 2024-01-01 → 2024-06-29
+  (leap year). It is 180 calendar days, not "six months". Backfill walks 150-day
+  windows and the echo guard (`tinos doctor`) proves the clamp is detected.
+- **`to_issue_date` is an exclusive bound at local midnight.** The echo shows
+  `TO DT(<to>T00:00:00+03:00)` while stored `issueDate` values are UTC midnight,
+  which is later than local midnight in Greece. So acts issued ON the `to` day are
+  excluded. The ingester requests `end + 1 day` and walks half-open `[from, to)`
+  windows with no overlap. Verified 2024, org 100032995: 3 windows, 145 acts
+  (= probe H1 63 + H2 82), 0 duplicates at the seams.
 - `from_date`/`to_date` filter `submissionTimestamp` (works), but `issueDate` still
   defaults to last 6 months alongside it. Incremental sync = walk all issue windows
   with a submission filter (~32 calls/entity/run).
 - Max `size` = 500. Paging via `page=`.
-- `status=all` reveals revoked acts (2016: 4 extra; 2024: 0).
+- `status=all` reveals revoked acts (2016: 4 extra; 2024: 0). Revoked acts carry
+  `status: "REVOKED"` (published ones `"PUBLISHED"`). The echoed query drops its
+  `status:"Αναρτημένη"` clause when `status=all` is honoured; the guard checks that.
+  Ingester default is `status=all`. Verified 2016 H1, org 6296: 1,351 vs 1,355.
 - Version log: `/opendata/decisions/{ADA}/versionlog.json`. Retroactive edits are real.
 - Documents: `https://diavgeia.gov.gr/doc/{ADA}`. **Born-digital text, 2011-2025, no scans found.**
 

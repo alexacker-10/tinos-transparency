@@ -7,10 +7,16 @@ authors = [
     { name = "alexacker-10", email = "konstantinos.dim@outlook.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "duckdb>=1.5.5",
+    "httpx>=0.28.1",
+    "pyarrow>=25.0.1",
+    "pyyaml>=6.0.3",
+    "typer>=0.27.2",
+]
 
 [project.scripts]
-tinos = "tinos:main"
+tinos = "tinos.cli:app"
 
 [build-system]
 requires = ["uv_build>=0.12.17,<0.13.0"]
