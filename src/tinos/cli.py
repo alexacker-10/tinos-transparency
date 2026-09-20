@@ -251,7 +251,9 @@ def backfill(
 @app.command()
 def status() -> None:
     """Summarise what is in data/raw and the ingest log."""
-    import duckdb
+    import json
+    from datetime import datetime, timezone
+    from zoneinfo import ZoneInfo
 
     st = _settings()
     reg = load_registry(st.entities_file)
@@ -259,22 +261,25 @@ def status() -> None:
     files = store.iter_diavgeia_acts()
     typer.echo(f"raw acts on disk: {len(files)}  ({st.raw_dir / 'diavgeia' / 'acts'})")
     if files:
-        pattern = str(st.raw_dir / "diavgeia" / "acts" / "*" / "*.json")
-        rows = duckdb.sql(
-            f"""
-            SELECT organizationId AS org,
-                   year(to_timestamp(issueDate / 1000)) AS yr,
-                   status,
-                   count(*) AS n,
-                   count(DISTINCT ada) AS adas
-            FROM read_json_auto('{pattern}', union_by_name=true, filename=true)
-            GROUP BY 1, 2, 3 ORDER BY 1, 2, 3
-            """
-        ).fetchall()
-        typer.echo(f"{'org':<10} {'year':<6} {'status':<10} {'files':>6} {'adas':>6}  name")
-        for org, yr, status, n, adas in rows:
-            e = reg.get(str(org))
-            typer.echo(f"{org:<10} {yr:<6} {status:<10} {n:>6} {adas:>6}  {e.name if e else '?'}")
+        # Plain per-file scan on purpose: DuckDB schema inference across tens of
+        # thousands of nested JSON files needs many GB; this needs none.
+        athens = ZoneInfo("Europe/Athens")
+        counts: Counter[tuple[str, int, str]] = Counter()
+        adas: dict[tuple[str, int, str], set[str]] = {}
+        for f in files:
+            with open(f, "rb") as fh:
+                act = json.load(fh)
+            # issueDate is a Greek civil date; older acts store it as local
+            # midnight, newer ones as UTC midnight, so attribute the year in
+            # Europe/Athens (see FINDINGS.md).
+            yr = datetime.fromtimestamp(act["issueDate"] / 1000, timezone.utc).astimezone(athens).year
+            key = (str(act.get("organizationId")), yr, str(act.get("status")))
+            counts[key] += 1
+            adas.setdefault(key, set()).add(act.get("ada"))
+        typer.echo(f"{'org':<10} {'year':<6} {'status':<19} {'files':>6} {'adas':>6}  name")
+        for (org, yr, status), n in sorted(counts.items()):
+            e = reg.get(org)
+            typer.echo(f"{org:<10} {yr:<6} {status:<19} {n:>6} {len(adas[(org, yr, status)]):>6}  {e.name if e else '?'}")
     log = IngestLog(st.ingest_log).read()
     typer.echo(f"ingest log: {len(log)} record(s)  ({st.ingest_log})")
     if log:

@@ -26,10 +26,12 @@ withdrawn act is exactly what a transparency dataset must surface. The
 guard also checks that clause, so a silently dropped ``status=all`` is
 caught like any other drift.
 
-The ``to_issue_date`` bound is echoed as local midnight at the start of that
-day, while stored ``issueDate`` values are UTC midnight (later than local
-midnight in Greece). We therefore treat the upper bound as EXCLUSIVE and
-request ``end + 1 day`` to include the last day of a range.
+Both date bounds are INCLUSIVE at Greek local midnight. ``issueDate`` values
+are stored as local midnight up to early 2014 and as UTC midnight after, so an
+act dated on the ``to`` day is included only under the old convention. The
+ingester therefore requests ``end + 1 day``, walks windows whose next ``from``
+equals the previous ``to``, and dedupes by ADA: a pre-2014 act sitting exactly
+on a seam is returned by both windows, byte-identical. See FINDINGS.md.
 """
 
 from __future__ import annotations
@@ -61,7 +63,7 @@ class EchoMismatch(Exception):
 class SearchRequest:
     org: str
     from_date: date  # inclusive
-    to_date: date  # EXCLUSIVE (see module docstring)
+    to_date: date  # requested upper bound; inclusive at local midnight (see module docstring)
     page: int = 0
     size: int = MAX_PAGE_SIZE
     status_all: bool = True
