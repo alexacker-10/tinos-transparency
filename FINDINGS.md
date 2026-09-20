@@ -139,3 +139,120 @@ Always parse `Περίοδος:` from the PDF.
 ## Tooling notes
 - `mawk` (Ubuntu default) lacks `{n}` interval regex — **use `gawk`**.
 - Internet Archive was offline on probe day; retry the Wayback CDX sweep.
+
+---
+
+# Findings — what the data says (distinct from the API contract)
+
+Each finding names its evidence. Queries run against `releases/tinos.duckdb`
+(`tinos build && tinos release`). Figures as of the 2026-09-20 corpus.
+
+## F1. Direct awards (Δ.1) stopped being copied into Diavgeia in 2021. Spending did not change.
+
+**Claim.** Δ.1 counts collapse from 2021; payments and commitments hold or rise;
+ΚΗΜΔΗΣ contract counts are flat throughout. This was never a migration: ΚΗΜΔΗΣ was
+always the primary venue, Diavgeia carried a parallel copy, and the copy stopped.
+
+**Evidence.**
+- Δ.1 per year, all entities: 2015-2020 flat at 606-710, then 391 (2021), 187, 132,
+  **46 (2024)**, 174, 247 (2026 to Sep). Municipality alone: 391 (2020) → 145 → 100 →
+  90 → **13 (2024)** → 133 → 209.
+  `SELECT year, count(*) FROM act WHERE type='Δ.1' AND status='PUBLISHED' GROUP BY 1`
+- Staggered by entity: municipality 2021; port authority 50256 in 2022 (87 → 3);
+  school committees 54500 in 2022 (77 → 0); community enterprise 53952 after 2019
+  (117 → 17 → 0) while still publishing 500-600 acts a year.
+- Municipality payment acts ~1,700/yr from 2016 to 2026 with no dip; third-party
+  payment euros 3.3M (2021) → 6.7M (2024); commitments (reversals excluded) 12.9M
+  (2020) → 19.8M (2024). `SELECT * FROM v_yearly WHERE entity='6296'`
+- ΚΗΜΔΗΣ, org 6296, POST `/contract` and `/request` with `dateFrom/dateTo` per year,
+  first page validated on `contractSignedDate` / `signedDate`:
+  contracts 135, 141, 122, 100, 125, 101, 137, 143 (2018-2025); requests 267, 294,
+  357, 289, 370, 246, 445, 493. Contracts were already at 135 in 2018 when Diavgeia
+  still carried 271 Δ.1 acts for the same body.
+- Award value that has no Diavgeia record: against the 2017-2020 average of
+  3.08M €/yr, 2021-2024 carry 2.79M in total instead of ~12.3M, i.e. **~9.5M €**.
+  `SELECT year, sum(amount) FROM v_award WHERE award_type='Δ.1' GROUP BY 1`
+- Partial recovery: 2025 174 acts / 0.83M, 2026 to Sep 247 / 1.19M.
+- Independent confirmation: pending-revocation 6ΥΝ1ΟΡ07-0ΨΠ carries the operator note
+  "ΔΕΝ ΕΧΕΙ ΑΝΑΡΤΗΘΕΙ ΠΡΩΤΑ ΣΤΟ ΚΗΜΔΗΣ" (not posted to ΚΗΜΔΗΣ first): the rule that
+  awards go to ΚΗΜΔΗΣ before Diavgeia was already in force in 2018.
+- Join key for the ΚΗΜΔΗΣ side: contract rows carry `diavgeiaADA` and
+  `procedureType` (e.g. "Απευθείας ανάθεση (αρ.118/αρ. 328)").
+
+**Caveat.** The port authority's 2022 Δ.1 collapse coincides with a genuine activity
+contraction: payment acts 428 → 182, payment euros 0.82M → 0.20M, while commitment
+euros held. For 50256 it is not a pure paperwork effect.
+
+## F2. PENDING_REVOCATION acts are mis-uploads the system never processed, not withdrawn spending.
+
+**Claim.** Revocation is a two-party workflow: the organisation requests, a central
+Diavgeia operator approves. The 30 PENDING_REVOCATION acts are requests the central
+step never completed.
+
+**Evidence.**
+- All 30 fall between 2018-03-14 and 2020-01-31; 14 from the port authority, 9 from
+  the municipality, 5 from the community enterprise. Pending 6.6-8.5 years.
+  `SELECT * FROM act WHERE status='PENDING_REVOCATION' ORDER BY date`
+- `/opendata/decisions/{ADA}/versionlog.json`, three pending acts:
+  6ΣΕΚΟΡ07-ΙΕΜ published 09:09, flagged 09:14, reason "ΛΑΘΟΣ ΑΡΧΕΙΟ";
+  6ΥΝ1ΟΡ07-0ΨΠ published 11:21, flagged 11:22, reason "not posted to ΚΗΜΔΗΣ first";
+  ΩΓ6ΖΟΡ07-Υ6Κ published 09:51, flagged 09:55, reason "wrong file uploaded".
+  Each log has exactly two versions; no third step.
+- Control ΩΝΩ6ΟΞΥΒ-ΟΡΖ (REVOKED, 2016): published 2016-12-09 15:01, flagged 15:10
+  "διπλή ανάρτηση", **REVOKED 2016-12-12 07:33 by a central operator account** (not
+  an org account). Normal completion takes days.
+- Amounts present on 16 of 30, 82,334 € in total, 25,003 € of it one withholdings
+  statement to the state.
+
+**Consequence.** Excluded from the measure tables, kept in `act` with their status.
+Do not read them as revoked payments.
+
+## F3. Supplier concentration: the corrected series, and why the naive one misled.
+
+**Claim.** Counting every Β.2.2 counterparty as a "supplier" inflated the apparent
+2016-2024 concentration trend. Remittances to the state (ΚΑΕ 82, withholdings
+statements) and the 2015 ESPA outlier drove most of it. 2026 reverses it.
+
+**Evidence** (municipality, supplier payments only, `v_counterparty_year`):
+
+| year | distinct suppliers | supplier € | top-10 | top-1 |
+|---|---|---|---|---|
+| 2016 | 230 | 3.25M | 48.6% | 13.4% |
+| 2018 | 206 | 3.34M | 49.6% | 16.5% |
+| 2020 | 125 | 1.50M | 81.8% | 38.5% |
+| 2022 | 120 | 3.12M | 83.5% | 42.7% |
+| 2024 | 96 | 3.04M | 88.3% | 51.9% |
+| 2026 (Sep) | **225** | 4.56M | **60.7%** | 15.9% |
+
+- Naive series (all counterparties): 260 → 120 distinct, top-10 50% → 92%. Roughly
+  half of the 2023-2024 "top payee" euros were ΚΑΕ-82 remittances to the Ministry
+  of Finance, EFKA and pension funds (3.3M of 6.1M in 2023, 3.6M of 6.7M in 2024).
+- 2015 top-1 share of 64.7% is one payment: Ω1ΠΠΩΗ6-ΧΗΑ, 6,493,493.00 € to ΔΟΜΙΚΗ
+  ΕΦΑΡΜΟΓΗ ΑΕ, 6th instalment of the ESPA-funded «Κέντρο σίτισης» works. Nine
+  payments from that contractor total 6.82M over 2014-2016.
+- The decline in distinct suppliers 2018-2024 is real but begins before the Δ.1
+  collapse and reverses in 2026 (partly because payroll batches and a new chart of
+  accounts changed how lines are posted; see hazards above).
+
+**Reading.** Use as a pointer, not a finding. Large recurring payees (electricity,
+waste, water, multi-year works) concentrate any municipal ledger legitimately.
+
+## F4. There was no taxonomy migration.
+
+**Claim.** The numeric (2.4.x) and Greek-letter (Α/Β/Γ/Δ) families run in parallel
+for the whole period; neither replaced the other.
+
+**Evidence.** `SELECT year, type, count(*) FROM act GROUP BY 1,2`
+- Numeric share of all acts by year: 24%, 24%, 33%, 25%, 21%, 20%, 15%, 17%, 17%,
+  20%, 19%, 21%, 27%, 29%, 24%, 25% (2011-2026). No trend, never zero, never dominant.
+- Within the numeric family: 2.4.6.1 effectively died in 2019 (222 → 8, then ≤14);
+  "100" vanished after 2012; 2.4.7.1 grew from ~16% of all acts (2017) to 29% (2024).
+  Since 2019 "numeric" means 2.4.7.1, the miscellaneous-acts drawer.
+- Letter families first seen: Β and Δ 2010, Α and Γ 2011, Ζ 2014, Ε 2015.
+- `2.4.4` never occurs in the corpus.
+
+## F5. Nothing in the Δ.1 metadata classifies awards.
+
+CPV is filled on ≤13% of Δ.1 acts in any year (0% before 2014). The award amount is
+present on 88-100% of acts through 2021 and degrades to 56% in 2023. Classification
+of direct awards must come from ΚΗΜΔΗΣ, which carries `cpvItems` and `procedureType`.
