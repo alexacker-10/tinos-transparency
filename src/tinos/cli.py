@@ -289,6 +289,41 @@ def status() -> None:
                    f"{last.get('from')}..{last.get('to_excl')} status={last.get('status', 'ok')}")
 
 
+# --------------------------------------------------------------------------
+@app.command()
+def build() -> None:
+    """Rebuild data/curated/*.parquet from data/raw (pure, no network)."""
+    from tinos.curated import build_curated
+
+    st = _settings()
+    res = build_curated(st)
+    typer.echo(f"curated -> {st.curated_dir}  (derived_at={res.derived_at.isoformat()})")
+    for name, n in res.counts.items():
+        typer.echo(f"  {name:<13}{n:>10,}")
+    typer.echo(f"manifest: {res.manifest_path}")
+
+
+@app.command()
+def release() -> None:
+    """Build releases/tinos.duckdb from the curated Parquet files."""
+    from tinos.publish.release import build_release
+
+    st = _settings()
+    path, counts = build_release(st)
+    typer.echo(f"release -> {path}")
+    for name, n in counts.items():
+        typer.echo(f"  {name:<13}{n:>10,}")
+
+
+@app.command()
+def summary() -> None:
+    """Write SUMMARY.md from releases/tinos.duckdb."""
+    from tinos.publish.summary import write_summary
+
+    st = _settings()
+    typer.echo(f"summary -> {write_summary(st)}")
+
+
 def main() -> None:  # pragma: no cover
     app()
 

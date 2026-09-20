@@ -53,6 +53,18 @@ class Settings:
         return self.root / "data" / "raw"
 
     @property
+    def curated_dir(self) -> Path:
+        return self.root / "data" / "curated"
+
+    @property
+    def releases_dir(self) -> Path:
+        return self.root / "releases"
+
+    @property
+    def summary_file(self) -> Path:
+        return self.root / "SUMMARY.md"
+
+    @property
     def manifests_dir(self) -> Path:
         return self.root / "manifests"
 

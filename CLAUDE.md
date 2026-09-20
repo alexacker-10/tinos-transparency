@@ -16,5 +16,10 @@ Read these two files before doing anything in this repo:
 - Be polite to public endpoints: keep the delay, keep the User-Agent.
 
 ## Current state
-Reconnaissance complete. `entities.yaml` verified. Building phase 1: the
-Diavgeia ingester (`src/tinos/`).
+Phase 1 done: Diavgeia ingester (`tinos backfill`), full corpus in `data/raw`
+(76,785 acts, 11 entities, 2010-2026). Phase 2 done: curated layer
+(`tinos build` -> `data/curated/*.parquet`, `tinos release` ->
+`releases/tinos.duckdb`, `tinos summary` -> `SUMMARY.md`). Read the
+docstring of `src/tinos/curated.py` before touching any money figure: it
+lists the flags (remittance, suspect, reversal, payroll kinds) and why.
+Next: ΚΗΜΔΗΣ ingester for awards from 2021 on; execution-statement PDFs.

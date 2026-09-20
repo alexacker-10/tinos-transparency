@@ -68,6 +68,28 @@ A result that doesn't name your filter in the echoed query is not filtered.
 DuckDB `read_json_auto` over the act files exhausts memory (schema inference across
 76k nested files); pass explicit `columns=` or scan with plain `json`.
 
+### Metadata hazards found while building the curated layer (2026-09-20)
+- **Reversals are positive.** Year-end commitment reversals (`Ανατροπές`, `Ανάκληση`)
+  are posted as Β.1.3 with a positive `amountWithVAT`; `recalledExpenseDecision` is
+  unreliable (2023: 9.05M of 28.1M "commitments" were reversals). From 2025 some
+  reversals carry negative amounts instead. Filter on flag OR subject.
+- **One suspect line.** ΨΩΚΙΟΚ6Δ-ΘΟ6 (53404, 2018) carries a withholdings statement of
+  82,310,012.00 EUR, ~400x the body's annual payments. Data-entry error at source;
+  kept, flagged `amount_suspect`, excluded from views.
+- **Remittances dominate naive top-payee lists.** ΚΑΕ group 82 (αποδόσεις κρατήσεων)
+  and "Κατάσταση Κρατήσεων" subjects are pass-through withholdings to the state,
+  EFKA, IKA and pension funds: 3.6M of 6.7M municipal third-party payments in 2024.
+- **New chart of accounts in 2026.** Δήμος Τήνου ΚΑΕ changed from `NN.NNNN[.NNNN]`
+  to `NNN.NNNNNNN[.NNN]` on 2026-01-01. ΚΑΕ-based classification is not mapped for it.
+- **Payroll batches from late 2025.** Payroll Β.2.2 acts now carry a sponsor line naming
+  one representative employee "& ΛΟΙΠΟΙ" with that person's ΑΦΜ (721 lines, 22 people,
+  1.87M in 2026 to September). The curated layer keeps the amount and drops the person.
+- **Pre-2017 Β.1.3 is not commitments.** Β4Β7ΩΗ6-Μ8Ω (2012) is the whole annual budget
+  summary (13.77M) posted under Β.1.3. In 2017 reversals (2.31M) exceed posted
+  commitments (0.12M): the record is incomplete, not small.
+- `read_json_auto` in DuckDB over the 76k act files exhausts >10 GB; scan with plain
+  `json` or pass explicit `columns=`.
+
 ## ΚΗΜΔΗΣ — keyless, CC BY 4.0
 - Base: `https://cerpp.eprocurement.gov.gr/khmdhs-opendata`
 - OpenAPI: `/v3/api-docs` · Swagger UI: `/swagger-ui/index.html`
