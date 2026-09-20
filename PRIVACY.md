@@ -18,9 +18,17 @@ registers and the layer is a faithful transform, but nothing this project
 publishes prints them in a league table.
 
 **How.** `counterparty.is_natural_person` is set from Diavgeia's own
-`SURNAME,,NAME,FATHER` formatting of individuals; `counterparty.display_name`
-is the masked name and is the only name SUMMARY.md prints. Payment-level
-tables in SUMMARY.md apply the same mask on the fly.
+`SURNAME,,NAME,FATHER` formatting of individuals, and, because 2026 records
+dropped that form, from a second rule: a Greek 9-digit ΑΦΜ in the individual
+range (first digit 0-3, excluding 08x partnerships and 09x public bodies) on a
+name of at most four words with no legal-form token, or an imprest-account
+holder (ΥΠΟΛΟΓΟΣ). Calibrated 2026-09-21: every `,,` name has an ΑΦΜ in that
+range and no company with a legal-form token starts with 09; 764 of 1,315
+counterparties are masked. `counterparty.display_name` and
+`payment.counterparty_display` carry the mask and are the only names
+SUMMARY.md prints. The second rule is a heuristic: a company with an
+individual-range ΑΦΜ and no legal-form word in its name would be masked
+(harmless), and a person whose name contains such a word would not (a gap).
 
 **Reasoning.** A searchable, ranked list of named individuals by euros received
 is materially different from the same facts scattered across separate decisions
@@ -34,9 +42,9 @@ ADA, and anyone with a legitimate question can follow it to the named source.
 
 **Not covered by this decision.** Company names, even one-person companies
 (ΟΕ, ΕΕ, ΙΚΕ, ΑΕ), are shown. Public office holders acting in office are shown.
-Whether to publish per-person totals above some high euro threshold, or to
-treat imprest-account holders (employees receiving advances, «ΥΠΟΛΟΓΟΣ
-ΕΝΤΑΛΜΑΤΟΣ ΠΡΟΠΛΗΡΩΜΗΣ») differently, is left open.
+Whether to publish per-person totals above some high euro threshold is left
+open. Imprest-account holders («ΥΠΟΛΟΓΟΣ ΕΝΤΑΛΜΑΤΟΣ ΠΡΟΠΛΗΡΩΜΗΣ») are masked
+as natural persons since they are employees.
 
 ## Q2. Welfare and hardship decisions — UNDECIDED
 

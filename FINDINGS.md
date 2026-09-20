@@ -86,7 +86,11 @@ DuckDB `read_json_auto` over the act files exhausts memory (schema inference acr
   and "Κατάσταση Κρατήσεων" subjects are pass-through withholdings to the state,
   EFKA, IKA and pension funds: 3.6M of 6.7M municipal third-party payments in 2024.
 - **New chart of accounts in 2026.** Δήμος Τήνου ΚΑΕ changed from `NN.NNNN[.NNNN]`
-  to `NNN.NNNNNNN[.NNN]` on 2026-01-01. ΚΑΕ-based classification is not mapped for it.
+  (sometimes `NN-NNNN.NNNN`) to `NNN.NNNNNNN[.NNN]` on 2026-01-01. Groups seen, from
+  subject sampling: 21 personnel, 22 supplies, 23 transfers and levies, 24 services,
+  27 rents, 31 fixed assets, 45 contributions, **59 αποδόσεις (remittances)**; the old
+  chart's 60 personnel / 63 taxes / 65 debt / 67 grants / 82 remittances map onto them
+  only partly. Classification rules use both.
 - **Payroll batches from late 2025.** Payroll Β.2.2 acts now carry a sponsor line naming
   one representative employee "& ΛΟΙΠΟΙ" with that person's ΑΦΜ (721 lines, 22 people,
   1.87M in 2026 to September). The curated layer keeps the amount and drops the person.
@@ -222,14 +226,15 @@ statements) and the 2015 ESPA outlier drove most of it. 2026 reverses it.
 **Evidence** (municipality, `payee_class = 'supplier'` only: no payroll, remittances, internal
 transfers, taxes, debt service or other public bodies; `v_counterparty_year`):
 
-| year | distinct suppliers | supplier € | top-10 | top-1 |
-|---|---|---|---|---|
-| 2016 | 218 | 2.19M | 41.6% | 7.6% |
-| 2018 | 188 | 2.72M | 51.9% | 20.2% |
-| 2020 | 108 | 0.90M | 85.3% | 64.6% |
-| 2022 | 103 | 2.76M | 88.1% | 48.2% |
-| 2024 | 78 | 2.69M | 91.3% | 58.5% |
-| 2026 (Sep) | 215 | 4.33M | 63.1% | 16.7% |
+| year | distinct suppliers | first paid this year | supplier € | top-10 | top-1 |
+|---|---|---|---|---|---|
+| 2016 | 218 | 102 | 2.19M | 41.6% | 7.6% |
+| 2018 | 188 | 39 | 2.72M | 51.9% | 20.2% |
+| 2020 | 107 | 23 | 0.86M | 85.9% | 67.1% |
+| 2022 | 102 | 14 | 2.72M | 88.9% | 48.8% |
+| 2024 | 77 | 19 | 2.65M | 92.0% | 59.6% |
+| 2025 | 91 | 18 | 2.87M | 91.7% | 60.9% |
+| 2026 (to Sep, new chart) | 210 | 95 | 4.21M | 64.8% | 17.2% |
 
 - Naive series (all counterparties): 260 → 120 distinct, top-10 50% → 92%. Roughly
   half of the 2023-2024 "top payee" euros were ΚΑΕ-82 remittances to the Ministry
@@ -245,6 +250,37 @@ transfers, taxes, debt service or other public bodies; `v_counterparty_year`):
 - The decline in distinct suppliers 2018-2024 is real but begins before the Δ.1
   collapse and reverses in 2026 (partly because payroll batches and a new chart of
   accounts changed how lines are posted; see hazards above).
+
+**Is the 2026 row trustworthy? Yes, with two caveats.** Tested 2026-09-21 on the
+suspicion that the 2026 chart-of-accounts change had broken the remittance rule and
+let state payees leak into "suppliers":
+- Every ΑΦΜ classed remittance or tax in 2023-2024 keeps that class in 2026; the only
+  lines that flipped to supplier total 274 € (ΟΤΕ ΑΚΙΝΗΤΑ). The new chart puts all
+  remittances in group 59, 178 lines / 904k €, now an explicit rule.
+- The count is keyed by ΑΦΜ, so the 2026 change from `SURNAME,,NAME` to `SURNAME NAME`
+  cannot inflate it. 95 suppliers received their first municipal payment in 2026,
+  against 14-19 a year in 2022-2025; both companies (39 → 109) and sole traders
+  (38 → 101) roughly tripled; monthly distinct suppliers run 43-86 against 19-39 in
+  2025; the subjects are ordinary works and services (firefighting, waste collection,
+  mosquito control, pump repairs, furniture).
+- Two payroll shapes the rules had missed were found and fixed in the same check
+  ("ΚΑΙ ΛΟΙΠΕΣ ΥΠΑΛΛΗΛΟΙ" batches; individuals paid under personnel group 21/60), 169
+  lines / 268k € moved out of the supplier column.
+Caveats: 2026 is nine months, and it is the first year on the new chart, so any rule
+that depends on ΚΑΕ semantics is weaker for it. The row is comparable as a count of
+distinct paid suppliers; its reading as "the concentration trend reversed" is real so
+far but should be re-checked at year end.
+
+**The 2020 trough (0.86M against 1.7M in 2019 and 2.7M in 2022) is real, not a posting
+gap and not a classification effect.** Payment acts fell only from 987 to 884; no line
+lacks an amount; remittances were normal (0.99M). The extra 250 no-sponsor acts that
+year are payroll posted per employee per half-month (subjects checked), not supplier
+payments without a payee. Supplier cash-outs were low in every month of 2020, with no
+single works payment above 160k €, while the electricity bill alone (580k €) was 67% of
+the supplier total. Commitments doubled to 12.9M and awards were normal (391 Δ.1), so
+projects were being committed, not paid; the large works payments reappear in December
+2021 (452k €) and through 2022 (2.7M). This is the pandemic-year execution-delay
+pattern; the data shows the delay, not its cause.
 
 **Reading.** Use as a pointer, not a finding. Large recurring payees (electricity,
 waste, water, multi-year works) concentrate any municipal ledger legitimately.

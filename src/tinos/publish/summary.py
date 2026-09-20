@@ -137,10 +137,11 @@ def write_summary(settings: Settings) -> Path:
       "transfer (payee ΑΦΜ belongs to an entity in `entities.yaml`) → remittance (ΚΑΕ 82 or a withholdings "
       "subject) → tax (ΚΑΕ 63, tax-authority payee, ΕΝΦΙΑ/ΦΠΑ subject) → debt service (ΚΑΕ 65, bank or "
       "Ταμείο Παρακαταθηκών payee) → other public body (name marks a state, regional, municipal, insurance "
-      "or regulatory body) → supplier. Utilities such as ΔΕΗ and ΕΛΤΑ stay suppliers; grants to clubs and "
+      "or regulatory body) → supplier, then a second pass reclassifies supplier lines of any ΑΦΜ whose euros are at least 80% "
+      "non-supplier across all years (`payee_class_rule = afm_propagation`). Utilities such as ΔΕΗ and ΕΛΤΑ stay suppliers; grants to clubs and "
       "churches (ΚΑΕ 67) are not yet separated and remain in the supplier column.")
     w("")
-    it = q("""SELECT p.counterparty_name_raw, count(*), sum(p.amount) FROM v_internal_transfer p
+    it = q("""SELECT p.counterparty_display, count(*), sum(p.amount) FROM v_internal_transfer p
               GROUP BY 1 ORDER BY 3 DESC LIMIT 6""")
     w("Largest internal transfers (not procurement): " + "; ".join(f"{n.strip()} {_eur(e)} € in {c} payments" for n, c, e in it) + ".")
     w("")
@@ -148,13 +149,24 @@ def write_summary(settings: Settings) -> Path:
     # ---- supplier concentration
     w("## Supplier concentration, Δήμος Τήνου")
     w("")
-    rows = q("SELECT year, n_suppliers, supplier_eur, top10_share, top1_share FROM v_counterparty_year WHERE entity = '6296' ORDER BY 1")
+    rows = q("""WITH f AS (SELECT counterparty_afm, min(year) AS y0 FROM v_supplier_payment WHERE entity = '6296' GROUP BY 1),
+                       n AS (SELECT y0 AS year, count(*) AS new_suppliers FROM f GROUP BY 1)
+                SELECT c.year, c.n_suppliers, n.new_suppliers, c.supplier_eur, c.top10_share, c.top1_share
+                FROM v_counterparty_year c LEFT JOIN n USING (year) WHERE c.entity = '6296' ORDER BY 1""")
     w("Supplier-class payments only: payroll, remittances, internal transfers, taxes, debt service and "
       "other public bodies are excluded, so the state, EFKA, the tax office, the bank and the "
       "municipality's own bodies do not appear as \"suppliers\".")
     w("")
-    w(_table(["Year", "Distinct suppliers", "Supplier payments €", "Top-10 share", "Top-1 share"],
-             [[y, n, _m(e), f"{s * 100:.1f}%", f"{t * 100:.1f}%"] for y, n, e, s, t in rows]))
+    w(_table(["Year", "Distinct suppliers", "of which first paid this year", "Supplier payments €", "Top-10 share", "Top-1 share"],
+             [[y, n, nw or 0, _m(e), f"{s * 100:.1f}%", f"{t * 100:.1f}%"] for y, n, nw, e, s, t in rows]))
+    w("")
+    w("2026 is a partial year and the first under the new chart of accounts. Its supplier count is keyed "
+      "by ΑΦΜ and was checked line by line against the 2023-2024 payees: nothing that used to be a "
+      "remittance or tax payee became a supplier. The jump is real: most of the new suppliers had never "
+      "been paid by the municipality before, and the subjects are ordinary works and services. 2020 is a "
+      "genuine trough in supplier cash-outs, not a posting gap: payment acts fell only a tenth, remittances "
+      "were normal, no amounts are missing, and no works payment above 160k € was made all year while "
+      "commitments doubled; the large works payments resume in December 2021.")
     w("")
     w("**Concentration has innocent explanations and is not, by itself, evidence of anything improper.** "
       "A few large payees dominate any municipal ledger: the electricity utility, waste-management and "

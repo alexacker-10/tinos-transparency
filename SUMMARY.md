@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-20T21:12:48+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated1`, curated at 2026-09-20T21:12:35+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-20T21:23:40+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated1`, curated at 2026-09-20T21:22:03+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
@@ -54,19 +54,19 @@ Status: PUBLISHED 76,564 · REVOKED 191 · PENDING_REVOCATION 30.
 | 2011 | 1,470 | 0 |  |  |  |  |  | 0 |  | 52 | 0.21M |  | 680 | 0.00M |
 | 2012 | 1,939 | 0 |  |  |  |  |  | 0 |  | 82 | 14.49M | 0.03M | 947 | 0.00M |
 | 2013 | 1,626 | 0 |  |  |  |  |  | 0 |  | 90 | 0.26M | 0.00M | 648 | 0.00M |
-| 2014 | 2,798 | 759 | 1.57M | 1.38M | 0.02M | 0.12M | 0.04M | 99 | 0.00M | 75 | 1.75M | 0.00M | 589 | 0.92M |
-| 2015 | 4,002 | 1,372 | 10.97M | 10.10M | 0.26M | 0.32M | 0.30M | 420 | 0.01M | 58 | 4.69M |  | 618 | 2.42M |
-| 2016 | 4,785 | 2,082 | 5.44M | 3.43M | 0.90M | 0.82M | 0.29M | 596 | 0.02M | 77 | 0.07M |  | 655 | 3.19M |
-| 2017 | 6,593 | 2,301 | 6.95M | 4.32M | 1.31M | 0.61M | 0.88M | 714 | 0.01M | 978 | 2.23M | 3.39M | 711 | 3.88M |
-| 2018 | 7,151 | 2,154 | 5.38M | 3.64M | 1.04M | 0.35M | 0.35M | 712 | 0.02M | 1,195 | 5.73M | 1.74M | 704 | 3.42M |
-| 2019 | 6,780 | 2,054 | 5.43M | 3.64M | 1.12M | 0.32M | 0.36M | 654 | 0.01M | 1,202 | 7.79M | 4.60M | 669 | 3.08M |
-| 2020 | 7,246 | 1,928 | 3.80M | 1.91M | 1.11M | 0.53M | 0.26M | 892 |  | 1,232 | 16.32M | 5.03M | 716 | 3.13M |
-| 2021 | 6,634 | 2,045 | 4.41M | 2.39M | 1.34M | 0.40M | 0.29M | 771 | 0.00M | 1,240 | 20.20M | 5.31M | 392 | 1.00M |
-| 2022 | 5,783 | 1,745 | 4.81M | 3.08M | 1.34M | 0.38M | 0.18M | 746 |  | 1,004 | 16.51M | 5.71M | 190 | 0.77M |
-| 2023 | 5,653 | 1,490 | 6.42M | 2.77M | 3.35M | 0.39M | 0.13M | 777 |  | 907 | 21.29M | 10.83M | 146 | 0.55M |
-| 2024 | 5,154 | 1,291 | 8.70M | 2.85M | 3.67M | 0.32M | 2.10M | 725 |  | 853 | 25.78M | 8.51M | 47 | 0.54M |
-| 2025 | 5,072 | 1,345 | 5.75M | 3.11M | 1.71M | 0.09M | 0.86M | 735 | 0.11M | 1,103 | 27.34M | 5.68M | 178 | 0.83M |
-| 2026 | 4,097 | 1,484 | 5.97M | 4.81M | 0.92M | 0.00M | 0.24M | 491 | 1.84M | 602 | 26.42M | -0.86M | 247 | 1.19M |
+| 2014 | 2,798 | 759 | 1.56M | 1.38M | 0.02M | 0.12M | 0.04M | 104 | 0.01M | 75 | 1.75M | 0.00M | 589 | 0.92M |
+| 2015 | 4,002 | 1,370 | 10.97M | 10.10M | 0.26M | 0.32M | 0.30M | 422 | 0.01M | 58 | 4.69M |  | 618 | 2.42M |
+| 2016 | 4,785 | 2,078 | 5.44M | 3.43M | 0.90M | 0.82M | 0.29M | 608 | 0.02M | 77 | 0.07M |  | 655 | 3.19M |
+| 2017 | 6,593 | 2,298 | 6.95M | 4.31M | 1.31M | 0.61M | 0.88M | 717 | 0.01M | 978 | 2.23M | 3.39M | 711 | 3.88M |
+| 2018 | 7,151 | 2,153 | 5.38M | 3.64M | 1.04M | 0.35M | 0.35M | 713 | 0.02M | 1,195 | 5.73M | 1.74M | 704 | 3.42M |
+| 2019 | 6,780 | 2,054 | 5.43M | 3.60M | 1.12M | 0.32M | 0.39M | 654 | 0.01M | 1,202 | 7.79M | 4.60M | 669 | 3.08M |
+| 2020 | 7,246 | 1,928 | 3.80M | 1.87M | 1.11M | 0.53M | 0.29M | 892 |  | 1,232 | 16.32M | 5.03M | 716 | 3.13M |
+| 2021 | 6,634 | 2,043 | 4.41M | 2.36M | 1.34M | 0.40M | 0.33M | 773 | 0.01M | 1,240 | 20.20M | 5.31M | 392 | 1.00M |
+| 2022 | 5,783 | 1,744 | 4.81M | 3.03M | 1.34M | 0.38M | 0.21M | 747 | 0.00M | 1,004 | 16.51M | 5.71M | 190 | 0.77M |
+| 2023 | 5,653 | 1,490 | 6.42M | 2.73M | 3.35M | 0.39M | 0.17M | 777 |  | 907 | 21.29M | 10.83M | 146 | 0.55M |
+| 2024 | 5,154 | 1,291 | 8.70M | 2.80M | 3.67M | 0.32M | 2.15M | 725 |  | 853 | 25.78M | 8.51M | 47 | 0.54M |
+| 2025 | 5,072 | 1,338 | 5.72M | 3.03M | 1.71M | 0.09M | 0.92M | 742 | 0.14M | 1,103 | 27.34M | 5.68M | 178 | 0.83M |
+| 2026 | 4,097 | 1,445 | 5.86M | 4.70M | 0.92M | 0.00M | 0.24M | 530 | 1.95M | 602 | 26.42M | -0.86M | 247 | 1.19M |
 
 ## Money by year, Δήμος Τήνου (6296) only
 
@@ -76,19 +76,19 @@ Status: PUBLISHED 76,564 · REVOKED 191 · PENDING_REVOCATION 30.
 | 2011 | 965 | 0 |  |  |  |  |  | 0 |  | 8 | 0.00M |  | 431 | 0.00M |
 | 2012 | 1,329 | 0 |  |  |  |  |  | 0 |  | 16 | 13.77M | 0.03M | 693 | 0.00M |
 | 2013 | 1,109 | 0 |  |  |  |  |  | 0 |  | 39 | 0.07M | 0.00M | 479 | 0.00M |
-| 2014 | 1,784 | 509 | 1.27M | 1.10M | 0.02M | 0.12M | 0.03M | 59 |  | 26 | 1.28M | 0.00M | 337 | 0.67M |
-| 2015 | 2,648 | 902 | 10.38M | 9.58M | 0.23M | 0.32M | 0.26M | 309 |  | 20 | 4.57M |  | 325 | 1.78M |
-| 2016 | 3,078 | 1,262 | 4.05M | 2.19M | 0.80M | 0.82M | 0.24M | 459 | 0.01M | 34 | 0.04M |  | 354 | 2.49M |
-| 2017 | 4,088 | 1,298 | 5.88M | 3.56M | 1.09M | 0.60M | 0.79M | 579 |  | 667 | 0.12M | 2.31M | 364 | 2.40M |
+| 2014 | 1,784 | 509 | 1.26M | 1.09M | 0.02M | 0.12M | 0.03M | 64 | 0.01M | 26 | 1.28M | 0.00M | 337 | 0.67M |
+| 2015 | 2,648 | 900 | 10.37M | 9.58M | 0.23M | 0.32M | 0.26M | 311 | 0.00M | 20 | 4.57M |  | 325 | 1.78M |
+| 2016 | 3,078 | 1,261 | 4.05M | 2.19M | 0.80M | 0.82M | 0.24M | 468 | 0.01M | 34 | 0.04M |  | 354 | 2.49M |
+| 2017 | 4,088 | 1,297 | 5.87M | 3.55M | 1.09M | 0.60M | 0.79M | 580 | 0.01M | 667 | 0.12M | 2.31M | 364 | 2.40M |
 | 2018 | 4,189 | 1,147 | 4.25M | 2.72M | 0.91M | 0.35M | 0.27M | 567 |  | 674 | 2.59M | 0.24M | 273 | 1.50M |
-| 2019 | 3,983 | 986 | 3.24M | 1.73M | 0.88M | 0.32M | 0.31M | 562 | 0.01M | 749 | 4.32M | 3.21M | 390 | 2.40M |
-| 2020 | 4,225 | 884 | 2.50M | 0.90M | 0.99M | 0.38M | 0.23M | 809 |  | 827 | 12.91M | 3.68M | 393 | 1.65M |
-| 2021 | 4,103 | 1,046 | 3.30M | 1.43M | 1.22M | 0.40M | 0.26M | 702 |  | 895 | 15.70M | 3.71M | 146 | 0.36M |
-| 2022 | 3,900 | 1,053 | 4.34M | 2.76M | 1.23M | 0.38M | 0.14M | 691 |  | 727 | 14.16M | 4.20M | 102 | 0.59M |
-| 2023 | 3,869 | 1,019 | 6.11M | 2.55M | 3.30M | 0.39M | 0.10M | 758 |  | 709 | 19.08M | 9.05M | 94 | 0.42M |
-| 2024 | 4,208 | 967 | 6.67M | 2.69M | 3.63M | 0.28M | 0.31M | 725 |  | 710 | 19.82M | 8.49M | 14 | 0.14M |
-| 2025 | 4,102 | 1,035 | 5.48M | 2.95M | 1.65M | 0.05M | 0.84M | 732 | 0.11M | 852 | 22.43M | 0.55M | 136 | 0.59M |
-| 2026 | 3,516 | 1,230 | 5.46M | 4.33M | 0.90M | 0.00M | 0.22M | 491 | 1.84M | 462 | 22.14M | -0.86M | 209 | 0.82M |
+| 2019 | 3,983 | 986 | 3.24M | 1.70M | 0.88M | 0.32M | 0.34M | 562 | 0.01M | 749 | 4.32M | 3.21M | 390 | 2.40M |
+| 2020 | 4,225 | 884 | 2.50M | 0.86M | 0.99M | 0.38M | 0.27M | 809 |  | 827 | 12.91M | 3.68M | 393 | 1.65M |
+| 2021 | 4,103 | 1,046 | 3.30M | 1.40M | 1.22M | 0.40M | 0.29M | 702 |  | 895 | 15.70M | 3.71M | 146 | 0.36M |
+| 2022 | 3,900 | 1,053 | 4.34M | 2.72M | 1.23M | 0.38M | 0.18M | 691 |  | 727 | 14.16M | 4.20M | 102 | 0.59M |
+| 2023 | 3,869 | 1,019 | 6.11M | 2.51M | 3.30M | 0.39M | 0.14M | 758 |  | 709 | 19.08M | 9.05M | 94 | 0.42M |
+| 2024 | 4,208 | 967 | 6.67M | 2.65M | 3.63M | 0.28M | 0.35M | 725 |  | 710 | 19.82M | 8.49M | 14 | 0.14M |
+| 2025 | 4,102 | 1,028 | 5.45M | 2.87M | 1.65M | 0.05M | 0.89M | 739 | 0.14M | 852 | 22.43M | 0.55M | 136 | 0.59M |
+| 2026 | 3,516 | 1,191 | 5.34M | 4.21M | 0.90M | 0.00M | 0.22M | 530 | 1.95M | 462 | 22.14M | -0.86M | 209 | 0.82M |
 
 Third-party payments are every Β.2.2 sponsor line with a counterparty, split by payee class. *Suppliers* are the residual after removing *remittances* (withholdings passed to the state), *internal transfers* (the municipality funding its own bodies), and *tax, debt service and other public bodies* (ΕΝΦΙΑ and fees, loan instalments, payments to other municipalities, regions, ministries and insurance funds). Only the supplier column is procurement. Payroll euros are visible only from late 2025, when the municipality began posting payroll batches with an amount; before that payroll acts carry no amount at all. In 2026 the municipality adopted a new chart of accounts, so ΚΑΕ-based classification is weaker for that year. Commitments exclude year-end reversals (Ανατροπές), which Diavgeia posts as positive Β.1.3 amounts; the excluded euros are shown so the effect is visible. Β.1.3 is in consistent use only from 2017; the 2012 municipal figure is the whole annual budget summary posted under that type, not a commitment. Awards (Δ.1) collapse from 2021 while payments hold steady: the money did not move, the award record stopped being duplicated into Diavgeia (see coverage gaps).
 
@@ -96,15 +96,15 @@ Third-party payments are every Β.2.2 sponsor line with a counterparty, split by
 
 | Class | Lines | Acts | € |
 |---|---:|---:|---:|
-| supplier | 15,548 | 14,324 | 47,433,343.15 |
-| remittance | 6,195 | 5,477 | 17,254,222.79 |
+| supplier | 15,368 | 14,235 | 46,964,090.46 |
+| remittance | 6,212 | 5,494 | 17,281,000.76 |
 | internal_transfer | 566 | 480 | 4,655,141.62 |
-| other_public_body | 174 | 146 | 3,264,714.38 |
-| payroll | 8,789 | 8,332 | 2,011,153.12 |
-| tax | 797 | 770 | 1,614,184.62 |
-| debt_service | 904 | 870 | 1,400,802.90 |
+| other_public_body | 197 | 151 | 3,507,768.40 |
+| payroll | 8,918 | 8,404 | 2,177,766.94 |
+| tax | 798 | 771 | 1,616,002.88 |
+| debt_service | 914 | 878 | 1,431,791.52 |
 
-Classes are assigned by deterministic rules (see the `curated.py` docstring): payroll → internal transfer (payee ΑΦΜ belongs to an entity in `entities.yaml`) → remittance (ΚΑΕ 82 or a withholdings subject) → tax (ΚΑΕ 63, tax-authority payee, ΕΝΦΙΑ/ΦΠΑ subject) → debt service (ΚΑΕ 65, bank or Ταμείο Παρακαταθηκών payee) → other public body (name marks a state, regional, municipal, insurance or regulatory body) → supplier. Utilities such as ΔΕΗ and ΕΛΤΑ stay suppliers; grants to clubs and churches (ΚΑΕ 67) are not yet separated and remain in the supplier column.
+Classes are assigned by deterministic rules (see the `curated.py` docstring): payroll → internal transfer (payee ΑΦΜ belongs to an entity in `entities.yaml`) → remittance (ΚΑΕ 82 or a withholdings subject) → tax (ΚΑΕ 63, tax-authority payee, ΕΝΦΙΑ/ΦΠΑ subject) → debt service (ΚΑΕ 65, bank or Ταμείο Παρακαταθηκών payee) → other public body (name marks a state, regional, municipal, insurance or regulatory body) → supplier, then a second pass reclassifies supplier lines of any ΑΦΜ whose euros are at least 80% non-supplier across all years (`payee_class_rule = afm_propagation`). Utilities such as ΔΕΗ and ΕΛΤΑ stay suppliers; grants to clubs and churches (ΚΑΕ 67) are not yet separated and remain in the supplier column.
 
 Largest internal transfers (not procurement): ΔΗΜΟΣ ΤΗΝΟΥ 1,960,291.09 € in 431 payments; ΔΗΜΟΤΙΚΟ ΝΟΜΙΚΟ ΠΡΟΣΩΠΟ ΔΗΜΟΥ ΤΗΝΟΥ 1,110,650.47 € in 24 payments; ΚΟΙΝΩΦΕΛΗΣ ΕΠΙΧΕΙΡΗΣΗ ΥΠΗΡΕΣΙΩΝ ΔΗΜΟΥ ΤΗΝΟΥ 473,020.29 € in 11 payments; ΚΟΙΝΩΦΕΛΗΣ ΕΠΙΧΕΙΡΗΣΗ ΥΠΗΡΕΣΙΩΝ ΔΗΜΟΥ ΤΗΝΟΥ - "Κ.ΕΠ.Υ.ΔΗ.Τ." 283,990.00 € in 8 payments; ΜΟΥΣΕΙΟ ΚΩΣΤΑ ΤΣΟΚΛΗ 202,564.25 € in 14 payments; ΕΝΙΑΙΑ ΣΧΟΛΙΚΗ ΕΠΙΤΡΟΠΗ Α'ΘΜΙΑΣ ΕΚΠΑΙΔΕΥΣΗΣ ΔΗΜΟΥ ΤΗΝΟΥ 199,177.00 € in 12 payments.
 
@@ -112,25 +112,27 @@ Largest internal transfers (not procurement): ΔΗΜΟΣ ΤΗΝΟΥ 1,960,291.09
 
 Supplier-class payments only: payroll, remittances, internal transfers, taxes, debt service and other public bodies are excluded, so the state, EFKA, the tax office, the bank and the municipality's own bodies do not appear as "suppliers".
 
-| Year | Distinct suppliers | Supplier payments € | Top-10 share | Top-1 share |
-|---|---:|---:|---:|---:|
-| 2014 | 132 | 1.10M | 62.5% | 17.7% |
-| 2015 | 185 | 9.58M | 89.2% | 70.5% |
-| 2016 | 218 | 2.19M | 41.6% | 7.6% |
-| 2017 | 224 | 3.56M | 53.8% | 16.7% |
-| 2018 | 188 | 2.72M | 51.9% | 20.2% |
-| 2019 | 181 | 1.73M | 60.1% | 35.0% |
-| 2020 | 108 | 0.90M | 85.3% | 64.6% |
-| 2021 | 133 | 1.43M | 78.9% | 53.8% |
-| 2022 | 103 | 2.76M | 88.1% | 48.2% |
-| 2023 | 104 | 2.55M | 89.6% | 60.2% |
-| 2024 | 78 | 2.69M | 91.3% | 58.5% |
-| 2025 | 98 | 2.95M | 90.1% | 59.1% |
-| 2026 | 215 | 4.33M | 63.1% | 16.7% |
+| Year | Distinct suppliers | of which first paid this year | Supplier payments € | Top-10 share | Top-1 share |
+|---|---:|---:|---:|---:|---:|
+| 2014 | 132 | 132 | 1.09M | 62.6% | 17.8% |
+| 2015 | 184 | 105 | 9.58M | 89.2% | 70.5% |
+| 2016 | 218 | 102 | 2.19M | 41.6% | 7.6% |
+| 2017 | 224 | 64 | 3.55M | 53.9% | 16.7% |
+| 2018 | 188 | 39 | 2.72M | 51.9% | 20.2% |
+| 2019 | 180 | 50 | 1.70M | 60.8% | 35.6% |
+| 2020 | 107 | 23 | 0.86M | 85.9% | 67.1% |
+| 2021 | 131 | 38 | 1.40M | 79.6% | 55.1% |
+| 2022 | 102 | 14 | 2.72M | 88.9% | 48.8% |
+| 2023 | 103 | 18 | 2.51M | 90.3% | 61.1% |
+| 2024 | 77 | 19 | 2.65M | 92.0% | 59.6% |
+| 2025 | 91 | 18 | 2.87M | 91.7% | 60.9% |
+| 2026 | 210 | 95 | 4.21M | 64.8% | 17.2% |
+
+2026 is a partial year and the first under the new chart of accounts. Its supplier count is keyed by ΑΦΜ and was checked line by line against the 2023-2024 payees: nothing that used to be a remittance or tax payee became a supplier. The jump is real: most of the new suppliers had never been paid by the municipality before, and the subjects are ordinary works and services. 2020 is a genuine trough in supplier cash-outs, not a posting gap: payment acts fell only a tenth, remittances were normal, no amounts are missing, and no works payment above 160k € was made all year while commitments doubled; the large works payments resume in December 2021.
 
 **Concentration has innocent explanations and is not, by itself, evidence of anything improper.** A few large payees dominate any municipal ledger: the electricity utility, waste-management and water contractors, and multi-year public-works contracts each concentrate spending in one ΑΦΜ. A single EU-funded project can put most of a year's euros with one contractor. Fewer, larger contracts (a policy choice, or a shift of small purchases to framework agreements) reduce the count of small suppliers without anyone doing anything wrong. Use this table to decide where to look, not as a finding.
 
-Counterparty registry: 1,333 distinct ΑΦΜ, 289 flagged for review (non-standard ΑΦΜ format or materially different name spellings under one ΑΦΜ). Resolution is exact-ΑΦΜ only; name variants are collected, never merged.
+Counterparty registry: 1,323 distinct ΑΦΜ, 289 flagged for review (non-standard ΑΦΜ format or materially different name spellings under one ΑΦΜ). Resolution is exact-ΑΦΜ only; name variants are collected, never merged.
 
 Top 15 counterparties by supplier-class euros received, all entities, all years (published, non-suspect). Rows for natural persons were removed from this historical version on 2026-09-25 (PRIVACY.md Q1).
 
@@ -176,7 +178,7 @@ Commitment reversals excluded from commitment totals: 4,297 acts, 49,985,463.94 
 
 ## Coverage gaps
 
-- **Payroll is counted, never itemised.** 8,028 payment acts have an empty sponsor list because the beneficiary is an employee; Diavgeia withholds the name and the amount by design, so the FY2024 residual below is the only handle on them. From late 2025 the municipality posts payroll batches that name one representative employee plus "& ΛΟΙΠΟΙ" (739 lines) and a few payroll acts name a single person (27 lines). These carry an amount, which is kept; the name and ΑΦΜ are dropped in the curated layer and never reach the counterparty table.
+- **Payroll is counted, never itemised.** 8,028 payment acts have an empty sponsor list because the beneficiary is an employee; Diavgeia withholds the name and the amount by design, so the FY2024 residual below is the only handle on them. From late 2025 the municipality posts payroll batches that name one representative employee plus "& ΛΟΙΠΟΙ" (796 lines) and a few payroll acts name a single person (27 lines). These carry an amount, which is kept; the name and ΑΦΜ are dropped in the curated layer and never reach the counterparty table.
 - **Direct awards left Diavgeia in 2021.** Δήμος Τήνου published 13 Δ.1 acts in 2024 against about 350 a year before 2021, while its payment volume did not change and ΚΗΜΔΗΣ contract counts stayed flat. Award values from 2021 onward must come from ΚΗΜΔΗΣ, not from this table.
 - **Award amounts and CPV are unreliable.** 626 published award rows have no amount; CPV is filled on under 15% of awards in any year.
 - **Commitments before 2017 are absent** (Β.1.3 was not used), and 4,920 published commitment rows have no per-ΚΑΕ breakdown, so their ΚΑΕ is null and the amount is the act total. In 2017 the municipality's year-end reversals exceed its posted commitments, so the commitment record for those years is incomplete, not small.
