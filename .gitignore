@@ -1,0 +1,31 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+*.token
+secrets/
+
+# --- Data: raw captures and rebuildable derivatives stay out of git ---
+data/raw/**
+data/interim/**
+data/curated/**
+releases/**
+site/**
+!**/.gitkeep
+
+# ...but manifests and human corrections ARE tracked (provenance + judgement)
+!manifests/**
+!data/manual/**
+
+# --- Misc ---
+*.log
+.DS_Store
