@@ -7,6 +7,9 @@ casual reader gets the right numbers by default:
 - ``v_*`` views filter to PUBLISHED acts.
 - ``v_payment`` excludes payroll rows and suspect amounts; ``v_payroll`` is
   only payroll rows; ``v_supplier_payment`` further drops ΚΑΕ-82 remittances.
+- ``v_supplier_payment`` is ``payee_class = 'supplier'`` only; ``v_internal_transfer``
+  is money moving inside the entity family; ``v_payee_class_year`` shows the
+  euro effect of every class.
 - ``v_commitment`` excludes reversals; ``v_commitment_reversal`` is only them.
 - ``v_yearly`` reports the three money measures side by side but in
   separate columns. They are different measures of the same spending and
@@ -27,7 +30,12 @@ TABLES = ("act", "payment", "commitment", "award", "counterparty", "entity")
 VIEWS = {
     "v_act": "SELECT * FROM act",
     "v_payment": "SELECT * FROM payment WHERE act_status = 'PUBLISHED' AND NOT is_payroll AND NOT amount_suspect",
-    "v_supplier_payment": "SELECT * FROM payment WHERE act_status = 'PUBLISHED' AND NOT is_payroll AND NOT amount_suspect AND NOT is_remittance",
+    "v_supplier_payment": "SELECT * FROM payment WHERE act_status = 'PUBLISHED' AND NOT amount_suspect AND payee_class = 'supplier'",
+    "v_internal_transfer": "SELECT * FROM payment WHERE act_status = 'PUBLISHED' AND NOT amount_suspect AND payee_class = 'internal_transfer'",
+    "v_payee_class_year": """
+        SELECT entity, year, payee_class, count(*) AS n_lines, count(DISTINCT source_ada) AS n_acts, sum(amount) AS eur
+        FROM payment WHERE act_status = 'PUBLISHED' AND NOT amount_suspect GROUP BY 1, 2, 3 ORDER BY 1, 2, 3
+    """,
     "v_payment_suspect": "SELECT * FROM payment WHERE amount_suspect",
     "v_payroll": "SELECT * FROM payment WHERE act_status = 'PUBLISHED' AND is_payroll",
     "v_commitment": "SELECT * FROM commitment WHERE act_status = 'PUBLISHED' AND NOT is_reversal",
@@ -43,10 +51,12 @@ VIEWS = {
                    count(DISTINCT CASE WHEN NOT is_payroll AND NOT amount_suspect THEN source_ada END) AS n_payment_acts,
                    sum(CASE WHEN NOT is_payroll AND NOT amount_suspect THEN amount END) AS payment_eur,
                    sum(CASE WHEN NOT is_payroll AND NOT amount_suspect AND is_remittance THEN amount END) AS remittance_eur,
-                   sum(CASE WHEN NOT is_payroll AND NOT amount_suspect AND NOT is_remittance THEN amount END) AS supplier_eur,
+                   sum(CASE WHEN NOT amount_suspect AND payee_class = 'supplier' THEN amount END) AS supplier_eur,
+                   sum(CASE WHEN NOT amount_suspect AND payee_class = 'internal_transfer' THEN amount END) AS internal_transfer_eur,
+                   sum(CASE WHEN NOT amount_suspect AND payee_class IN ('tax', 'debt_service', 'other_public_body') THEN amount END) AS other_nonsupplier_eur,
                    count(DISTINCT CASE WHEN is_payroll THEN source_ada END) AS n_payroll_acts,
                    sum(CASE WHEN is_payroll THEN amount END) AS payroll_eur,
-                   count(DISTINCT CASE WHEN NOT is_payroll AND NOT is_remittance THEN counterparty_afm END) AS n_suppliers,
+                   count(DISTINCT CASE WHEN NOT amount_suspect AND payee_class = 'supplier' THEN counterparty_afm END) AS n_suppliers,
                    sum(CASE WHEN amount_suspect THEN 1 ELSE 0 END) AS n_suspect_lines
             FROM payment WHERE act_status = 'PUBLISHED' GROUP BY 1, 2),
         c AS (
@@ -60,7 +70,8 @@ VIEWS = {
             FROM (SELECT DISTINCT source_ada, entity, year, amount FROM award WHERE act_status = 'PUBLISHED')
             GROUP BY 1, 2)
         SELECT a.entity, e.name AS entity_name, a.year, a.n_acts,
-               p.n_payment_acts, p.payment_eur, p.remittance_eur, p.supplier_eur, p.n_payroll_acts, p.payroll_eur,
+               p.n_payment_acts, p.payment_eur, p.remittance_eur, p.supplier_eur, p.internal_transfer_eur,
+               p.other_nonsupplier_eur, p.n_payroll_acts, p.payroll_eur,
                p.n_suppliers, p.n_suspect_lines,
                c.n_commitment_acts, c.commitment_eur, c.reversal_eur, w.n_award_acts, w.award_eur
         FROM a LEFT JOIN p USING (entity, year) LEFT JOIN c USING (entity, year)
@@ -70,8 +81,8 @@ VIEWS = {
     "v_counterparty_year": """
         WITH t AS (
             SELECT entity, year, counterparty_afm, sum(amount) AS eur
-            FROM payment WHERE act_status = 'PUBLISHED' AND NOT is_payroll AND NOT amount_suspect
-                  AND NOT is_remittance AND counterparty_afm IS NOT NULL
+            FROM payment WHERE act_status = 'PUBLISHED' AND NOT amount_suspect
+                  AND payee_class = 'supplier' AND counterparty_afm IS NOT NULL
             GROUP BY 1, 2, 3),
         r AS (
             SELECT *, row_number() OVER (PARTITION BY entity, year ORDER BY eur DESC) AS rk,

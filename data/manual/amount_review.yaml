@@ -1,0 +1,19 @@
+# Human-verified amount checks against the source document. Tracked in git.
+# The curated build applies `amount_suspect = true, suspect_reason = 'document_mismatch'`
+# to the payment lines of any ADA listed under `mismatch`. Nothing is corrected:
+# the metadata amount stays in the table, flagged, and the document amount is
+# recorded here for the reader.
+version: 1
+mismatch:
+  - ada: Ω25ΙΩΗ6-ΟΜΘ
+    entity: "6296"
+    metadata_amount: 281880.00
+    document_amount: 2818.80
+    document_net: 2430.00
+    document_vat: 388.80
+    document: data/raw/diavgeia/docs/6296/Ω25ΙΩΗ6-ΟΜΘ.pdf
+    document_sha256: 872acd760dcf2514390094dd34b1478e038e087df9b63d78860c4ff29077be59
+    checked_on: 2026-09-21
+    note: >
+      Payment order ΧΘ 600 of 17/08/2015, sports equipment for the indoor gym
+      (ΚΑΕ 15.7135.0001). Metadata amount is the document amount x100: entered in cents.

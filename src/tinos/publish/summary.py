@@ -99,20 +99,23 @@ def write_summary(settings: Settings) -> Path:
         w(f"## Money by year, {title}")
         w("")
         rows = q(f"""
-            SELECT year, sum(n_acts), sum(n_payment_acts), sum(payment_eur), sum(remittance_eur), sum(supplier_eur),
+            SELECT year, sum(n_acts), sum(n_payment_acts), sum(payment_eur), sum(supplier_eur), sum(remittance_eur),
+                   sum(internal_transfer_eur), sum(other_nonsupplier_eur),
                    sum(n_payroll_acts), sum(payroll_eur), sum(n_commitment_acts), sum(commitment_eur), sum(reversal_eur),
                    sum(n_award_acts), sum(award_eur)
             FROM v_yearly WHERE {where} GROUP BY 1 ORDER BY 1""")
-        w(_table(["Year", "Acts", "Payment acts", "Third-party payments €", "of which remittances €",
-                  "of which suppliers €", "Payroll acts", "Payroll € (where posted)", "Commitment acts", "Commitments €",
-                  "Reversals € (excluded)", "Award acts", "Awards €"],
-                 [[y, f"{a:,}", f"{p or 0:,}", _m(pe), _m(re_), _m(se), f"{pr or 0:,}", _m(pl), f"{c or 0:,}", _m(ce), _m(rv),
-                   f"{aw or 0:,}", _m(ae)]
-                  for y, a, p, pe, re_, se, pr, pl, c, ce, rv, aw, ae in rows]))
+        w(_table(["Year", "Acts", "Payment acts", "Third-party payments €", "Suppliers €", "Remittances €",
+                  "Internal transfers €", "Tax, debt, other public €", "Payroll acts", "Payroll € (where posted)",
+                  "Commitment acts", "Commitments €", "Reversals € (excluded)", "Award acts", "Awards €"],
+                 [[y, f"{a:,}", f"{p or 0:,}", _m(pe), _m(se), _m(re_), _m(it), _m(ot), f"{pr or 0:,}", _m(pl),
+                   f"{c or 0:,}", _m(ce), _m(rv), f"{aw or 0:,}", _m(ae)]
+                  for y, a, p, pe, se, re_, it, ot, pr, pl, c, ce, rv, aw, ae in rows]))
         w("")
-    w("Third-party payments are every Β.2.2 sponsor line with a counterparty. *Remittances* are tax, "
-      "insurance and other withholdings passed through to the state (ΚΑΕ group 82, or a subject naming "
-      "withholdings); real payments, not supplier spending. *Suppliers* is the remainder. Payroll euros "
+    w("Third-party payments are every Β.2.2 sponsor line with a counterparty, split by payee class. "
+      "*Suppliers* are the residual after removing *remittances* (withholdings passed to the state), "
+      "*internal transfers* (the municipality funding its own bodies), and *tax, debt service and other "
+      "public bodies* (ΕΝΦΙΑ and fees, loan instalments, payments to other municipalities, regions, "
+      "ministries and insurance funds). Only the supplier column is procurement. Payroll euros "
       "are visible only from late 2025, when the municipality began posting payroll batches with an "
       "amount; before that payroll acts carry no amount at all. In 2026 the municipality adopted a new "
       "chart of accounts, so ΚΑΕ-based classification is weaker for that year. Commitments exclude year-end reversals "
@@ -123,12 +126,32 @@ def write_summary(settings: Settings) -> Path:
       "into Diavgeia (see coverage gaps).")
     w("")
 
+    # ---- payee classes
+    w("## Payee classes, all entities")
+    w("")
+    rows = q("""SELECT payee_class, sum(n_lines), sum(n_acts), sum(eur) FROM v_payee_class_year
+                GROUP BY 1 ORDER BY 4 DESC NULLS LAST""")
+    w(_table(["Class", "Lines", "Acts", "€"], [[c, f"{l:,}", f"{a:,}", _eur(e)] for c, l, a, e in rows]))
+    w("")
+    w("Classes are assigned by deterministic rules (see the `curated.py` docstring): payroll → internal "
+      "transfer (payee ΑΦΜ belongs to an entity in `entities.yaml`) → remittance (ΚΑΕ 82 or a withholdings "
+      "subject) → tax (ΚΑΕ 63, tax-authority payee, ΕΝΦΙΑ/ΦΠΑ subject) → debt service (ΚΑΕ 65, bank or "
+      "Ταμείο Παρακαταθηκών payee) → other public body (name marks a state, regional, municipal, insurance "
+      "or regulatory body) → supplier. Utilities such as ΔΕΗ and ΕΛΤΑ stay suppliers; grants to clubs and "
+      "churches (ΚΑΕ 67) are not yet separated and remain in the supplier column.")
+    w("")
+    it = q("""SELECT p.counterparty_name_raw, count(*), sum(p.amount) FROM v_internal_transfer p
+              GROUP BY 1 ORDER BY 3 DESC LIMIT 6""")
+    w("Largest internal transfers (not procurement): " + "; ".join(f"{n.strip()} {_eur(e)} € in {c} payments" for n, c, e in it) + ".")
+    w("")
+
     # ---- supplier concentration
     w("## Supplier concentration, Δήμος Τήνου")
     w("")
     rows = q("SELECT year, n_suppliers, supplier_eur, top10_share, top1_share FROM v_counterparty_year WHERE entity = '6296' ORDER BY 1")
-    w("Supplier payments only: payroll and ΚΑΕ-82 remittances to the state are excluded, so the state, "
-      "EFKA and the tax office do not appear as \"suppliers\".")
+    w("Supplier-class payments only: payroll, remittances, internal transfers, taxes, debt service and "
+      "other public bodies are excluded, so the state, EFKA, the tax office, the bank and the "
+      "municipality's own bodies do not appear as \"suppliers\".")
     w("")
     w(_table(["Year", "Distinct suppliers", "Supplier payments €", "Top-10 share", "Top-1 share"],
              [[y, n, _m(e), f"{s * 100:.1f}%", f"{t * 100:.1f}%"] for y, n, e, s, t in rows]))
@@ -146,13 +169,15 @@ def write_summary(settings: Settings) -> Path:
       f"format or materially different name spellings under one ΑΦΜ). Resolution is exact-ΑΦΜ only; "
       "name variants are collected, never merged.")
     w("")
-    top = q("""SELECT afm, canonical_name, total_received_supplier, n_payments, first_seen, last_seen, n_entities
-               FROM counterparty ORDER BY total_received_supplier DESC LIMIT 15""")
-    w("Top 15 counterparties by supplier euros received, all entities, all years (published, non-suspect, "
-      "non-remittance payments):")
+    top = q("""SELECT afm, display_name, is_natural_person, total_received_supplier, n_payments, first_seen, last_seen,
+                      n_entities, largest_payment_ada
+               FROM counterparty WHERE total_received_supplier > 0 ORDER BY total_received_supplier DESC LIMIT 15""")
+    w("Top 15 counterparties by supplier-class euros received, all entities, all years (published, "
+      "non-suspect). Natural persons are shown as «φυσικό πρόσωπο»; the ADA of their largest payment is "
+      "given so the fact can be verified at source (see PRIVACY.md).")
     w("")
-    w(_table(["ΑΦΜ", "Name (most frequent spelling)", "Received €", "Payments", "First", "Last", "Entities"],
-             [[a, n, _eur(t), p, f, l, e] for a, n, t, p, f, l, e in top], 2))
+    w(_table(["ΑΦΜ", "Name", "Received €", "Payments", "First", "Last", "Entities", "Largest payment"],
+             [["—" if np else a, n, _eur(t), p, f, l, e, ada] for a, n, np, t, p, f, l, e, ada in top], 2))
     w("")
 
     # ---- data quality

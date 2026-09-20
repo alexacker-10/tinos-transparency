@@ -8,16 +8,35 @@ publication, and Greek and EU data-protection law treats it as one. This file
 records the questions we have not answered. Each is marked UNDECIDED until it
 is not. Decisions, when taken, are recorded here with their reasoning.
 
-## Q1. Natural persons in ranked tables — UNDECIDED
+## Q1. Natural persons in ranked tables — DECIDED (2026-09-21)
 
-Diavgeia names sole traders and individuals who receive municipal money, in a
-recognisable `SURNAME,,NAME,FATHER` form, with their tax number. A ranked table
-of "individuals by euros received" would be trivial to build and is materially
-different from the same facts scattered across separate decisions. It creates a
-profile nobody consented to and that the source registers do not offer.
-Options on the table: show only legal entities by name; show individuals with a
-placeholder and a link to the source decision; show individuals above a euro
-threshold only; show everything, as the source does.
+**Position.** Natural persons are never shown by name in ranked or aggregated
+tables. They appear as «φυσικό πρόσωπο» with the ADA of a source decision, so
+the underlying fact remains verifiable at the source. Their raw name and tax
+number stay in the curated Parquet, because they are public in the source
+registers and the layer is a faithful transform, but nothing this project
+publishes prints them in a league table.
+
+**How.** `counterparty.is_natural_person` is set from Diavgeia's own
+`SURNAME,,NAME,FATHER` formatting of individuals; `counterparty.display_name`
+is the masked name and is the only name SUMMARY.md prints. Payment-level
+tables in SUMMARY.md apply the same mask on the fly.
+
+**Reasoning.** A searchable, ranked list of named individuals by euros received
+is materially different from the same facts scattered across separate decisions
+on Diavgeia. The source publishes each decision so that a specific act can be
+checked; it does not publish, and its legal basis does not obviously cover, a
+profile of a person's total dealings with the municipality over twelve years.
+Building that profile is our act, not the source's, and it is the kind of
+aggregation the GDPR treats as a new processing purpose. Sole traders are
+still people. Nothing is lost for accountability: every masked row carries an
+ADA, and anyone with a legitimate question can follow it to the named source.
+
+**Not covered by this decision.** Company names, even one-person companies
+(ΟΕ, ΕΕ, ΙΚΕ, ΑΕ), are shown. Public office holders acting in office are shown.
+Whether to publish per-person totals above some high euro threshold, or to
+treat imprest-account holders (employees receiving advances, «ΥΠΟΛΟΓΟΣ
+ΕΝΤΑΛΜΑΤΟΣ ΠΡΟΠΛΗΡΩΜΗΣ») differently, is left open.
 
 ## Q2. Welfare and hardship decisions — UNDECIDED
 

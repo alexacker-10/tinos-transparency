@@ -66,10 +66,30 @@ Flags (deterministic, documented, never applied by hand):
   inconsistently (budget summaries appear under it); treat early years as
   unreliable.
 
+- ``payment.payee_class`` classifies every non-payroll line, first match wins:
+  ``internal_transfer`` (ΑΦΜ of an entity in entities.yaml: the municipality
+  funding its own bodies, not procurement) → ``remittance`` (above) → ``tax``
+  (old-chart ΚΑΕ major 63, taxes and fees, or a tax-authority payee: Ministry
+  of Finance, ΔΟΥ, ΑΑΔΕ, or an ΕΝΦΙΑ / interest-tax subject; ΚΑΕ 63 also catches
+  interest-withholding tax settled through banks and regulator levies) →
+  ``debt_service`` (ΚΑΕ major 65: loan instalments, bank and card-processing
+  charges; or a bank / Ταμείο Παρακαταθηκών payee) → ``other_public_body`` (a payee
+  whose name marks it as state, region, another municipality or its bodies,
+  a social-insurance fund, regulator, chamber or hospital) → ``supplier``.
+  Utilities (ΔΕΗ, ΕΛΤΑ, ΔΕΔΔΗΕ) stay suppliers: they sell a service. Grants to
+  clubs and churches (ΚΑΕ 67) also stay ``supplier`` for now.
+- ``payment.suspect_reason``: ``threshold`` (above) or ``document_mismatch``,
+  applied from ``data/manual/amount_review.yaml`` where a human compared the
+  metadata amount with the PDF and found it wrong (Ω25ΙΩΗ6-ΟΜΘ: 281,880.00 in
+  the metadata, 2,818.80 in the document; entered in cents).
+
 Counterparties. Resolution is exact-ΑΦΜ only. Name variants are collected,
 never fuzzy-merged. ``needs_review`` flags an ΑΦΜ whose format is not a
 9-digit Greek number or whose names differ beyond whitespace, case and
-punctuation.
+punctuation. ``is_natural_person`` is set from Diavgeia's ``SURNAME,,NAME,FATHER``
+form; the raw name stays in the Parquet (it is public at source) but
+``display_name`` is "φυσικό πρόσωπο" for natural persons and is what SUMMARY.md
+prints, with an ADA so the fact can be verified at source. See PRIVACY.md Q1.
 """
 
 from __future__ import annotations
@@ -110,6 +130,21 @@ _WITHHOLDING_RE = re.compile(r"κρατησ", re.IGNORECASE)
 _PAYROLL_SUBJECT_RE = re.compile(r"μισθοδοσ|αποδοχ|υπερωρι", re.IGNORECASE)
 _BATCH_NAME_RE = re.compile(r"(&|\bΚΑΙ)\s*ΛΟΙΠΟΙ", re.IGNORECASE)
 _PERSON_NAME_RE = re.compile(r",,")
+_TAX_PAYEE_RE = re.compile(
+    r"ΥΠΟΥΡΓΕΙΟ ΟΙΚΟΝΟΜ|ΑΑΔΕ|ΑΝΕΞΑΡΤΗΤΗ ΑΡΧΗ ΔΗΜΟΣΙΩΝ ΕΣΟΔΩΝ|ΦΟΡΟΛΟΓ|ΤΕΛΩΝΕΙ|(?<![^\W\d_])Δ\.?Ο\.?Υ(?![^\W\d_])",
+    re.IGNORECASE)
+# ΦΠΑ deliberately absent: ordinary invoices mention VAT in the subject.
+_TAX_SUBJECT_RE = re.compile(r"ΕΝΦΙΑ|ΦΟΡΟΣ ΕΙΣΟΔ|ΦΟΡΟΥ? ΤΟΚΩΝ", re.IGNORECASE)
+_DEBT_PAYEE_RE = re.compile(r"ΤΡΑΠΕΖ|(?<![^\W\d_])BANK(?![^\W\d_])|ΠΑΡΑΚΑΤΑΘΗΚ|(?<![^\W\d_])ALPHA(?![^\W\d_])|EUROBANK", re.IGNORECASE)
+_PUBLIC_BODY_RE = re.compile(
+    r"ΔΗΜΟΣ |ΔΗΜΟΤΙΚ|ΠΕΡΙΦΕΡΕΙ|ΥΠΟΥΡΓΕΙ|ΦΟΔΣΑ|ΦΟ\.Δ\.Σ\.Α|ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ|ΟΡΓΑΝΙΣΜΟΣ ΛΙΜΕΝ|ΡΥΘΜΙΣΤΙΚΗ ΑΡΧΗ|"
+    r"ΕΦΚΑ|ΕΘΝΙΚΟΣ ΦΟΡΕΑΣ ΚΟΙΝ|(?<![^\W\d_])ΙΚΑ(?![^\W\d_])|ΤΑΜΕΙΟ ΠΡΟΝΟΙΑΣ|ΟΠΑΔ|ΤΕΑΔΥ|ΤΑΔΚΥ|ΤΥΔΚΥ|ΟΑΕΔ|ΔΥΠΑ|ΕΟΠΥΥ|"
+    r"ΚΕΔΕ|ΕΕΤΑΑ|ΑΠΟΚΕΝΤΡΩΜΕΝ|ΕΛΛΗΝΙΚΟ ΔΗΜΟΣΙΟ|ΟΡΓΑΝΙΣΜΟΣ ΠΕΡΙΘΑΛΨ|ΝΟΣΟΚΟΜΕΙ|ΚΕΝΤΡΟ ΥΓΕΙΑΣ|ΠΑΝΕΠΙΣΤΗΜΙ|"
+    r"ΣΧΟΛΙΚΗ ΕΠΙΤΡΟΠ|ΚΟΙΝΩΦΕΛΗΣ ΕΠΙΧΕΙΡΗΣΗ|ΑΝΑΠΤΥΞΙΑΚ\w* ΟΡΓΑΝΙΣΜ|ΠΟΛΕΜΙΚΟΥ ΝΑΥΤΙΚΟΥ|ΕΠΙΜΕΛΗΤΗΡΙ|ΕΝΩΣΗ ΛΙΜΕΝΩΝ|"
+    r"ΚΤΗΜΑΤΟΛΟΓ|ΕΛ\.?Γ\.?Α(?![^\W\d_])|ΑΣΦΑΛΙΣΤΙΚ\w* ΤΑΜΕΙ|ΤΑΜΕΙΟ \w*ΑΣΦΑΛ|ΕΘΝΙΚΟ ΚΕΝΤΡΟ|ΓΕΝΙΚΟ ΛΟΓΙΣΤΗΡΙΟ|"
+    r"ΕΛΛΗΝΙΚΗ ΑΣΤΥΝΟΜ|ΠΥΡΟΣΒΕΣΤΙΚ|ΛΙΜΕΝΑΡΧΕΙ|ΕΙΡΗΝΟΔΙΚΕΙ|ΠΡΩΤΟΔΙΚΕΙ|ΔΙΚΑΣΤΗΡΙ",
+    re.IGNORECASE)
+PAYEE_CLASSES = ("payroll", "internal_transfer", "remittance", "tax", "debt_service", "other_public_body", "supplier")
 SUSPECT_PAYMENT_EUR = 10_000_000.0
 REMITTANCE_KAE_MAJOR = "82"
 
@@ -227,6 +262,37 @@ def is_withholding_subject(subject: str | None) -> bool:
     return bool(_WITHHOLDING_RE.search(strip_accents(subject)))
 
 
+def is_natural_person_name(name: str | None) -> bool:
+    return bool(name and _PERSON_NAME_RE.search(name))
+
+
+def classify_payee(*, afm: str | None, name: str | None, subject: str | None, kae_major: str | None,
+                   is_remittance: bool, family_afms: frozenset[str]) -> str:
+    """First matching rule wins; see module docstring for the rationale of each."""
+    n = strip_accents(name).upper()
+    subj = strip_accents(subject)
+    if afm and afm in family_afms:
+        return "internal_transfer"
+    if is_remittance:
+        return "remittance"
+    if kae_major == "63" or _TAX_PAYEE_RE.search(n) or _TAX_SUBJECT_RE.search(subj):
+        return "tax"
+    if kae_major == "65" or _DEBT_PAYEE_RE.search(n):
+        return "debt_service"
+    if _PUBLIC_BODY_RE.search(n):
+        return "other_public_body"
+    return "supplier"
+
+
+def load_amount_review(path: Path) -> dict[str, dict[str, Any]]:
+    """data/manual/amount_review.yaml -> {ada: entry} for documented mismatches."""
+    if not path.is_file():
+        return {}
+    import yaml
+    doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    return {str(e["ada"]): e for e in doc.get("mismatch", [])}
+
+
 def payroll_kind_of(name: str | None, subject: str | None) -> str | None:
     """'batch' for "X & ΛΟΙΠΟΙ" sponsors, 'named' for a payroll-worded act paid
     to a natural person, else None."""
@@ -280,9 +346,11 @@ def act_row(a: RawAct, stamp: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def payment_rows(a: RawAct, stamp: dict[str, Any]) -> list[dict[str, Any]]:
+def payment_rows(a: RawAct, stamp: dict[str, Any], family_afms: frozenset[str] = frozenset(),
+                 review: dict[str, dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """Β.2.2 -> one row per sponsor line; empty/null sponsor -> one payroll row."""
     d, ev = a.doc, a.ev
+    doc_mismatch = bool(review and a.ada in review)
     base = {
         "entity": str(d.get("organizationId")),
         "date": athens_date(d.get("issueDate")),
@@ -298,8 +366,9 @@ def payment_rows(a: RawAct, stamp: dict[str, Any]) -> list[dict[str, Any]]:
     if not sponsors:
         return [{
             "payment_id": f"{a.ada}:payroll", "line_no": 0, "is_payroll": True, "payroll_kind": "no_sponsor",
+            "payee_class": "payroll", "is_internal_transfer": False,
             "amount": None, "currency": None, "kae": None, "kae_scheme": None, "kae_major": None, "cpv": [],
-            "is_remittance": False, "amount_suspect": False,
+            "is_remittance": False, "amount_suspect": False, "suspect_reason": None,
             "counterparty_afm": None, "counterparty_afm_type": None, "counterparty_name_raw": None,
             **base,
         }]
@@ -312,12 +381,19 @@ def payment_rows(a: RawAct, stamp: dict[str, Any]) -> list[dict[str, Any]]:
         if kind:
             # An employee, not a supplier: keep the euros, drop the person.
             afm = afm_type = name = None
+        remit = kind is None and (major == REMITTANCE_KAE_MAJOR or is_withholding_subject(d.get("subject")))
+        klass = "payroll" if kind else classify_payee(
+            afm=afm, name=name, subject=d.get("subject"), kae_major=major,
+            is_remittance=remit, family_afms=family_afms)
+        over = amt is not None and amt > SUSPECT_PAYMENT_EUR
         rows.append({
             "payment_id": f"{a.ada}:{i}", "line_no": i, "is_payroll": kind is not None, "payroll_kind": kind,
+            "payee_class": klass, "is_internal_transfer": klass == "internal_transfer",
             "amount": amt, "currency": currency_of(s.get("expenseAmount")),
             "kae": s.get("kae"), "kae_scheme": scheme, "kae_major": major, "cpv": [str(c) for c in as_list(s.get("cpv"))],
-            "is_remittance": kind is None and (major == REMITTANCE_KAE_MAJOR or is_withholding_subject(d.get("subject"))),
-            "amount_suspect": amt is not None and amt > SUSPECT_PAYMENT_EUR,
+            "is_remittance": remit,
+            "amount_suspect": over or doc_mismatch,
+            "suspect_reason": "threshold" if over else ("document_mismatch" if doc_mismatch else None),
             "counterparty_afm": afm, "counterparty_afm_type": afm_type, "counterparty_name_raw": name,
             **base,
         })
@@ -416,17 +492,24 @@ def counterparty_rows(payments: list[dict[str, Any]], stamp: dict[str, Any]) -> 
         if len(norm_keys) > 1:
             reasons.append("name_variants")
         afm_types = {p["counterparty_afm_type"] for p in ps if p["counterparty_afm_type"]}
+        natural = any(is_natural_person_name(v) for v in variants)
+        canonical = names.most_common(1)[0][0] if names else None
+        largest = max(published, key=lambda p: p["amount"] or 0.0, default=None)
         rows.append({
             "afm": afm,
             "afm_type": sorted(afm_types)[0] if afm_types else None,
-            "canonical_name": names.most_common(1)[0][0] if names else None,
+            "canonical_name": canonical,
+            "is_natural_person": natural,
+            "display_name": "φυσικό πρόσωπο" if natural else canonical,
+            "payee_class": Counter(p["payee_class"] for p in ps).most_common(1)[0][0],
+            "largest_payment_ada": largest["source_ada"] if largest else None,
             "name_variants": variants,
             "n_name_variants": len(variants),
             "n_name_variants_normalised": len(norm_keys),
             "first_seen": min(p["date"] for p in ps),
             "last_seen": max(p["date"] for p in ps),
             "total_received": round(sum(p["amount"] or 0.0 for p in published), 2),
-            "total_received_supplier": round(sum(p["amount"] or 0.0 for p in published if not p["is_remittance"]), 2),
+            "total_received_supplier": round(sum(p["amount"] or 0.0 for p in published if p["payee_class"] == "supplier"), 2),
             "n_payments": len(published),
             "n_payments_revoked": sum(1 for p in ps if p["act_status"] != "PUBLISHED"),
             "n_payments_suspect": sum(1 for p in ps if p["amount_suspect"]),
@@ -479,11 +562,11 @@ SCHEMAS: dict[str, pa.Schema] = {
     ]),
     "payment": pa.schema([
         pa.field("payment_id", S()), pa.field("line_no", pa.int32()), pa.field("is_payroll", pa.bool_()),
-        pa.field("payroll_kind", S()),
+        pa.field("payroll_kind", S()), pa.field("payee_class", S()), pa.field("is_internal_transfer", pa.bool_()),
         pa.field("amount", pa.float64()), pa.field("currency", S()), pa.field("kae", S()), pa.field("kae_scheme", S()),
         pa.field("kae_major", S()),
         pa.field("cpv", L(S())), pa.field("is_remittance", pa.bool_()), pa.field("amount_suspect", pa.bool_()),
-        pa.field("counterparty_afm", S()), pa.field("counterparty_afm_type", S()), pa.field("counterparty_name_raw", S()),
+        pa.field("suspect_reason", S()), pa.field("counterparty_afm", S()), pa.field("counterparty_afm_type", S()), pa.field("counterparty_name_raw", S()),
         pa.field("entity", S()), pa.field("date", pa.date32()), pa.field("year", pa.int32()), pa.field("act_status", S()),
         pa.field("related_ada", L(S())), pa.field("skip_vat_reason", S()),
         pa.field("source_ada", S()), pa.field("source_sha256", S()), *_stamp_fields(),
@@ -510,7 +593,8 @@ SCHEMAS: dict[str, pa.Schema] = {
     ]),
     "counterparty": pa.schema([
         pa.field("afm", S()), pa.field("afm_type", S()), pa.field("canonical_name", S()),
-        pa.field("name_variants", L(S())), pa.field("n_name_variants", pa.int32()),
+        pa.field("is_natural_person", pa.bool_()), pa.field("display_name", S()), pa.field("payee_class", S()),
+        pa.field("largest_payment_ada", S()), pa.field("name_variants", L(S())), pa.field("n_name_variants", pa.int32()),
         pa.field("n_name_variants_normalised", pa.int32()), pa.field("first_seen", pa.date32()),
         pa.field("last_seen", pa.date32()), pa.field("total_received", pa.float64()),
         pa.field("total_received_supplier", pa.float64()), pa.field("n_payments", pa.int32()),
@@ -559,6 +643,8 @@ def build_curated(settings: Settings) -> BuildResult:
     awards: list[dict] = []
     source_hashes: list[str] = []
     excluded_pending = Counter()
+    family_afms = frozenset(e.afm for e in load_registry(settings.entities_file).entities if e.afm)
+    review = load_amount_review(settings.root / "data" / "manual" / "amount_review.yaml")
 
     for a in iter_raw_acts(settings.raw_dir):
         source_hashes.append(a.sha256)
@@ -569,7 +655,7 @@ def build_curated(settings: Settings) -> BuildResult:
                 excluded_pending[t] += 1
             continue
         if t in PAYMENT_TYPES:
-            payments.extend(payment_rows(a, stamp))
+            payments.extend(payment_rows(a, stamp, family_afms, review))
         elif t in COMMITMENT_TYPES:
             commitments.extend(commitment_rows(a, stamp))
         elif t in AWARD_TYPES:
@@ -603,6 +689,8 @@ def build_curated(settings: Settings) -> BuildResult:
             "remittance_kae_major": REMITTANCE_KAE_MAJOR,
             "remittance_subject": "κρατησ (accent-insensitive)",
             "payroll_kinds": "no_sponsor | batch ('& ΛΟΙΠΟΙ' sponsor) | named (payroll subject + natural person); name and AFM dropped",
+            "payee_classes": list(PAYEE_CLASSES),
+            "amount_review_entries": len(review),
             "commitment_reversal": "recalledExpenseDecision OR subject matches ανατροπ/ανακλησ",
             "never_sum_across_tables": True,
         },

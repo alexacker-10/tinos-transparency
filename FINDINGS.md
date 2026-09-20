@@ -76,6 +76,12 @@ DuckDB `read_json_auto` over the act files exhausts memory (schema inference acr
 - **One suspect line.** ΨΩΚΙΟΚ6Δ-ΘΟ6 (53404, 2018) carries a withholdings statement of
   82,310,012.00 EUR, ~400x the body's annual payments. Data-entry error at source;
   kept, flagged `amount_suspect`, excluded from views.
+- **Amounts can be entered in cents.** Ω25ΙΩΗ6-ΟΜΘ (6296, 2015) carries 281,880.00 EUR in
+  the metadata; the PDF (payment order ΧΘ 600, sha256 872acd76…) says 2,818.80 (2,430.00
+  net + 388.80 VAT) for gym equipment. Exactly x100. The 10M threshold cannot catch this
+  class of error; verified cases go in `data/manual/amount_review.yaml` and are flagged
+  `suspect_reason = document_mismatch`. Expect more; a systematic check (metadata
+  amount vs. commitment amount vs. PDF) is future work.
 - **Remittances dominate naive top-payee lists.** ΚΑΕ group 82 (αποδόσεις κρατήσεων)
   and "Κατάσταση Κρατήσεων" subjects are pass-through withholdings to the state,
   EFKA, IKA and pension funds: 3.6M of 6.7M municipal third-party payments in 2024.
@@ -213,20 +219,26 @@ Do not read them as revoked payments.
 2016-2024 concentration trend. Remittances to the state (ΚΑΕ 82, withholdings
 statements) and the 2015 ESPA outlier drove most of it. 2026 reverses it.
 
-**Evidence** (municipality, supplier payments only, `v_counterparty_year`):
+**Evidence** (municipality, `payee_class = 'supplier'` only: no payroll, remittances, internal
+transfers, taxes, debt service or other public bodies; `v_counterparty_year`):
 
 | year | distinct suppliers | supplier € | top-10 | top-1 |
 |---|---|---|---|---|
-| 2016 | 230 | 3.25M | 48.6% | 13.4% |
-| 2018 | 206 | 3.34M | 49.6% | 16.5% |
-| 2020 | 125 | 1.50M | 81.8% | 38.5% |
-| 2022 | 120 | 3.12M | 83.5% | 42.7% |
-| 2024 | 96 | 3.04M | 88.3% | 51.9% |
-| 2026 (Sep) | **225** | 4.56M | **60.7%** | 15.9% |
+| 2016 | 218 | 2.19M | 41.6% | 7.6% |
+| 2018 | 188 | 2.72M | 51.9% | 20.2% |
+| 2020 | 108 | 0.90M | 85.3% | 64.6% |
+| 2022 | 103 | 2.76M | 88.1% | 48.2% |
+| 2024 | 78 | 2.69M | 91.3% | 58.5% |
+| 2026 (Sep) | 215 | 4.33M | 63.1% | 16.7% |
 
 - Naive series (all counterparties): 260 → 120 distinct, top-10 50% → 92%. Roughly
   half of the 2023-2024 "top payee" euros were ΚΑΕ-82 remittances to the Ministry
-  of Finance, EFKA and pension funds (3.3M of 6.1M in 2023, 3.6M of 6.7M in 2024).
+  of Finance, EFKA and pension funds (3.3M of 6.1M in 2023, 3.6M of 6.7M in 2024),
+  and a further 4.7M corpus-wide were transfers inside the entity family (the
+  municipality funding its own bodies), 1.6M taxes, 1.4M debt service, 3.3M other
+  public bodies. Removing them lowers the supplier count but *raises* the top-1 share
+  in 2020-2025 (the electricity bill dominates a smaller denominator); the
+  concentration is real, its interpretation is not.
 - 2015 top-1 share of 64.7% is one payment: Ω1ΠΠΩΗ6-ΧΗΑ, 6,493,493.00 € to ΔΟΜΙΚΗ
   ΕΦΑΡΜΟΓΗ ΑΕ, 6th instalment of the ESPA-funded «Κέντρο σίτισης» works. Nine
   payments from that contractor total 6.82M over 2014-2016.

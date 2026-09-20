@@ -45,6 +45,15 @@ to study procurement after 2020 will see almost nothing and conclude wrongly.
   source. We keep it, flag it, and leave it out of every total.
 - A 2012 record of 13.8 million euros filed as a "commitment" is in fact the
   whole annual budget summary filed under the wrong type.
+- Amounts are sometimes typed wrong at the source. One verified case: a 2015
+  payment recorded as 281,880 euros whose document says 2,818.80, entered in
+  cents. We have no way to check every record against its document, so a few
+  wrong amounts certainly remain. Verified cases are listed in
+  `data/manual/amount_review.yaml` and left out of totals.
+- About 4.7 million euros of "payments" are the municipality funding its own
+  subsidiaries; a further 3.3 million went to other public bodies, 1.6 million
+  to taxes and 1.4 million to loan instalments and bank charges. None of that
+  is procurement, and our supplier tables exclude it.
 
 ## Some records are simply missing or thin
 
