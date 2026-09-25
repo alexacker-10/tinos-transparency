@@ -12,12 +12,25 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Literal
 
 Outcome = Literal["new", "unchanged", "changed"]
+
+# An ADA arrives in API responses and becomes a file name. All 76,785 in the
+# corpus are Greek capitals and digits around one hyphen (Ω25ΙΩΗ6-ΟΜΘ); anything
+# else is refused rather than allowed to steer a path out of data/raw.
+_ADA_RE = re.compile(r"[0-9Α-Ω]+-[0-9Α-Ω]+")
+_ORG_UID_RE = re.compile(r"\d+")
+
+
+def _path_part(value: Any, pattern: re.Pattern[str], what: str) -> str:
+    if not isinstance(value, str) or not pattern.fullmatch(value):
+        raise ValueError(f"refusing unsafe {what} {value!r} as a path component")
+    return value
 
 
 def canonical_json(obj: Any) -> bytes:
@@ -97,13 +110,14 @@ class RawStore:
     # -- diavgeia layout ---------------------------------------------------
 
     def diavgeia_act_path(self, org_uid: str, ada: str) -> Path:
-        return self.raw_dir / "diavgeia" / "acts" / org_uid / f"{ada}.json"
+        org = _path_part(org_uid, _ORG_UID_RE, "org uid")
+        return self.raw_dir / "diavgeia" / "acts" / org / f"{_path_part(ada, _ADA_RE, 'ADA')}.json"
 
     def diavgeia_page_path(
         self, org_uid: str, from_date: str, to_date: str, page: int, digest: str
     ) -> Path:
         name = f"{from_date}_{to_date}_p{page:03d}_{digest[:12]}.json"
-        return self.raw_dir / "diavgeia" / "search" / org_uid / name
+        return self.raw_dir / "diavgeia" / "search" / _path_part(org_uid, _ORG_UID_RE, "org uid") / name
 
     def put_diavgeia_page(
         self, org_uid: str, from_date: str, to_date: str, page: int, envelope: dict
