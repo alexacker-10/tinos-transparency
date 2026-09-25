@@ -23,24 +23,26 @@ contributions) in 2024; Diavgeia's payment decisions carry amounts for about
 48,000 euros of it. From late 2025 payroll batches carry an amount and the name
 of one employee standing for the group. We keep the amount and drop the name.
 
-## Diavgeia's payment decisions show less than half of what was paid
+## Since 2019, Diavgeia's payment decisions show less than half of what was paid
 
-The municipality reports paying 11.13 million euros in 2024. Its payment
-decisions on Diavgeia carry amounts for 4.64 million, about 42%. Salaries explain
-2.9 million of the gap. The rest is spread across ordinary spending: most
-purchases of consumables, equipment and small works that the budget report shows
-as paid have no payment decision with an amount. We do not yet know where, or
-whether, those payments are published. Treat every Diavgeia payment total as a
-floor, not as what was spent.
+Each year the municipality publishes its own budget report, which says how much
+it paid. Until 2018 its payment decisions on Diavgeia carried nearly all of the
+non-salary payments in that report. From 2019 they carry about half, and less
+since: in 2024, 4.64 of the 11.13 million euros paid, about 42%. Salaries explain
+2.9 million of the gap; the rest is ordinary spending on supplies, equipment and
+works. Most of those payments did not disappear: they are recorded in ΚΗΜΔΗΣ, the
+national procurement register, instead of Diavgeia (65 to 84% of each year's gap
+since 2019). Treat any payment total from Diavgeia alone, from 2019 on, as a floor.
 
 ## Direct awards vanished from Diavgeia in 2021, not from reality
 
 The municipality published about 350 direct-award decisions a year until 2020
 and 13 in 2024. Its payments did not change. The awards continued to be recorded
 in ΚΗΜΔΗΣ, the procurement register, which was always the primary venue; what
-stopped was the duplicate copy in Diavgeia. Roughly 9.5 million euros of award
-value between 2021 and 2024 has no Diavgeia record. Anyone using Diavgeia alone
-to study procurement after 2020 will see almost nothing and conclude wrongly.
+stopped was the duplicate copy in Diavgeia. For the municipality alone, ΚΗΜΔΗΣ
+records 7.7 million euros of direct awards (before VAT) in 2021-2024, where
+Diavgeia carries 1.5 million. Anyone using Diavgeia alone to study procurement
+after 2020 will see almost nothing and conclude wrongly.
 
 ## Some big numbers are bookkeeping, not spending
 
@@ -63,7 +65,11 @@ to study procurement after 2020 will see almost nothing and conclude wrongly.
   20,000. The last two had made "payments to third parties" look 2 million euros
   larger in each of those years. We have no way to check every record against its
   document, so a few wrong amounts certainly remain. Verified cases are listed in
-  `data/manual/amount_review.yaml` and left out of totals.
+  `data/manual/amount_review.yaml` and left out of totals. Comparing payments with
+  the budget reports points to at least six more likely cases, among them a 2015
+  payment of 6.5 million euros that is larger than everything the municipality
+  paid that year (FINDINGS.md F7). They are still counted until their documents
+  are checked.
 - About 4.7 million euros of "payments" are the municipality funding its own
   subsidiaries; a further 3.3 million went to other public bodies, 1.6 million
   to taxes and 1.4 million to loan instalments and bank charges. None of that
@@ -99,6 +105,11 @@ waste contractor, the water-treatment supplier, a multi-year construction
 contract. The naive figures looked worse than the corrected ones because they
 counted the tax office and the pension funds as "suppliers". Our concentration
 tables exclude those. Use them to decide where to look, not as a conclusion.
+
+From 2019 the supplier tables also miss most small suppliers, because their
+payments moved from Diavgeia to ΚΗΜΔΗΣ (see above). The apparent fall in the
+number of suppliers after 2018 is mostly that move, not a change in who the
+municipality buys from.
 
 ## Dates and years
 

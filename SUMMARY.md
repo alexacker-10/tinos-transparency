@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-25T15:59:03+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated1`, curated at 2026-09-25T15:54:52+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-25T16:52:06+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated2`, curated at 2026-09-25T16:44:00+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
@@ -205,6 +205,24 @@ Commitment reversals excluded from commitment totals: 4,297 acts, 49,985,463.94 
 | Β.1.3 commitments, this release (reversals excluded) | 19,824,694.80 | curated; 8,486,555.56 € of reversals excluded |
 
 The December execution statement (6ΝΠΘΩΗ6-Β64) is the denominator: what the municipality itself reports as paid in the year. Diavgeia's payment decisions carry amounts for 42% of it. Personnel costs are almost entirely missing there, and so are whole spending groups such as consumables, equipment and works (FINDINGS.md). Paid minus third-party payments is therefore not a payroll estimate; payroll is read from the statement's personnel lines. Two withholdings lines, 6Ω80ΩΗ6-0Ι2 (2023) and 6Ξ6ΖΩΗ6-26Β (2024), were entered in cents (about 2.0 million € each where the document says about 20,000 €); they are verified against their PDFs, flagged and excluded. Commitments exceed payments by design: they are budget reservations, many multi-year, not cash.
+
+## How much of what was paid Diavgeia shows, Δήμος Τήνου
+
+| Year | Paid, per the year-end statement € | With a Diavgeia payment line € | Share | Share excl. staff | Statement |
+|---|---:|---:|---:|---:|---:|
+| 2015 | 6,480,252.38 | 10,293,434.20 | 159% | 211% | 6ΟΜ6ΩΗ6-ΘΛ0 |
+| 2016 | 5,896,517.54 | 3,998,354.35 | 68% | 95% | ΩΧΗΝΩΗ6-ΝΓΦ |
+| 2017 | 6,787,387.20 | 5,856,337.04 | 86% | 115% | ΩΓ4ΗΩΗ6-ΔΘΩ |
+| 2018 | 6,243,759.28 | 4,181,994.39 | 67% | 95% | ΩΞΥΜΩΗ6-ΨΚΝ |
+| 2019 | 7,021,314.77 | 3,179,978.38 | 45% | 61% | 6ΥΒΙΩΗ6-Ν7Ψ |
+| 2020 | 7,603,787.10 | 2,497,273.30 | 33% | 44% | ΨΡΚΞΩΗ6-Ψ32 |
+| 2021 | 8,169,105.21 | 3,297,207.91 | 40% | 56% | 67ΠΖΩΗ6-4Ρ7 |
+| 2022 | 9,951,139.26 | 4,342,431.25 | 44% | 57% | 94Ξ9ΩΗ6-ΛΝΞ |
+| 2023 | 9,876,883.49 | 4,088,167.62 | 41% | 56% | 6ΣΒΚΩΗ6-ΓΔ8 |
+| 2024 | 11,134,283.87 | 4,643,984.72 | 42% | 56% | 6ΝΠΘΩΗ6-Β64 |
+| 2025 | 16,577,096.88 | 5,581,968.89 | 34% | 41% | Ψ1ΖΜΩΗ6-Τ8Β |
+
+The year-end execution statement is the municipality's own account of what it paid, parsed from its PDF with every column equal to the document's totals. Until 2018 Diavgeia's payment decisions carried nearly all non-staff payments; from 2019 most supplier payments are recorded in ΚΗΜΔΗΣ instead (FINDINGS.md F6). A share above 100% means some Diavgeia amount cannot be right (FINDINGS.md F7). Staff pay is withheld from Diavgeia by design.
 
 ## Method
 

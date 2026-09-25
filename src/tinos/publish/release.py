@@ -14,6 +14,11 @@ casual reader gets the right numbers by default:
 - ``v_yearly`` reports the three money measures side by side but in
   separate columns. They are different measures of the same spending and
   must never be added together.
+- ``v_budget_year`` is the municipality's own year-end execution statement
+  per ΚΑΕ group (one statement per entity and year, the latest published);
+  ``v_payment_coverage`` sets its paid column against the Β.2.2 lines that
+  carry an amount, per year and ΚΑΕ group. Coverage, not a sum: the two are
+  the same payments counted by two sources.
 """
 
 from __future__ import annotations
@@ -25,7 +30,7 @@ import duckdb
 
 from tinos.config import Settings
 
-TABLES = ("act", "payment", "commitment", "award", "counterparty", "entity")
+TABLES = ("act", "payment", "commitment", "award", "counterparty", "entity", "budget_line")
 
 VIEWS = {
     "v_act": "SELECT * FROM act",
@@ -93,6 +98,36 @@ VIEWS = {
         FROM r GROUP BY 1, 2 ORDER BY 1, 2
     """,
     "v_type_year": "SELECT year, type, status, count(*) AS n FROM act GROUP BY 1, 2, 3 ORDER BY 1, 2, 3",
+    "v_budget_year": """
+        WITH s AS (
+            SELECT DISTINCT entity, statement_ada, period_end, statement_date FROM budget_line WHERE is_year_end),
+        pick AS (
+            SELECT entity, statement_ada FROM s
+            QUALIFY row_number() OVER (PARTITION BY entity, period_end ORDER BY statement_date DESC, statement_ada) = 1)
+        SELECT b.entity, b.period_year AS year, b.side, b.kae_group, any_value(b.statement_ada) AS statement_ada,
+               sum(b.budgeted) AS budgeted, sum(b.assessed_or_warranted) AS assessed_or_warranted,
+               sum(b.collected_or_paid) AS collected_or_paid
+        FROM budget_line b JOIN pick USING (entity, statement_ada)
+        GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 3, 4
+    """,
+    # Same payments, two sources: the statement (all paid) and Β.2.2 lines with an amount.
+    "v_payment_coverage": r"""
+        WITH stmt AS (
+            SELECT entity, year, kae_group, collected_or_paid AS paid_per_statement, statement_ada
+            FROM v_budget_year WHERE side = 'spending'),
+        pub AS (
+            SELECT entity, year,
+                   left(coalesce(nullif(regexp_extract(kae, '^\d{2}[.\-](\d{4})', 1), ''),
+                                 regexp_extract(kae, '^(\d{4})', 1)), 2) AS kae_group,
+                   sum(amount) AS paid_in_diavgeia
+            FROM payment WHERE act_status = 'PUBLISHED' AND NOT amount_suspect AND amount IS NOT NULL
+            GROUP BY 1, 2, 3)
+        SELECT stmt.entity, stmt.year, stmt.kae_group, stmt.paid_per_statement,
+               coalesce(pub.paid_in_diavgeia, 0) AS paid_in_diavgeia,
+               coalesce(pub.paid_in_diavgeia, 0) / nullif(stmt.paid_per_statement, 0) AS coverage,
+               stmt.statement_ada
+        FROM stmt LEFT JOIN pub USING (entity, year, kae_group) ORDER BY 1, 2, 3
+    """,
 }
 
 

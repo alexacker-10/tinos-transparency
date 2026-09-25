@@ -310,6 +310,27 @@ def write_summary(settings: Settings) -> Path:
       "exceed payments by design: they are budget reservations, many multi-year, not cash.")
     w("")
 
+    # ---- coverage: Diavgeia payments against the municipality's own year-end statements
+    cov = q("""SELECT year, sum(paid_per_statement), sum(paid_in_diavgeia),
+                      sum(paid_in_diavgeia) FILTER (WHERE kae_group <> '60')
+                        / sum(paid_per_statement) FILTER (WHERE kae_group <> '60'),
+                      any_value(statement_ada)
+               FROM v_payment_coverage WHERE entity = '6296' GROUP BY 1 ORDER BY 1""")
+    if cov:
+        w("## How much of what was paid Diavgeia shows, Δήμος Τήνου")
+        w("")
+        w(_table(["Year", "Paid, per the year-end statement €", "With a Diavgeia payment line €", "Share",
+                  "Share excl. staff", "Statement"],
+                 [[y, _eur(s), _eur(d), f"{d / s:.0%}" if s else "", "" if x is None else f"{x:.0%}", ada]
+                  for y, s, d, x, ada in cov], 1))
+        w("")
+        w("The year-end execution statement is the municipality's own account of what it paid, parsed from its PDF "
+          "with every column equal to the document's totals. Until 2018 Diavgeia's payment decisions carried nearly "
+          "all non-staff payments; from 2019 most supplier payments are recorded in ΚΗΜΔΗΣ instead (FINDINGS.md F6). "
+          "A share above 100% means some Diavgeia amount cannot be right (FINDINGS.md F7). Staff pay is withheld "
+          "from Diavgeia by design.")
+        w("")
+
     # ---- method
     w("## Method")
     w("")

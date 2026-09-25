@@ -15,6 +15,11 @@ commitment   one row per Β.1.3 ΚΑΕ line, or one row from the act-level
 award        one row per Δ.1 / Δ.2.2 awardee, or one row with no awardee.
 counterparty one row per distinct ΑΦΜ seen on payment lines.
 entity       the registry in ``entities.yaml``.
+budget_line  one row per ΚΑΕ line of every stored budget execution statement
+             (Β.3 PDF in ``data/raw/diavgeia/docs``), parsed by
+             ``tinos.extract.statements`` and kept only if every column sums
+             to the document's own totals to the cent. The municipality's own
+             account of what was paid: the denominator for Diavgeia payments.
 
 DO NOT SUM ACROSS TABLES. ``payment`` (money that left the account),
 ``commitment`` (budget reserved) and ``award`` (contract value decided)
@@ -109,6 +114,9 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import shutil
+import subprocess
+import sys
 import unicodedata
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -123,7 +131,7 @@ import pyarrow.parquet as pq
 from tinos import __version__
 from tinos.config import Settings, load_registry
 
-CURATED_SCHEMA_VERSION = 1
+CURATED_SCHEMA_VERSION = 2  # 2: budget_line
 PIPELINE_VERSION = f"{__version__}+curated{CURATED_SCHEMA_VERSION}"
 ATHENS = ZoneInfo("Europe/Athens")
 UTC = timezone.utc
@@ -639,6 +647,65 @@ def entity_rows(settings: Settings, stamp: dict[str, Any]) -> list[dict[str, Any
     } for e in reg.entities]
 
 
+_LOOKALIKE = str.maketrans("ABEHIKMNOPTXYZ", "ΑΒΕΗΙΚΜΝΟΡΤΧΥΖ")
+
+
+def is_execution_statement(type_id: str | None, subject: str | None) -> bool:
+    """Β.3 «ΔΗΜΟΣΙΕΥΣΗ ΣΤΟΙΧΕΙΩΝ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛΟΓΙΣΜΟΥ ...», Latin look-alikes folded."""
+    s = strip_accents(subject).upper().translate(_LOOKALIKE)
+    return type_id == "Β.3" and "ΕΚΤΕΛΕΣ" in s and "ΠΡΟΥΠΟΛΟΓΙΣΜ" in s
+
+
+def pdftotext_version() -> str | None:
+    exe = shutil.which("pdftotext")
+    if exe is None:
+        return None
+    out = subprocess.run([exe, "-v"], capture_output=True, text=True)
+    first = (out.stderr or out.stdout).strip().splitlines()
+    return first[0] if first else "pdftotext"
+
+
+def budget_rows(raw_dir: Path, statements: dict[str, tuple[str, date | None]],
+                stamp: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, str]]:
+    """One row per ΚΑΕ line of every stored execution statement that parses exactly.
+
+    ``statements`` maps ADA -> (entity, act date) for published Β.3 execution
+    statements. Only the first capture of each PDF is read; other documents are
+    ignored. Returns the rows and {ADA: reason} for statements refused by the
+    parser (unsupported layout, or columns that do not sum to the document).
+    """
+    from tinos.extract.statements import StatementError, parse_statement
+
+    rows: list[dict[str, Any]] = []
+    refused: dict[str, str] = {}
+    base = raw_dir / "diavgeia" / "docs"
+    for pdf in sorted(base.glob("*/*.pdf")) if base.is_dir() else []:
+        ada = pdf.stem
+        if ada not in statements:
+            continue
+        entity, act_date = statements[ada]
+        sha = hashlib.sha256(pdf.read_bytes()).hexdigest()
+        text = subprocess.run(["pdftotext", "-layout", str(pdf), "-"],
+                              capture_output=True, text=True, check=True).stdout
+        try:
+            st = parse_statement(text)
+        except StatementError as exc:
+            refused[ada] = str(exc)
+            continue
+        year_end = (st.period_end.month, st.period_end.day) == (12, 31)
+        for ln in st.lines:
+            rows.append({
+                "statement_ada": ada, "entity": entity, "statement_date": act_date,
+                "period_end": st.period_end, "period_year": st.period_end.year,
+                "period_month": st.period_end.month, "is_year_end": year_end, "layout": st.layout,
+                "side": ln.side, "service": ln.service, "kae": ln.kae, "kae_group": ln.kae[:2],
+                "budgeted": ln.budgeted / 100, "assessed_or_warranted": ln.assessed_or_warranted / 100,
+                "collected_or_paid": ln.collected_or_paid / 100,
+                "source_ada": ada, "source_sha256": sha, **stamp,
+            })
+    return rows, refused
+
+
 # ---------------------------------------------------------------------------
 # schemas
 # ---------------------------------------------------------------------------
@@ -710,12 +777,21 @@ SCHEMAS: dict[str, pa.Schema] = {
         pa.field("in_scope", pa.bool_()), pa.field("reason", S()),
         pa.field("source_ada", S()), pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),
     ]),
+    "budget_line": pa.schema([
+        pa.field("statement_ada", S()), pa.field("entity", S()), pa.field("statement_date", pa.date32()),
+        pa.field("period_end", pa.date32()), pa.field("period_year", pa.int32()), pa.field("period_month", pa.int32()),
+        pa.field("is_year_end", pa.bool_()), pa.field("layout", S()), pa.field("side", S()), pa.field("service", S()),
+        pa.field("kae", S()), pa.field("kae_group", S()), pa.field("budgeted", pa.float64()),
+        pa.field("assessed_or_warranted", pa.float64()), pa.field("collected_or_paid", pa.float64()),
+        pa.field("source_ada", S()), pa.field("source_sha256", S()), *_stamp_fields(),
+    ]),
 }
 
 SORT_KEYS = {
     "act": ("entity", "date", "ada"), "payment": ("entity", "date", "payment_id"),
     "commitment": ("entity", "date", "commitment_id"), "award": ("entity", "date", "award_id"),
     "counterparty": ("afm",), "entity": ("uid",),
+    "budget_line": ("entity", "period_end", "side", "service", "kae"),
 }
 
 
@@ -745,11 +821,14 @@ def build_curated(settings: Settings) -> BuildResult:
     excluded_pending = Counter()
     family_afms = frozenset(e.afm for e in load_registry(settings.entities_file).entities if e.afm)
     review = load_amount_review(settings.root / "data" / "manual" / "amount_review.yaml")
+    statements: dict[str, tuple[str, date | None]] = {}
 
     for a in iter_raw_acts(settings.raw_dir):
         source_hashes.append(a.sha256)
         acts.append(act_row(a, stamp))
         t, status = a.doc.get("decisionTypeId"), a.doc.get("status")
+        if status == "PUBLISHED" and is_execution_statement(t, a.doc.get("subject")):
+            statements[a.ada] = (str(a.doc.get("organizationId")), athens_date(a.doc.get("issueDate")))
         if status not in MEASURE_STATUSES:
             if t in PAYMENT_TYPES | COMMITMENT_TYPES | AWARD_TYPES:
                 excluded_pending[t] += 1
@@ -762,6 +841,12 @@ def build_curated(settings: Settings) -> BuildResult:
             awards.extend(award_rows(a, stamp))
 
     propagated = propagate_payee_class(payments)
+    pdftotext = pdftotext_version()
+    if pdftotext:
+        budget, refused = budget_rows(settings.raw_dir, statements, stamp)
+    else:
+        budget, refused = [], {}
+        print("warning: pdftotext not installed; budget_line is empty", file=sys.stderr)
     tables = {
         "act": to_table("act", acts),
         "payment": to_table("payment", payments),
@@ -769,6 +854,7 @@ def build_curated(settings: Settings) -> BuildResult:
         "award": to_table("award", awards),
         "counterparty": to_table("counterparty", counterparty_rows(payments, stamp)),
         "entity": to_table("entity", entity_rows(settings, stamp)),
+        "budget_line": to_table("budget_line", budget),
     }
     out = settings.curated_dir
     out.mkdir(parents=True, exist_ok=True)
@@ -782,6 +868,12 @@ def build_curated(settings: Settings) -> BuildResult:
         "source_digest": digest_of_hashes(source_hashes),
         "rows": {k: v.num_rows for k, v in tables.items()},
         "excluded_pending_revocation_measure_acts": dict(excluded_pending),
+        "budget_statements": {
+            "parsed": len({r["statement_ada"] for r in budget}),
+            "refused": refused,
+            "pdftotext": pdftotext or "not installed",
+            "validation": "every amount column sums to the document's own total line, to the cent",
+        },
         "rules": {
             "measure_statuses": sorted(MEASURE_STATUSES),
             "dates": "Europe/Athens",

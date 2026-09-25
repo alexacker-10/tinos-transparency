@@ -49,14 +49,21 @@ cheap.
 - Base `https://cerpp.eprocurement.gov.gr/khmdhs-opendata`, keyless, CC BY 4.0,
   OpenAPI at `/v3/api-docs`. POST JSON to `/request`, `/notice`, `/contract`,
   `/auction`, `/payment`, `/pde`; `?page=N`; Spring page envelope
-  (`totalElements`, `totalPages`, `content[]`, 50 per page).
-- Same organisation uid as Diavgeia (`6296`). Filter validated by checking
-  `signedDate` (requests) / `contractSignedDate` (contracts) on the first page.
-- **Contract rows carry `diavgeiaADA`** — a hard join key to our `act` table —
-  and `procedureType` (e.g. «Απευθείας ανάθεση (αρ.118/αρ. 328)»), plus
-  `totalCostWithVAT`, `cpvItems`, `contractorName`, `vatNumber`.
-- Volume for 6296: contracts 100-143 per year (2018-2025), requests 246-493.
-  `/adamChain/{referenceNumber}` returns the pre-built request → notice →
+  (`totalElements`, `totalPages`, `content[]`, 50 per page). **It silently truncates
+  any date window over 180 days and echoes nothing**: ingest only with
+  `tinos khmdhs-backfill` (the verified contract is in FINDINGS.md).
+- Same organisation uid as Diavgeia (`6296`); records carry `organization.key`.
+- **Contract rows carry `procedureType`** (e.g. «Απευθείας ανάθεση (αρ.118/αρ. 328)»),
+  amounts, CPV, the contractor (`contractingDataDetails.contractingMembersDataList[]`
+  with `vatNumber`) and Diavgeia ADAs (`diavgeiaADA`, `contractRelatedADA`), the ADAs
+  systematically only from 2023. Payment rows (`/payment`) name no payee; reach it
+  through `contractRefNo`.
+- Volume for 6296 (full backfill 2026-09-25, by submission year, 2018-2025): requests
+  427-930, notices 9-454 (the jump comes in 2021), awards 240-468, contracts 153-274,
+  payments 429-840 a year; 17,502 records from 2017 to September 2026, none before
+  2017. (This line used to say contracts 100-143 and requests 246-493: one-year
+  windows the API had truncated to their last 180 days.)
+- `/adamChain/{referenceNumber}` returns the pre-built request → notice →
   contract → payment chain.
 
 ## Transcription costing (472 h of sessions)
