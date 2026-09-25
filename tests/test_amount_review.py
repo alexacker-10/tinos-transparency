@@ -51,5 +51,25 @@ class AmountReview(unittest.TestCase):
             flagged({ADA: entry})
 
 
+class DuplicatePostings(unittest.TestCase):
+    def rows(self, review=None, duplicates=None):
+        return payment_rows(act(), STAMP, frozenset(), review or {}, duplicates or {})
+
+    def test_duplicate_flags_every_line(self):
+        rows = self.rows(duplicates={ADA: {"ada": ADA, "duplicate_of": "ΑΛΛΗ6-ΑΔΑ"}})
+        self.assertEqual([(r["amount_suspect"], r["suspect_reason"]) for r in rows],
+                         [(True, "duplicate_posting")] * len(LINES))
+
+    def test_mismatch_reason_wins_on_its_line(self):
+        rows = self.rows(review={ADA: {"ada": ADA, "line_no": 2, "metadata_amount": 2023213.00}},
+                         duplicates={ADA: {"ada": ADA, "duplicate_of": "ΑΛΛΗ6-ΑΔΑ"}})
+        self.assertEqual([r["suspect_reason"] for r in rows],
+                         ["duplicate_posting", "duplicate_posting", "document_mismatch", "duplicate_posting"])
+
+    def test_other_acts_are_untouched(self):
+        rows = self.rows(duplicates={"ΑΛΛΗ6-ΑΔΑ": {"ada": "ΑΛΛΗ6-ΑΔΑ", "duplicate_of": ADA}})
+        self.assertFalse(any(r["amount_suspect"] for r in rows))
+
+
 if __name__ == "__main__":
     unittest.main()

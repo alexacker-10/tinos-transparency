@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-25T16:54:12+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated2`, curated at 2026-09-25T16:44:00+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-25T17:04:05+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated2`, curated at 2026-09-25T17:01:20+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
@@ -55,14 +55,14 @@ Status: PUBLISHED 76,564 · REVOKED 191 · PENDING_REVOCATION 30.
 | 2012 | 1,939 | 0 |  |  |  |  |  | 0 |  | 82 | 14.49M | 0.03M | 947 | 0.00M |
 | 2013 | 1,626 | 0 |  |  |  |  |  | 0 |  | 90 | 0.26M | 0.00M | 648 | 0.00M |
 | 2014 | 2,798 | 759 | 1.56M | 1.38M | 0.02M | 0.12M | 0.04M | 104 | 0.01M | 75 | 1.75M | 0.00M | 589 | 0.92M |
-| 2015 | 4,002 | 1,370 | 10.97M | 10.10M | 0.26M | 0.32M | 0.30M | 422 | 0.01M | 58 | 4.69M |  | 618 | 2.42M |
+| 2015 | 4,002 | 1,367 | 4.24M | 3.37M | 0.26M | 0.32M | 0.30M | 422 | 0.01M | 58 | 4.69M |  | 618 | 2.42M |
 | 2016 | 4,785 | 2,078 | 5.44M | 3.43M | 0.90M | 0.82M | 0.29M | 608 | 0.02M | 77 | 0.07M |  | 655 | 3.19M |
-| 2017 | 6,593 | 2,298 | 6.95M | 4.31M | 1.31M | 0.61M | 0.88M | 717 | 0.01M | 978 | 2.23M | 3.39M | 711 | 3.88M |
+| 2017 | 6,593 | 2,296 | 6.06M | 3.95M | 1.31M | 0.61M | 0.35M | 717 | 0.01M | 978 | 2.23M | 3.39M | 711 | 3.88M |
 | 2018 | 7,151 | 2,153 | 5.38M | 3.64M | 1.04M | 0.35M | 0.35M | 713 | 0.02M | 1,195 | 5.73M | 1.74M | 704 | 3.42M |
 | 2019 | 6,780 | 2,054 | 5.43M | 3.60M | 1.12M | 0.32M | 0.39M | 654 | 0.01M | 1,202 | 7.79M | 4.60M | 669 | 3.08M |
 | 2020 | 7,246 | 1,928 | 3.80M | 1.87M | 1.11M | 0.53M | 0.29M | 892 |  | 1,232 | 16.32M | 5.03M | 716 | 3.13M |
 | 2021 | 6,634 | 2,043 | 4.41M | 2.36M | 1.34M | 0.40M | 0.33M | 773 | 0.01M | 1,240 | 20.20M | 5.31M | 392 | 1.00M |
-| 2022 | 5,783 | 1,744 | 4.81M | 3.03M | 1.34M | 0.38M | 0.21M | 747 | 0.00M | 1,004 | 16.51M | 5.71M | 190 | 0.77M |
+| 2022 | 5,783 | 1,743 | 4.66M | 2.88M | 1.34M | 0.38M | 0.21M | 747 | 0.00M | 1,004 | 16.51M | 5.71M | 190 | 0.77M |
 | 2023 | 5,653 | 1,490 | 4.42M | 2.73M | 1.35M | 0.39M | 0.17M | 777 |  | 907 | 21.29M | 10.83M | 146 | 0.55M |
 | 2024 | 5,154 | 1,291 | 6.68M | 2.80M | 1.64M | 0.32M | 2.15M | 725 |  | 853 | 25.78M | 8.51M | 47 | 0.54M |
 | 2025 | 5,072 | 1,338 | 5.72M | 3.03M | 1.71M | 0.09M | 0.92M | 742 | 0.14M | 1,103 | 27.34M | 5.68M | 178 | 0.83M |
@@ -77,14 +77,14 @@ Status: PUBLISHED 76,564 · REVOKED 191 · PENDING_REVOCATION 30.
 | 2012 | 1,329 | 0 |  |  |  |  |  | 0 |  | 16 | 13.77M | 0.03M | 693 | 0.00M |
 | 2013 | 1,109 | 0 |  |  |  |  |  | 0 |  | 39 | 0.07M | 0.00M | 479 | 0.00M |
 | 2014 | 1,784 | 509 | 1.26M | 1.09M | 0.02M | 0.12M | 0.03M | 64 | 0.01M | 26 | 1.28M | 0.00M | 337 | 0.67M |
-| 2015 | 2,648 | 900 | 10.37M | 9.58M | 0.23M | 0.32M | 0.26M | 311 | 0.00M | 20 | 4.57M |  | 325 | 1.78M |
+| 2015 | 2,648 | 897 | 3.64M | 2.84M | 0.23M | 0.32M | 0.26M | 311 | 0.00M | 20 | 4.57M |  | 325 | 1.78M |
 | 2016 | 3,078 | 1,261 | 4.05M | 2.19M | 0.80M | 0.82M | 0.24M | 468 | 0.01M | 34 | 0.04M |  | 354 | 2.49M |
-| 2017 | 4,088 | 1,297 | 5.87M | 3.55M | 1.09M | 0.60M | 0.79M | 580 | 0.01M | 667 | 0.12M | 2.31M | 364 | 2.40M |
+| 2017 | 4,088 | 1,295 | 4.98M | 3.20M | 1.09M | 0.60M | 0.26M | 580 | 0.01M | 667 | 0.12M | 2.31M | 364 | 2.40M |
 | 2018 | 4,189 | 1,147 | 4.25M | 2.72M | 0.91M | 0.35M | 0.27M | 567 |  | 674 | 2.59M | 0.24M | 273 | 1.50M |
 | 2019 | 3,983 | 986 | 3.24M | 1.70M | 0.88M | 0.32M | 0.34M | 562 | 0.01M | 749 | 4.32M | 3.21M | 390 | 2.40M |
 | 2020 | 4,225 | 884 | 2.50M | 0.86M | 0.99M | 0.38M | 0.27M | 809 |  | 827 | 12.91M | 3.68M | 393 | 1.65M |
 | 2021 | 4,103 | 1,046 | 3.30M | 1.40M | 1.22M | 0.40M | 0.29M | 702 |  | 895 | 15.70M | 3.71M | 146 | 0.36M |
-| 2022 | 3,900 | 1,053 | 4.34M | 2.72M | 1.23M | 0.38M | 0.18M | 691 |  | 727 | 14.16M | 4.20M | 102 | 0.59M |
+| 2022 | 3,900 | 1,052 | 4.19M | 2.57M | 1.23M | 0.38M | 0.18M | 691 |  | 727 | 14.16M | 4.20M | 102 | 0.59M |
 | 2023 | 3,869 | 1,019 | 4.11M | 2.51M | 1.29M | 0.39M | 0.14M | 758 |  | 709 | 19.08M | 9.05M | 94 | 0.42M |
 | 2024 | 4,208 | 967 | 4.64M | 2.65M | 1.61M | 0.28M | 0.35M | 725 |  | 710 | 19.82M | 8.49M | 14 | 0.14M |
 | 2025 | 4,102 | 1,028 | 5.45M | 2.87M | 1.65M | 0.05M | 0.89M | 739 | 0.14M | 852 | 22.43M | 0.55M | 136 | 0.59M |
@@ -96,13 +96,13 @@ Third-party payments are every Β.2.2 sponsor line with a counterparty, split by
 
 | Class | Lines | Acts | € |
 |---|---:|---:|---:|
-| supplier | 15,368 | 14,235 | 46,964,090.46 |
+| supplier | 15,362 | 14,230 | 39,721,755.04 |
 | remittance | 6,210 | 5,494 | 13,253,511.76 |
 | internal_transfer | 566 | 480 | 4,655,141.62 |
 | other_public_body | 197 | 151 | 3,507,768.40 |
 | payroll | 8,918 | 8,404 | 2,177,766.94 |
-| tax | 798 | 771 | 1,616,002.88 |
 | debt_service | 914 | 878 | 1,431,791.52 |
+| tax | 797 | 770 | 1,085,694.88 |
 
 Classes are assigned by deterministic rules (see the `curated.py` docstring): payroll → internal transfer (payee ΑΦΜ belongs to an entity in `entities.yaml`) → remittance (ΚΑΕ 82 or a withholdings subject) → tax (ΚΑΕ 63, tax-authority payee, ΕΝΦΙΑ/ΦΠΑ subject) → debt service (ΚΑΕ 65, bank or Ταμείο Παρακαταθηκών payee) → other public body (name marks a state, regional, municipal, insurance or regulatory body) → supplier, then a second pass reclassifies supplier lines of any ΑΦΜ whose euros are at least 80% non-supplier across all years (`payee_class_rule = afm_propagation`). Utilities such as ΔΕΗ and ΕΛΤΑ stay suppliers; grants to clubs and churches (ΚΑΕ 67) are not yet separated and remain in the supplier column.
 
@@ -115,14 +115,14 @@ Supplier-class payments only: payroll, remittances, internal transfers, taxes, d
 | Year | Distinct suppliers | of which first paid this year | Supplier payments € | Top-10 share | Top-1 share |
 |---|---:|---:|---:|---:|---:|
 | 2014 | 132 | 132 | 1.09M | 62.6% | 17.8% |
-| 2015 | 184 | 105 | 9.58M | 89.2% | 70.5% |
+| 2015 | 184 | 105 | 2.84M | 65.2% | 17.0% |
 | 2016 | 218 | 102 | 2.19M | 41.6% | 7.6% |
-| 2017 | 224 | 64 | 3.55M | 53.9% | 16.7% |
+| 2017 | 224 | 64 | 3.20M | 50.2% | 18.6% |
 | 2018 | 188 | 39 | 2.72M | 51.9% | 20.2% |
 | 2019 | 180 | 50 | 1.70M | 60.8% | 35.6% |
 | 2020 | 107 | 23 | 0.86M | 85.9% | 67.1% |
 | 2021 | 131 | 38 | 1.40M | 79.6% | 55.1% |
-| 2022 | 102 | 14 | 2.72M | 88.9% | 48.8% |
+| 2022 | 102 | 14 | 2.57M | 88.2% | 51.7% |
 | 2023 | 103 | 18 | 2.51M | 90.3% | 61.1% |
 | 2024 | 77 | 19 | 2.65M | 92.0% | 59.6% |
 | 2025 | 91 | 18 | 2.87M | 91.7% | 60.9% |
@@ -134,42 +134,48 @@ Supplier-class payments only: payroll, remittances, internal transfers, taxes, d
 
 Counterparty registry: 1,323 distinct ΑΦΜ, 289 flagged for review (non-standard ΑΦΜ format or materially different name spellings under one ΑΦΜ). Resolution is exact-ΑΦΜ only; name variants are collected, never merged.
 
-Top 15 counterparties by supplier-class euros received, all entities, all years (published, non-suspect). Natural persons, sole traders included, are not ranked: a masked row would still give one person's all-years total, and the ADA printed beside it names them at source. Together, 624 natural persons received 10,017,664.26 € (21.3% of supplier-class euros) in 5,640 payments (see PRIVACY.md).
+Top 15 counterparties by supplier-class euros received, all entities, all years (published, non-suspect). Natural persons, sole traders included, are not ranked: a masked row would still give one person's all-years total, and the ADA printed beside it names them at source. Together, 624 natural persons received 9,781,024.26 € (24.6% of supplier-class euros) in 5,638 payments (see PRIVACY.md).
 
 | ΑΦΜ | Name | Received € | Payments | First | Last | Entities | Largest payment |
 |---|---|---:|---:|---:|---:|---:|---:|
 | 090000045 | ΔΗΜΟΣΙΑ ΕΠΙΧΕΙΡΗΣΗ ΗΛΕΚΤΡΙΣΜΟΥ ΑΝΩΝΥΜΗ ΕΤΑΙΡΙΑ | 10,731,782.26 | 1427 | 2014-07-22 | 2026-09-18 | 5 | 9Χ19ΩΗ6-ΠΜΗ |
-| 099003039 | ΔΟΜΙΚΗ ΕΦΑΡΜΟΓΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ | 6,816,102.10 | 9 | 2014-12-23 | 2016-02-29 | 1 | Ω1ΠΠΩΗ6-ΧΗΑ |
 | 999814118 | ΑΤΤΙΚΑ ΚΤΙΡΙΑ ΤΕΧΝΙΚΗ ΟΡΓΑΝΩΣΗ ΚΑΙ ΣΥΝΤΗΡΗΣΗ ΕΠΕ | 1,689,232.79 | 183 | 2014-07-17 | 2021-06-29 | 4 | ΩΤΣΜΟΡ07-ΥΛ7 |
 | 999481995 | ΠΕΡΙΒΑΛΛΟΝΤΙΚΗ ΧΟΡΗΓΙΑ ΕΝΗΜΕΡΩΣΗ ΕΥΑΙΣΘΗΤΟΠΟΙΗΣΗ ΜΟΝΟΠΡΟΣΩΠΗ ΕΤΑΙΡΕΙΑ ΠΕΡΙΟΡΙΣΜEΝΗΣ ΕΥΘΥΝΗΣ | 1,422,675.91 | 27 | 2017-07-12 | 2026-09-15 | 1 | ΨΡΨΕΩΗ6-Σ7Χ |
 | 094057329 | WATERA HELLAS ΜΟΝ Α.Β.Ε.Ε. | 1,105,333.55 | 96 | 2014-07-07 | 2026-09-17 | 1 | 7ΧΠΝΩΗ6-ΝΟΝ |
-| 999682455 | ΣΜΙΛΗ ΑΝΩΝΥΜΗ ΤΕΧΝΙΚΗ ΕΤΑΙΡΙΑ | 1,042,517.63 | 10 | 2021-08-25 | 2025-09-04 | 1 | 634ΧΩΗ6-ΗΕ7 |
-| 091724924 | ΣΤΑΥΡΟΣ ΠΛΥΤΑΣ ΚΑΙ ΣΙΑ ΟΕ | 719,233.01 | 430 | 2014-07-29 | 2023-11-27 | 3 | 6ΓΗΝΩΗ6-5Λ1 |
+| 999682455 | ΣΜΙΛΗ ΑΝΩΝΥΜΗ ΤΕΧΝΙΚΗ ΕΤΑΙΡΙΑ | 888,293.21 | 9 | 2021-08-25 | 2025-09-04 | 1 | 634ΧΩΗ6-ΗΕ7 |
 | 999266484 | ALPHADELTA CONSTRUCTIONS ΑΝΩΝΥΜΗ ΤΕΧΝΙΚΗ ΕΤΑΙΡΕΙΑ | 717,726.69 | 15 | 2014-08-07 | 2016-07-25 | 1 | 65Ψ2ΩΗ6-ΣΓ5 |
 | 099568315 | Α Φ ΚΟΠΑΝΙΤΣΑΝΟΣ ΚΑΙ ΣΙΑ ΕΕ | 560,842.96 | 27 | 2014-07-18 | 2026-03-12 | 2 | ΩΔ8ΧΩΗ6-ΥΙ4 |
 | 082025722 | ΑΦΟΙ ΝΙΚΟΛΑΟΥ ΣΤΕΡΓΙΩΤΗ ΟΕΕ | 533,668.78 | 75 | 2014-08-20 | 2026-09-14 | 5 | 6ΝΙΛΩΗ6-ΥΨ1 |
+| 091724924 | ΣΤΑΥΡΟΣ ΠΛΥΤΑΣ ΚΑΙ ΣΙΑ ΟΕ | 527,967.01 | 429 | 2014-07-29 | 2023-11-27 | 3 | 6Ι4ΚΩΗ6-84Υ |
 | 094387460 | ΑΝΔΡΙΑΝΗ ΠΑΓΑΝΕΛΗ ΕΜΠΟΡΙΚΕΣ ΟΙΚΟΔΟΜΙΚΕΣ ΚΑΤΑΣΚΕΥΑΣΤΙΚΕΣ ΧΩΜΑΤΟΥΡΓΙΚΕΣ ΛΑΤΟΜΙΚΕΣ ΕΠΙΧΕΙΡΗΣΕΙΣ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ | 421,607.80 | 123 | 2014-07-03 | 2022-08-29 | 5 | 7ΜΗΤΩΗ6-Δ7Χ |
 | 094019245 | Ο.Τ.Ε. Α.Ε. | 393,993.64 | 830 | 2014-07-22 | 2026-09-14 | 7 | Ψ07ΘΟΡ07-ΡΙ8 |
 | 998535328 | KAFSIS ΜΟΝΟΠΡΟΣΩΠΗ ΒΙΟΜΗΧΑΝΙΚΗ & ΕΝΕΡΓΕΙΑΚΗ Α.Ε | 377,649.55 | 75 | 2017-10-19 | 2026-09-16 | 2 | Ψ1ΑΙΩΗ6-2ΝΑ |
-| 800300059 | ΒΙΔΑΛΗΣ ΜΠΕΤΟΝ ΑΝΩΝΥΜΗ ΒΙΟΜΗΧΑΝΙΚΗ ΚΑΙ ΕΜΠΟΡΙΚΗ ΕΤΑΙΡΕΙΑ | 376,757.47 | 61 | 2014-08-12 | 2026-09-14 | 2 | 71ΠΔΩΗ6-ΘΑΠ |
 | 800301880 | ΔΗΜΗΤΡΑ ΖΑΡΠΑ ΜΑΡΚΟΣ ΖΑΡΠΑΣ ΟΕ | 345,213.66 | 65 | 2014-07-01 | 2026-09-15 | 5 | Ω3ΨΧΩΗ6-ΕΞ4 |
+| 099793475 | ΕΙΔΙΚΟΣ ΛΟΓΑΡΙΑΣΜΟΣ ΑΞΙΟΠΟΙΗΣΗΣ ΚΟΝΔΥΛΙΩΝ ΤΟΥ ΕΜΠ | 325,141.76 | 5 | 2015-03-12 | 2023-12-12 | 1 | Ω4Ε7ΩΗ6-ΔΕΑ |
+| 099003039 | ΔΟΜΙΚΗ ΕΦΑΡΜΟΓΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ | 322,609.10 | 8 | 2014-12-23 | 2016-02-29 | 1 | 6ΓΜ2ΩΗ6-ΣΨ2 |
 
 ## Data quality flags
 
-Suspect payment lines (above 10,000,000 € = `threshold`, or checked against the decision's PDF and found wrong = `document_mismatch`, see `data/manual/amount_review.yaml`; kept in `payment`, excluded from every view and total): 4
+Suspect payment lines (above 10,000,000 € = `threshold`, or checked against the decision's PDF and found wrong = `document_mismatch`, see `data/manual/amount_review.yaml`; kept in `payment`, excluded from every view and total): 11
 
 | Entity | Date | ADA | Amount € | Reason | Counterparty | Subject |
 |---|---|---|---:|---:|---:|---:|
 | 53404 | 2018-06-28 | ΨΩΚΙΟΚ6Δ-ΘΟ6 | 82,310,012.00 | threshold | ΥΠΟΥΡΓΕΙΟ ΟΙΚΟΝΟΜΙΚΩΝ ΓΕΝΙΚΗ ΔIEYΘΥΝΣΗ | Κατάσταση Κρατήσεων για την κράτηση 2.ΕΙΔΙΚΗ ΕΙΣΦ ΑΛΛΗΛΕΓΓ ΕΑΠ και την |
+| 6296 | 2015-08-14 | Ω1ΠΠΩΗ6-ΧΗΑ | 6,493,493.00 | document_mismatch | ΔΟΜΙΚΗ ΕΦΑΡΜΟΓΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ | εξόφληση 6ης εντολής πληρωμής έργου ΕΣΠΑ με τίτλο : Κέντρο σίτισης και |
 | 6296 | 2024-02-28 | 6Ξ6ΖΩΗ6-26Β | 2,023,213.00 | document_mismatch | ΥΠΟΥΡΓΕΙΟ ΟΙΚΟΝΟΜΙΚΩΝ ΓΕΝΙΚΗ ΔIEYΘΥΝΣΗ | Κατάσταση Κρατήσεων για τις κρατήσεις Κλάδος Σύνταξης ,Φόρος Μισθωτών |
 | 6296 | 2023-08-29 | 6Ω80ΩΗ6-0Ι2 | 2,004,276.00 | document_mismatch | ΥΠΟΥΡΓΕΙΟ ΟΙΚΟΝΟΜΙΚΩΝ ΓΕΝΙΚΗ ΔIEYΘΥΝΣΗ | Κατάσταση Κρατήσεων μ. Αυγούστου 2023 για τις κρατήσεις ΚΛΑΔΟΣ ΣΥΝΤΑΞΗ |
+| 6296 | 2017-11-28 | 6ΩΗ8ΩΗ6-7ΜΦ | 530,308.00 | document_mismatch | ΥΠΟΥΡΓΕΙΟ ΟΙΚΟΝΟΜΙΚΩΝ ΓΕΝ Δ-ΝΣΗ Δ-ΚΗΣΥΠ- | εξόφληση υπολοίπου ΕΝΦΙΑ Δήμου Τήνου έτους 2017 .( Το υπόλοιπο έχει ήδ |
 | 6296 | 2015-08-17 | Ω25ΙΩΗ6-ΟΜΘ | 281,880.00 | document_mismatch | φυσικό πρόσωπο | Προμήθεια αθλητικού υλικού ( πάγκοι , τραπέζι , και δίχτυ βόλεϋ) για τ |
+| 6296 | 2017-11-14 | 6ΓΗΝΩΗ6-5Λ1 | 191,266.00 | document_mismatch | ΣΤΑΥΡΟΣ ΠΛΥΤΑΣ ΚΑΙ ΣΙΑ ΟΕ | Προμήθεια καυσίμων για τη λειτουργία περονοφόρου ανυψωτικού μηχ/τος & |
+| 6296 | 2017-07-20 | 71ΠΔΩΗ6-ΘΑΠ | 166,712.00 | document_mismatch | ΒΙΔΑΛΗΣ ΜΠΕΤΟΝ ΑΝΩΝΥΜΗ ΒΙΟΜΗΧΑΝΙΚΗ ΚΑΙ Ε | Προμήθεια σκυροδέματος Δ.Ε. Πανόρμου |
+| 6296 | 2022-12-22 | 61ΘΚΩΗ6-4ΤΛ | 154,224.42 | duplicate_posting | ΣΜΙΛΗ ΑΝΩΝΥΜΗ ΤΕΧΝΙΚΗ ΕΤΑΙΡΙΑ | ΕΣΠΑ Εξωτερικά δίκτυα ύδρευσης Καλλονής,Υστερνίων και Πανόρμου Δήμου |
+| 6296 | 2015-11-27 | 6ΩΚΤΩΗ6-9ΛΦ | 151,960.00 | document_mismatch | φυσικό πρόσωπο | ΕΡΓΑΣΙΕΣ ΕΠΙΣΚΕΥΗΣ ΣΕ ΑΠΟΡΡΙΜΜΑΤΟΦΟΡΟ ΟΧΗΜΑ ΥΠΗΡΕΣΙΑΣ ΚΑΘΑΡΙΟΤΗΤΑΣ ΜΕ |
+| 6296 | 2015-11-26 | 76Λ6ΩΗ6-1ΝΓ | 84,680.00 | document_mismatch | φυσικό πρόσωπο | ΕΡΓΑΣΙΕΣ ΕΠΙΣΚΕΥΗΣ ΣΕ ΑΠΟΡΡΙΜΜΑΤΟΦΟΡΟ ΟΧΗΜΑ ΥΠΗΡΕΣΙΑΣ ΚΑΘΑΡΙΟΤΗΤΑΣ ΜΕ |
 
-Largest single supplier payment lines in the release. Each is a real record; large one-offs (an EU-funded works contract, a cash transfer to a newly created body) explain most year-to-year swings and should be read before any trend is. A natural person appears as «φυσικό πρόσωπο»; each row is one decision, checkable at source by its ADA:
+Largest single supplier payment lines in the release. Large one-offs explain most year-to-year swings and should be read before any trend is. Each row is one published decision, checkable at source by its ADA, but a published amount is not always right: the municipality's own year-end statements exposed nine lines entered x100 (FINDINGS.md F7), and bodies whose statements are not parsed yet are unchecked. A natural person appears as «φυσικό πρόσωπο»:
 
 | Entity | Date | ADA | Amount € | Counterparty | ΚΑΕ | Subject |
 |---|---|---|---:|---:|---:|---:|
-| 6296 | 2015-08-14 | Ω1ΠΠΩΗ6-ΧΗΑ | 6,493,493.00 | ΔΟΜΙΚΗ ΕΦΑΡΜΟΓΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ | 15.7341.0001 | εξόφληση 6ης εντολής πληρωμής έργου ΕΣΠΑ με τίτλο : Κέντρο σίτισης και |
 | 50256 | 2019-09-03 | 61ΟΛΟΡ07-ΕΡ4 | 708,102.00 | φυσικό πρόσωπο | 30.7333.0004 | ΕΞΟΦΛΗΣΗ ΕΡΓΟΥ ΕΠΙΣΚΕΥΗ ΟΔΟΣΤΡΩΜΑΤΟΣ ΛΙΜΕΝΑ ΠΑΝΟΡΜΟΥ |
 | 50256 | 2016-11-24 | ΩΤΣΜΟΡ07-ΥΛ7 | 466,638.00 | ΑΤΤΙΚΑ ΚΤΙΡΙΑ ΤΕΧΝΙΚΗ ΟΡΓΑΝΩΣΗ ΚΑΙ ΣΥΝΤΗ | 20.6117.0010 | ΧΡΗΜΑΤΙΚΟ ΕΝΤΑΛΜΑ ΧΘ 336/2016 ΚΑΘΑΡΙΟΤΗΤΑ ΛΙΜΕΝΩΝ ΓΑΥΡΙΟΥ ΚΑΙ ΜΠΑΤΣΙΟΥ |
 | 6296 | 2015-08-10 | Ω7ΘΗΩΗ6-ΓΒΗ | 320,401.60 | φυσικό πρόσωπο | 25.7341.0002 | Εξόφληση προμήθειας αυτόνομων συστημάτων νερού στο Δήμο Τηνου (ΕΣΠΑ) ( |
@@ -177,6 +183,7 @@ Largest single supplier payment lines in the release. Each is a real record; lar
 | 6296 | 2026-09-15 | ΨΡΨΕΩΗ6-Σ7Χ | 245,638.05 | GREENMEDIA ΠΕΡΙΒΑΛΛΟΝΤΙΚΕΣ ΕΦΑΡΜΟΓΕΣ ΕΠ | 020.2440989002 | Επεξεργασία Νέων ΑΣΑ Δήμου Τήνου – Μεταβατική Περίοδος & Μίσθωση Δεματ |
 | 6296 | 2015-12-17 | ΩΔ8ΧΩΗ6-ΥΙ4 | 210,430.00 | Α Φ ΚΟΠΑΝΙΤΣΑΝΟΣ ΚΑΙ ΣΙΑ ΕΕ | 20.7336.0008 | εξόφληση 2ου λογ/σμού του έργου :Αποκατάσταση χώρου ανεξέλεγκτης διάθε |
 | 6296 | 2026-02-13 | ΨΙ0ΣΩΗ6-Δ9Ε | 201,475.56 | DIALETI ΑΝΩΝΥΜΟΣ ΤΕΧΝΙΚΗ ΕΤΑΙΡΙΑ | 515.3170103002 | Επισκευή και συντήρηση κινηματογράφου Αιολίς Δήμου Τήνου (8ος λογαρια |
+| 6296 | 2022-06-10 | Ψ7ΦΒΩΗ6-ΨΘΣ | 186,836.95 | Μ. & Χ. ΜΑΚΡΥΠΟΥΛΙΑΣ Ο.Ε | 64.8122 | πληρωμή του έργου :"Επισκευή φθορών οδοστρώματος οδού Χώρας-Αγ. Φωκά Τ |
 
 Commitment reversals excluded from commitment totals: 4,297 acts, 49,985,463.94 €. Identified by the `recalledExpenseDecision` flag or a subject containing Ανατροπή/Ανάκληση.
 
@@ -210,14 +217,14 @@ The December execution statement (6ΝΠΘΩΗ6-Β64) is the denominator: what th
 
 | Year | Paid, per the year-end statement € | With a Diavgeia payment line € | Share | Share excl. staff | Statement |
 |---|---:|---:|---:|---:|---:|
-| 2015 | 6,480,252.38 | 10,293,434.20 | 159% | 211% | 6ΟΜ6ΩΗ6-ΘΛ0 |
+| 2015 | 6,480,252.38 | 3,563,301.20 | 55% | 72% | 6ΟΜ6ΩΗ6-ΘΛ0 |
 | 2016 | 5,896,517.54 | 3,998,354.35 | 68% | 95% | ΩΧΗΝΩΗ6-ΝΓΦ |
-| 2017 | 6,787,387.20 | 5,856,337.04 | 86% | 115% | ΩΓ4ΗΩΗ6-ΔΘΩ |
+| 2017 | 6,787,387.20 | 4,968,051.04 | 73% | 97% | ΩΓ4ΗΩΗ6-ΔΘΩ |
 | 2018 | 6,243,759.28 | 4,181,994.39 | 67% | 95% | ΩΞΥΜΩΗ6-ΨΚΝ |
 | 2019 | 7,021,314.77 | 3,179,978.38 | 45% | 61% | 6ΥΒΙΩΗ6-Ν7Ψ |
 | 2020 | 7,603,787.10 | 2,497,273.30 | 33% | 44% | ΨΡΚΞΩΗ6-Ψ32 |
 | 2021 | 8,169,105.21 | 3,297,207.91 | 40% | 56% | 67ΠΖΩΗ6-4Ρ7 |
-| 2022 | 9,951,139.26 | 4,342,431.25 | 44% | 57% | 94Ξ9ΩΗ6-ΛΝΞ |
+| 2022 | 9,951,139.26 | 4,188,206.83 | 42% | 55% | 94Ξ9ΩΗ6-ΛΝΞ |
 | 2023 | 9,876,883.49 | 4,088,167.62 | 41% | 56% | 6ΣΒΚΩΗ6-ΓΔ8 |
 | 2024 | 11,134,283.87 | 4,643,984.72 | 42% | 56% | 6ΝΠΘΩΗ6-Β64 |
 | 2025 | 16,577,096.88 | 5,581,968.89 | 34% | 41% | Ψ1ΖΜΩΗ6-Τ8Β |

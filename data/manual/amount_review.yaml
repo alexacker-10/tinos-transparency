@@ -2,9 +2,12 @@
 # The curated build applies `amount_suspect = true, suspect_reason = 'document_mismatch'`
 # to the payment lines of any ADA listed under `mismatch`: every line of the act, or
 # only sponsor line `line_no` when one is given (the build then fails unless that line
-# still carries `metadata_amount`, and `kae` if given). Nothing is corrected: the
-# metadata amount stays in the table, flagged, and the document amount is recorded
-# here for the reader.
+# still carries `metadata_amount`, and `kae` if given). Acts under `duplicate` re-post a
+# payment order that `duplicate_of` already records: all their lines are flagged
+# `duplicate_posting`. Nothing is corrected: the metadata amount stays in the table,
+# flagged, and the document's figure is recorded here for the reader. Most entries
+# below were found by reconciling Β.2.2 lines with the year-end execution statements
+# (release view v_kae_reconciliation, FINDINGS.md F7).
 version: 1
 mismatch:
   - ada: Ω25ΙΩΗ6-ΟΜΘ
@@ -50,3 +53,100 @@ mismatch:
       Withholdings statement for August 2023, four lines. The document gives 00.8211 as
       20.042,76 and the act's total payable as 34.262,96; the metadata line is the
       document amount x100, entered in cents. The other three lines match the document.
+
+  - ada: Ω1ΠΠΩΗ6-ΧΗΑ
+    entity: "6296"
+    line_no: 0
+    kae: "15.7341.0001"
+    metadata_amount: 6493493.00
+    document_amount: 64934.93
+    document: data/raw/diavgeia/docs/6296/Ω1ΠΠΩΗ6-ΧΗΑ.pdf
+    document_sha256: 2453da66ab488b164c3564e30d032fff12ec3ee136233e69f2fb96493b138ec8
+    checked_on: 2026-09-25
+    note: >
+      Payment of the 6th payment order of an ΕΣΠΑ works contract (Κέντρο σίτισης). The
+      document gives 64.934,93 six times and never 6.493.493,00; the metadata amount is it x100.
+      It exceeded everything the municipality paid in 2015 (6,480,252.38, statement 6ΟΜ6ΩΗ6-ΘΛ0).
+
+  - ada: 6ΩΗ8ΩΗ6-7ΜΦ
+    entity: "6296"
+    line_no: 0
+    kae: "00.6312"
+    metadata_amount: 530308.00
+    document_amount: 5303.08
+    document: data/raw/diavgeia/docs/6296/6ΩΗ8ΩΗ6-7ΜΦ.pdf
+    document_sha256: c9533fb76a96de4225975de1609e5440ffb69b4d0c01dc78c9b2e2d95576946a
+    checked_on: 2026-09-25
+    note: >
+      Balance of the municipality's own ΕΝΦΙΑ for 2017. The document gives 5.303,08; the
+      metadata amount is it x100. ΚΑΕ 6312 paid 7,525.18 in all of 2017 (statement ΩΓ4ΗΩΗ6-ΔΘΩ).
+
+  - ada: 6ΓΗΝΩΗ6-5Λ1
+    entity: "6296"
+    line_no: 0
+    kae: "30.6644"
+    metadata_amount: 191266.00
+    document_amount: 1912.66
+    document: data/raw/diavgeia/docs/6296/6ΓΗΝΩΗ6-5Λ1.pdf
+    document_sha256: 1042190e15d66d332134ab92235ca9752e182baf1404ccf4ff9917c659297a25
+    checked_on: 2026-09-25
+    note: >
+      Fuel, payment order ΧΘ 1.111, total payable 7.605,98. The document lists the ΚΑΕ lines
+      before VAT (30.6644 1.542,47; 35.6644 1.170,02; 20.6641 3.421,38); the metadata lines carry
+      them with 24% VAT. Lines 1 and 2 match (1,450.82 and 4,242.50); line 0 should be
+      1,542.47 x 1.24 = 1,912.66, entered x100. With 1,912.66 the three lines sum to 7,605.98.
+
+  - ada: 71ΠΔΩΗ6-ΘΑΠ
+    entity: "6296"
+    line_no: 0
+    kae: "30.6662.0006"
+    metadata_amount: 166712.00
+    document_amount: 1667.12
+    document: data/raw/diavgeia/docs/6296/71ΠΔΩΗ6-ΘΑΠ.pdf
+    document_sha256: 5ba4e9e52e4a293003b67ae767e4c7ab9a1b1bbaf370229148238b10042ba385
+    checked_on: 2026-09-25
+    note: >
+      Concrete for the Πάνορμος district. The document gives 1.667,12; the metadata amount
+      is it x100.
+
+  - ada: 6ΩΚΤΩΗ6-9ΛΦ
+    entity: "6296"
+    line_no: 0
+    kae: "20.6263"
+    metadata_amount: 151960.00
+    document_amount: 1519.60
+    document: data/raw/diavgeia/docs/6296/6ΩΚΤΩΗ6-9ΛΦ.pdf
+    document_sha256: a7992005e0b8e7bf7eae097732774b02c67924854f5237a2f198a2e2991792fd
+    checked_on: 2026-09-25
+    note: >
+      Repairs to a refuse truck (payee a natural person). The document gives 1.519,60; the
+      metadata amount is it x100.
+
+  - ada: 76Λ6ΩΗ6-1ΝΓ
+    entity: "6296"
+    line_no: 0
+    kae: "20.6263"
+    metadata_amount: 84680.00
+    document_amount: 846.80
+    document: data/raw/diavgeia/docs/6296/76Λ6ΩΗ6-1ΝΓ.pdf
+    document_sha256: 04bbb2585c2c78a105528d962320d96786e79f7cb183c0d71e7411f638ccbc05
+    checked_on: 2026-09-25
+    note: >
+      Repairs to a refuse truck (payee a natural person). The document gives 846,80; the
+      metadata amount is it x100.
+
+duplicate:
+  - ada: 61ΘΚΩΗ6-4ΤΛ
+    entity: "6296"
+    duplicate_of: ΨΧΥΧΩΗ6-8ΚΖ
+    payment_order: "ΧΡΗΜΑΤΙΚΟ ΕΝΤΑΛΜΑ 1.835, 8th invoice 393 of 19/12/2022, 154,224.42"
+    document: data/raw/diavgeia/docs/6296/61ΘΚΩΗ6-4ΤΛ.pdf
+    document_sha256: ae1c6daeb862b825b8982775c8e97a556bb6348783c57968e0fe56912fb7e0fd
+    duplicate_of_document_sha256: 7561033887483d9a089e327362728b582e4875f070b80cbf12bfd17349ebcc69
+    checked_on: 2026-09-25
+    note: >
+      Both acts are payment order 1.835 (protocol 1835) for the same ΕΣΠΑ water-network invoice.
+      ΨΧΥΧΩΗ6-8ΚΖ was published at 08:45:34 UTC on 2022-12-22 and corrected at 09:26 (it carries
+      a correctedVersionId); 61ΘΚΩΗ6-4ΤΛ was submitted 21 seconds after the first and never
+      corrected or revoked. Their withholdings differ by one 15,16 line. The statement counts the
+      payment once: ΚΑΕ 7312 in 2022 exceeded it by exactly 154,224.42 while both were counted.

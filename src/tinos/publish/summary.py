@@ -221,10 +221,11 @@ def write_summary(settings: Settings) -> Path:
         w("")
     big = q("""SELECT p.entity, p.date, p.source_ada, p.amount, substr(p.counterparty_display, 1, 40), p.kae, substr(a.subject, 1, 70)
                FROM v_supplier_payment p JOIN act a ON a.ada = p.source_ada ORDER BY p.amount DESC LIMIT 8""")
-    w("Largest single supplier payment lines in the release. Each is a real record; large one-offs "
-      "(an EU-funded works contract, a cash transfer to a newly created body) explain most year-to-year "
-      "swings and should be read before any trend is. A natural person appears as «φυσικό πρόσωπο»; "
-      "each row is one decision, checkable at source by its ADA:")
+    w("Largest single supplier payment lines in the release. Large one-offs explain most year-to-year "
+      "swings and should be read before any trend is. Each row is one published decision, checkable at "
+      "source by its ADA, but a published amount is not always right: the municipality's own year-end "
+      "statements exposed nine lines entered x100 (FINDINGS.md F7), and bodies whose statements are not "
+      "parsed yet are unchecked. A natural person appears as «φυσικό πρόσωπο»:")
     w("")
     w(_table(["Entity", "Date", "ADA", "Amount €", "Counterparty", "ΚΑΕ", "Subject"],
              [[e, d, ada, _eur(amt), n, k, sub] for e, d, ada, amt, n, k, sub in big], 3))

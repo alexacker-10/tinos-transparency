@@ -93,7 +93,9 @@ Flags (deterministic, documented, never applied by hand):
   the metadata, 2,818.80 in the document; entered in cents). An entry with
   ``line_no`` flags that sponsor line only, and the build fails if the line no
   longer carries the recorded ``metadata_amount``; without it, every line of
-  the act is flagged.
+  the act is flagged. ``duplicate_posting``: every line of an act listed under
+  ``duplicate`` there, a second posting of a payment order another act already
+  records (``duplicate_of``); the build fails unless both acts are held.
 
 Counterparties. Resolution is exact-ΑΦΜ only. Name variants are collected,
 never fuzzy-merged. ``needs_review`` flags an ΑΦΜ whose format is not a
@@ -334,11 +336,20 @@ def classify_payee(*, afm: str | None, name: str | None, subject: str | None, ka
 
 def load_amount_review(path: Path) -> dict[str, dict[str, Any]]:
     """data/manual/amount_review.yaml -> {ada: entry} for documented mismatches."""
+    return _review_section(path, "mismatch")
+
+
+def load_duplicate_postings(path: Path) -> dict[str, dict[str, Any]]:
+    """data/manual/amount_review.yaml -> {ada: entry} for acts that re-post another act's payment."""
+    return _review_section(path, "duplicate")
+
+
+def _review_section(path: Path, key: str) -> dict[str, dict[str, Any]]:
     if not path.is_file():
         return {}
     import yaml
     doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    return {str(e["ada"]): e for e in doc.get("mismatch", [])}
+    return {str(e["ada"]): e for e in doc.get(key) or []}
 
 
 def review_flags_line(entry: dict[str, Any] | None, i: int, kae: Any, amount: float | None) -> bool:
@@ -417,10 +428,12 @@ def act_row(a: RawAct, stamp: dict[str, Any]) -> dict[str, Any]:
 
 
 def payment_rows(a: RawAct, stamp: dict[str, Any], family_afms: frozenset[str] = frozenset(),
-                 review: dict[str, dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+                 review: dict[str, dict[str, Any]] | None = None,
+                 duplicates: dict[str, dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """Β.2.2 -> one row per sponsor line; empty/null sponsor -> one payroll row."""
     d, ev = a.doc, a.ev
     entry = review.get(a.ada) if review else None
+    duplicate = bool(duplicates and a.ada in duplicates)
     base = {
         "entity": str(d.get("organizationId")),
         "date": athens_date(d.get("issueDate")),
@@ -467,6 +480,7 @@ def payment_rows(a: RawAct, stamp: dict[str, Any], family_afms: frozenset[str] =
             is_remittance=remit, family_afms=family_afms)
         over = amt is not None and amt > SUSPECT_PAYMENT_EUR
         doc_mismatch = review_flags_line(entry, i, s.get("kae"), amt)
+        flagged = over or doc_mismatch or duplicate
         rows.append({
             "payment_id": f"{a.ada}:{i}", "line_no": i, "is_payroll": kind is not None, "payroll_kind": kind,
             "payee_class": klass, "payee_class_rule": "line", "is_internal_transfer": klass == "internal_transfer",
@@ -474,8 +488,9 @@ def payment_rows(a: RawAct, stamp: dict[str, Any], family_afms: frozenset[str] =
             "amount": amt, "currency": currency_of(s.get("expenseAmount")),
             "kae": s.get("kae"), "kae_scheme": scheme, "kae_major": major, "cpv": [str(c) for c in as_list(s.get("cpv"))],
             "is_remittance": remit,
-            "amount_suspect": over or doc_mismatch,
-            "suspect_reason": "threshold" if over else ("document_mismatch" if doc_mismatch else None),
+            "amount_suspect": flagged,
+            "suspect_reason": ("threshold" if over else "document_mismatch" if doc_mismatch
+                               else "duplicate_posting" if duplicate else None),
             "counterparty_afm": afm, "counterparty_afm_type": afm_type, "counterparty_name_raw": name,
             **base,
         })
@@ -820,7 +835,9 @@ def build_curated(settings: Settings) -> BuildResult:
     source_hashes: list[str] = []
     excluded_pending = Counter()
     family_afms = frozenset(e.afm for e in load_registry(settings.entities_file).entities if e.afm)
-    review = load_amount_review(settings.root / "data" / "manual" / "amount_review.yaml")
+    review_path = settings.root / "data" / "manual" / "amount_review.yaml"
+    review = load_amount_review(review_path)
+    duplicates = load_duplicate_postings(review_path)
     statements: dict[str, tuple[str, date | None]] = {}
 
     for a in iter_raw_acts(settings.raw_dir):
@@ -834,12 +851,19 @@ def build_curated(settings: Settings) -> BuildResult:
                 excluded_pending[t] += 1
             continue
         if t in PAYMENT_TYPES:
-            payments.extend(payment_rows(a, stamp, family_afms, review))
+            payments.extend(payment_rows(a, stamp, family_afms, review, duplicates))
         elif t in COMMITMENT_TYPES:
             commitments.extend(commitment_rows(a, stamp))
         elif t in AWARD_TYPES:
             awards.extend(award_rows(a, stamp))
 
+    # A duplicate must point at a payment act we hold that is not itself a duplicate.
+    payment_adas = {r["source_ada"] for r in payments}
+    for ada, e in duplicates.items():
+        kept = str(e.get("duplicate_of"))
+        if ada not in payment_adas or kept not in payment_adas or kept in duplicates:
+            raise ValueError(f"amount_review duplicate {ada} -> {kept}: both must be payment acts, "
+                             "and the kept one must not itself be a duplicate")
     propagated = propagate_payee_class(payments)
     pdftotext = pdftotext_version()
     if pdftotext:
@@ -885,6 +909,7 @@ def build_curated(settings: Settings) -> BuildResult:
                              " | personnel_kae (natural person under personnel ΚΑΕ: old 60, new 21); name and AFM dropped",
             "payee_classes": list(PAYEE_CLASSES),
             "amount_review_entries": len(review),
+            "duplicate_posting_entries": len(duplicates),
             "payee_class_afm_propagation_lines": dict(propagated),
             "commitment_reversal": "recalledExpenseDecision OR subject matches ανατροπ/ανακλησ",
             "never_sum_across_tables": True,

@@ -31,7 +31,7 @@ non-salary payments in that report. From 2019 they carry about half, and less
 since: in 2024, 4.64 of the 11.13 million euros paid, about 42%. Salaries explain
 2.9 million of the gap; the rest is ordinary spending on supplies, equipment and
 works. Most of those payments did not disappear: they are recorded in ΚΗΜΔΗΣ, the
-national procurement register, instead of Diavgeia (65 to 84% of each year's gap
+national procurement register, instead of Diavgeia (62 to 84% of each year's gap
 since 2019). Treat any payment total from Diavgeia alone, from 2019 on, as a floor.
 
 ## Direct awards vanished from Diavgeia in 2021, not from reality
@@ -58,18 +58,17 @@ after 2020 will see almost nothing and conclude wrongly.
   source. We keep it, flag it, and leave it out of every total.
 - A 2012 record of 13.8 million euros filed as a "commitment" is in fact the
   whole annual budget summary filed under the wrong type.
-- Amounts are sometimes typed wrong at the source. Three verified cases, all
-  entered in cents: a 2015 payment recorded as 281,880 euros whose document says
-  2,818.80, and monthly withholdings statements from August 2023 and February
-  2024 whose main line reads about 2 million euros where the document says about
-  20,000. The last two had made "payments to third parties" look 2 million euros
-  larger in each of those years. We have no way to check every record against its
-  document, so a few wrong amounts certainly remain. Verified cases are listed in
-  `data/manual/amount_review.yaml` and left out of totals. Comparing payments with
-  the budget reports points to at least six more likely cases, among them a 2015
-  payment of 6.5 million euros that is larger than everything the municipality
-  paid that year (FINDINGS.md F7). They are still counted until their documents
-  are checked.
+- Amounts are sometimes typed wrong at the source. Nine verified cases for the
+  municipality, all entered in cents (the amount x100), and one payment posted
+  twice. The largest was a 2015 payment recorded as 6.5 million euros, more than
+  everything the municipality paid that year; its document says 64,934.93. Two
+  monthly withholdings statements (2023, 2024) had made "payments to third
+  parties" look 2 million euros larger in each of those years. Together the nine
+  had overstated payments by 11.8 million euros. Most were found by comparing
+  payments with the municipality's own budget reports, then checked against the
+  documents; they are listed in `data/manual/amount_review.yaml` and left out of
+  totals. The same comparison shows a few smaller leads, and the other bodies,
+  whose reports we have not parsed, have not been checked (FINDINGS.md F7).
 - About 4.7 million euros of "payments" are the municipality funding its own
   subsidiaries; a further 3.3 million went to other public bodies, 1.6 million
   to taxes and 1.4 million to loan instalments and bank charges. None of that

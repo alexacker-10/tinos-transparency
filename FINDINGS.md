@@ -78,13 +78,14 @@ DuckDB `read_json_auto` over the act files exhausts memory (schema inference acr
   kept, flagged `amount_suspect`, excluded from views.
 - **Amounts can be entered in cents.** Ω25ΙΩΗ6-ΟΜΘ (6296, 2015) carries 281,880.00 EUR in
   the metadata; the PDF (payment order ΧΘ 600, sha256 872acd76…) says 2,818.80 (2,430.00
-  net + 388.80 VAT) for gym equipment. Exactly x100. Two more were found by reconciling
-  Β.2.2 lines against the execution statements (FY2024 below): one withholdings line each
-  in 6Ω80ΩΗ6-0Ι2 (2023) and 6Ξ6ΖΩΗ6-26Β (2024), ~2.0M where the document says ~20k. The 10M
-  threshold cannot catch this class of error; verified cases go in
-  `data/manual/amount_review.yaml` (the whole act, or one `line_no`) and are flagged
-  `suspect_reason = document_mismatch`. Expect more; the execution statements, ΚΑΕ by ΚΑΕ
-  against Β.2.2 lines, are the systematic check.
+  net + 388.80 VAT) for gym equipment. Exactly x100. Eight more, and one payment order
+  posted twice, were found by reconciling Β.2.2 lines against the execution statements and
+  verified against their PDFs (FY2024 below; F7). The 10M threshold cannot catch this class
+  of error; verified cases go in `data/manual/amount_review.yaml` (the whole act, or one
+  `line_no`; duplicates under `duplicate`) and are flagged `document_mismatch` or
+  `duplicate_posting`. The execution statements, ΚΑΕ by ΚΑΕ against Β.2.2 lines
+  (`v_kae_reconciliation`), are the systematic check; bodies without parsed statements are
+  unchecked.
 - **Remittances dominate naive top-payee lists.** ΚΑΕ group 82 (αποδόσεις κρατήσεων)
   and "Κατάσταση Κρατήσεων" subjects are pass-through withholdings to the state,
   EFKA, IKA and pension funds: 1.6M of 4.6M municipal third-party payments in 2024
@@ -333,12 +334,14 @@ transfers, taxes, debt service or other public bodies; `v_counterparty_year`):
   public bodies. Removing them lowers the supplier count but *raises* the top-1 share
   in 2020-2025 (the electricity bill dominates a smaller denominator); the
   concentration is real, its interpretation is not.
-- 2015 top-1 share of 64.7% is one payment: Ω1ΠΠΩΗ6-ΧΗΑ, 6,493,493.00 € to ΔΟΜΙΚΗ
-  ΕΦΑΡΜΟΓΗ ΑΕ, 6th instalment of the ESPA-funded «Κέντρο σίτισης» works. Nine
-  payments from that contractor total 6.82M over 2014-2016.
-- The decline in distinct suppliers 2018-2024 is real but begins before the Δ.1
-  collapse and reverses in 2026 (partly because payroll batches and a new chart of
-  accounts changed how lines are posted; see hazards above).
+- 2015's top-1 share looked like 64.7% because of one line: Ω1ΠΠΩΗ6-ΧΗΑ, 6,493,493.00 € to
+  ΔΟΜΙΚΗ ΕΦΑΡΜΟΓΗ ΑΕ for the ESPA-funded «Κέντρο σίτισης» works, which its PDF gives as
+  64,934.93 (F7). Flagged, 2015 has top-1 17.0% and top-10 65.2% (184 suppliers); the
+  contractor's other eight payments 2014-2016 total 322,609.
+- The decline in distinct suppliers after 2018 begins in 2019, the year supplier payments
+  started moving from Diavgeia to ΚΗΜΔΗΣ (F6), and before the Δ.1 collapse; it reverses in
+  2026 with the new software and chart of accounts. Read it as publication (see the
+  correction below), not as the municipality buying from fewer suppliers.
 
 **Is the 2026 row trustworthy? Yes, with two caveats.** Tested 2026-09-21 on the
 suspicion that the 2026 chart-of-accounts change had broken the remittance rule and
@@ -381,8 +384,8 @@ payments appear in ΚΗΜΔΗΣ's payment register and not in Diavgeia. The fall
 distinct suppliers (2018) to 77 (2024) and the rise in concentration are largely that shift:
 small suppliers are exactly who stopped appearing. The 2026 jump to 210 coincides with the
 municipality's new financial software and chart of accounts and is probably publication
-again (no 2026 statement parsed yet). The 2015 top-1 share rests on Ω1ΠΠΩΗ6-ΧΗΑ, which
-cannot be a real 6.49M payment (F7). Do not read 2019-2025 as a market trend until the
+again (no 2026 statement parsed yet). The 2015 top-1 share rested on a line entered x100
+(F7). Do not read 2019-2025 as a market trend until the
 series combines Β.2.2 lines with ΚΗΜΔΗΣ payments (payee through the contract's contractor
 ΑΦΜ).
 
@@ -412,7 +415,7 @@ of direct awards must come from ΚΗΜΔΗΣ, which carries `cpvItems` and `proc
 parsed into `budget_line`; every column equals the document's own totals to the cent). Until
 2018, Diavgeia's Β.2.2 lines carried the supplier spending in them almost in full. From 2019
 they carry about half and then less, while payments to the state (withholdings, taxes, debt)
-stay fully published. The missing supplier payments are, for 65-84% of each year's gap, in
+stay fully published. The missing supplier payments are, for 62-84% of each year's gap, in
 ΚΗΜΔΗΣ's payment register (εντολές πληρωμής), to payees that have no Β.2.2 line at all. Staff
 pay is withheld by design throughout. The pattern mirrors F1: direct awards stopped being
 copied into Diavgeia in 2021, supplier payments in 2019.
@@ -421,29 +424,30 @@ copied into Diavgeia in 2021, supplier payments in 2019.
 
 | Year | Paid (statement) | With a Β.2.2 line | Coverage | Excl. staff | 66 consumables | 71 equipment | 73 works | 82 remittances |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| 2015 | 6,480,252 | 10,293,434 | 159% | 211% | 81% | 72% | 476% | 31% |
+| 2015 | 6,480,252 | 3,563,301 | 55% | 72% | 81% | 72% | 87% | 31% |
 | 2016 | 5,896,518 | 3,998,354 | 68% | 95% | 96% | 101% | 97% | 92% |
-| 2017 | 6,787,387 | 5,856,337 | 86% | 115% | 181% | 97% | 99% | 100% |
+| 2017 | 6,787,387 | 4,968,051 | 73% | 97% | 99% | 97% | 99% | 100% |
 | 2018 | 6,243,759 | 4,181,994 | 67% | 95% | 96% | 100% | 103% | 98% |
 | 2019 | 7,021,315 | 3,179,978 | 45% | 61% | 16% | 28% | 54% | 76% |
 | 2020 | 7,603,787 | 2,497,273 | 33% | 44% | 2% | 17% | 8% | 85% |
 | 2021 | 8,169,105 | 3,297,208 | 40% | 56% | 19% | 9% | 30% | 84% |
-| 2022 | 9,951,139 | 4,342,431 | 44% | 57% | 8% | 6% | 124% | 89% |
+| 2022 | 9,951,139 | 4,188,207 | 42% | 55% | 8% | 6% | 96% | 89% |
 | 2023 | 9,876,883 | 4,088,168 | 41% | 56% | 6% | 1% | 57% | 93% |
 | 2024 | 11,134,284 | 4,643,985 | 42% | 56% | 2% | 2% | 1% | 100% |
 | 2025 | 16,577,097 | 5,581,969 | 34% | 41% | 13% | 2% | 24% | 101% |
 
 `SELECT * FROM v_payment_coverage WHERE entity='6296'` (statements: the December act of each
-year, `budget_line.statement_ada`). Above 100% means Diavgeia lines exceed what was paid: F7.
+year, `budget_line.statement_ada`), after the corrections in F7; before them 2015 read 159%,
+2017 86% (115% excluding staff) and 2022 44%. No group now exceeds 103%.
 
 | Year | Supplier-type spending, statement* | In Β.2.2* | Gap | ΚΗΜΔΗΣ payments | of which to payees with no Β.2.2 line ±60 d |
 |---|---:|---:|---:|---:|---:|
-| 2017 | 3,778,494 | 3,997,690 | −219,196 | 1,499,071 | 3,550 |
+| 2017 | 3,778,494 | 3,639,712 | 138,782 | 1,499,071 | 3,550 |
 | 2018 | 3,268,855 | 3,057,589 | 211,266 | 2,064,753 | 5,000 |
 | 2019 | 3,896,777 | 2,137,236 | 1,759,541 | 2,512,408 | 1,231,866 |
 | 2020 | 4,238,462 | 1,332,297 | 2,906,165 | 2,595,695 | 2,231,247 |
 | 2021 | 4,321,084 | 1,982,028 | 2,339,056 | 2,603,274 | 1,845,790 |
-| 2022 | 5,927,823 | 2,962,860 | 2,964,964 | 3,339,923 | 1,932,147 |
+| 2022 | 5,927,823 | 2,808,635 | 3,119,188 | 3,339,923 | 1,932,147 |
 | 2023 | 5,806,735 | 2,703,578 | 3,103,157 | 3,377,195 | 2,260,305 |
 | 2024 | 6,565,586 | 2,944,627 | 3,620,959 | 4,148,661 | 2,863,151 |
 | 2025 | 11,467,566 | 3,637,125 | 7,830,441 | 8,954,481 | 6,588,226 |
@@ -469,29 +473,37 @@ payees paid in Diavgeia with other amounts (0.32M); 315 to payees with no Β.2.2
 Β.2.2 alone are biased toward large, recurring and public payees (F3). A complete payment
 series needs Β.2.2 lines plus ΚΗΜΔΗΣ payments, the overlap removed by payee and amount.
 
-## F7. Reconciliation flags amounts that cannot be right. Unverified; not flagged yet.
+## F7. Reconciliation found amounts entered x100 and a double posting; verified and flagged.
 
-Where Diavgeia's Β.2.2 lines exceed what the statement says was paid in a ΚΑΕ group and year,
-some line is wrong or posted twice. The lines behind each excess (none yet checked against
-its own PDF, so none is in `data/manual/amount_review.yaml`; natural persons unnamed):
+Where Diavgeia's Β.2.2 lines exceed what the year-end statement says was paid under a ΚΑΕ,
+some line is wrong or posted twice. Each line below explained its own excess almost exactly,
+and its stored PDF (`data/raw/diavgeia/docs/6296/`) confirms it. All are in
+`data/manual/amount_review.yaml` and excluded from the views since 2026-09-25 (natural
+persons unnamed):
 
-| ADA | Date | ΚΑΕ | Amount | Why it cannot be right |
-|---|---|---|---:|---|
-| Ω1ΠΠΩΗ6-ΧΗΑ | 2015-08-14 | 15.7341.0001 | 6,493,493.00 | More than the municipality paid in all of 2015 (6.48M); group 73 paid 1.67M that year; the project's 2014 commitment was 431,964 (ΒΙΥΗΩΗ6-Ν29). As cents: 64,934.93. |
-| 6ΩΗ8ΩΗ6-7ΜΦ | 2017-11-28 | 00.6312 | 530,308.00 | Balance of the municipality's own ΕΝΦΙΑ; the first instalment was 2,192.10 and group 63 paid 13,243.18 in 2017. |
-| 6ΓΗΝΩΗ6-5Λ1 | 2017-11-14 | 30.6644 | 191,266.00 | Fuel for a forklift. |
-| 71ΠΔΩΗ6-ΘΑΠ | 2017-07-20 | 30.6662.0006 | 166,712.00 | Concrete for one district. As cents, with the line above, it removes 354,398 against group 66's 2017 excess of 353,196. |
-| 6ΩΚΤΩΗ6-9ΛΦ | 2015-11-27 | 20.6263 | 151,960.00 | Repairs to a refuse truck (payee a natural person). |
-| 76Λ6ΩΗ6-1ΝΓ | 2015-11-26 | 20.6263 | 84,680.00 | Repairs to a refuse truck (payee a natural person); with the line above, group 62's 2015 excess is 198,915. |
-| ΨΧΥΧΩΗ6-8ΚΖ, 61ΘΚΩΗ6-4ΤΛ | 2022-12-22 | 63.7312.0001 | 154,224.42 twice | Same day, contractor, ΚΑΕ and amount under two ADAs: a double posting; group 73's 2022 excess is 132,218. |
+| ADA | Date | ΚΑΕ | Metadata | Document | What |
+|---|---|---|---:|---:|---|
+| Ω1ΠΠΩΗ6-ΧΗΑ | 2015-08-14 | 15.7341.0001 | 6,493,493.00 | 64,934.93 | ΕΣΠΑ works instalment; the metadata exceeded all 2015 payments |
+| 6ΩΗ8ΩΗ6-7ΜΦ | 2017-11-28 | 00.6312 | 530,308.00 | 5,303.08 | the municipality's own ΕΝΦΙΑ balance |
+| 6ΓΗΝΩΗ6-5Λ1 | 2017-11-14 | 30.6644 | 191,266.00 | 1,912.66 | fuel; 1,542.47 + 24% VAT, lines sum to the order's 7,605.98 |
+| 71ΠΔΩΗ6-ΘΑΠ | 2017-07-20 | 30.6662.0006 | 166,712.00 | 1,667.12 | concrete |
+| 6ΩΚΤΩΗ6-9ΛΦ | 2015-11-27 | 20.6263 | 151,960.00 | 1,519.60 | refuse-truck repairs |
+| 76Λ6ΩΗ6-1ΝΓ | 2015-11-26 | 20.6263 | 84,680.00 | 846.80 | refuse-truck repairs |
+| 61ΘΚΩΗ6-4ΤΛ | 2022-12-22 | 63.7312.0001 | 154,224.42 | = ΨΧΥΧΩΗ6-8ΚΖ | payment order 1.835 posted a second time 21 s after the first |
 
-The same check per 4-digit ΚΑΕ is a release view: `SELECT * FROM v_kae_reconciliation WHERE
-entity='6296' AND excess_in_diavgeia > 20000 ORDER BY excess_in_diavgeia DESC` (26 rows; every
-line in the table above explains its own row almost exactly). Smaller leads it adds: 2022 ΚΑΕ
-8211 is 131,814 over with no line above 34,490 (repeated monthly withholdings postings?); 2017
-ΚΑΕ 6423 holds ΩΩ2ΜΩΗ6-ΩΡΖ at 50,952.00 against 9,718 paid; a 2018 payment coded under a
-revenue ΚΑΕ (0718, 50,000.00); Β.2.2 lines with no parseable ΚΑΕ (63-81k a year in 2015,
-2016 and 2019).
+With 6Ξ6ΖΩΗ6-26Β, 6Ω80ΩΗ6-0Ι2 (FY2024 section) and Ω25ΙΩΗ6-ΟΜΘ, nine municipal lines were
+entered x100; together they overstated the municipality's published payments by 11.8M
+(metadata minus document amounts), and the duplicate by another 0.15M.
+
+Still open, from `SELECT * FROM v_kae_reconciliation WHERE entity='6296' AND
+excess_in_diavgeia > 20000` (20 rows left): 2022 ΚΑΕ 8211 is 131,814 over with no line above
+34,490 (repeated monthly withholdings postings?); 2017 ΚΑΕ 6423 holds ΩΩ2ΜΩΗ6-ΩΡΖ at 50,952.00
+against 9,718 paid; a 2018 payment coded under a revenue ΚΑΕ (0718, 50,000.00); Β.2.2 lines with
+no parseable ΚΑΕ (63-81k a year in 2015, 2016 and 2019). The subsidiaries are unchecked: the
+port authority's two largest supplier lines, 61ΟΛΟΡ07-ΕΡ4 (2019, 708,102.00, road-surface
+repair) and ΩΤΣΜΟΡ07-ΥΛ7 (2016, 466,638.00), are round sums 24-37 times its 99th-percentile
+line (19,326) that create its only two spike years (1.77M and 1.18M against 0.5-0.8M); its
+year-end statements would settle them.
 
 Corpus-wide, 37 groups of payment lines share entity, date, ΚΑΕ, amount and payee under two
 or more ADAs (amount ≥ 1,000; 0.49M counted more than once if all are duplicates). Some are

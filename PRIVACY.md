@@ -94,15 +94,21 @@ Signer ids are kept in `act.signer_ids`. Resolving them to names (public office
 holders acting in office) is almost certainly fine; publishing per-signer
 statistics ("who signed the most direct awards") is a judgement we have not made.
 
-## Q6. ΚΗΜΔΗΣ records — UNDECIDED, raw only for now
+## Q6. ΚΗΜΔΗΣ records — DECIDED (2026-09-25)
 
 ΚΗΜΔΗΣ records name more people than Diavgeia metadata does: the email of the
 civil servant who entered each record (`authorEmail`), the signers, and the
-contractor's name and ΑΦΜ, sole traders included. Since 2026-09-25 they are
-stored in `data/raw/khmdhs` (not tracked in git) and nothing derived reads them
-yet. Current handling, until decided: before any curated table or published
-figure uses them, drop `authorEmail`; treat natural-person contractors exactly
-as in Q1 (masked, no per-person totals); keep signers out until Q5 is decided.
+contractor's name and ΑΦΜ, sole traders included. They are stored in
+`data/raw/khmdhs` (not tracked in git).
+
+**Position**, proposed and approved by the project owner on 2026-09-25: the
+curated layer never carries `authorEmail`, signers or any other official's
+name (Q5 still governs signers); contractors are treated exactly as Diavgeia
+counterparties under Q1: legal entities named, natural persons (sole traders
+included) shown as «φυσικό πρόσωπο», never ranked or totalled per person, with
+the raw name and ΑΦΜ kept in the curated layer only for joins and checks.
+The same `is_natural_person` rule applies, and `tinos privacy-check` guards
+what is published.
 
 ## Principles we are working from, pending decisions
 
