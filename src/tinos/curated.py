@@ -758,9 +758,10 @@ def build_curated(settings: Settings) -> BuildResult:
             "dates": "Europe/Athens",
             "counterparty_resolution": "exact AFM, no fuzzy merge",
             "payment_amount_suspect_above_eur": SUSPECT_PAYMENT_EUR,
-            "remittance_kae_major": REMITTANCE_KAE_MAJOR,
+            "remittance_kae_major": f"{REMITTANCE_KAE_MAJOR} (old chart) | {NEW_REMITTANCE_KAE_MAJOR} (new chart, 2026)",
             "remittance_subject": "κρατησ (accent-insensitive)",
-            "payroll_kinds": "no_sponsor | batch ('& ΛΟΙΠΟΙ' sponsor) | named (payroll subject + natural person); name and AFM dropped",
+            "payroll_kinds": "no_sponsor | batch ('& ΛΟΙΠΟΙ' / 'ΚΑΙ ΛΟΙΠΕΣ' sponsor) | named (payroll subject + natural person)"
+                             " | personnel_kae (natural person under personnel ΚΑΕ: old 60, new 21); name and AFM dropped",
             "payee_classes": list(PAYEE_CLASSES),
             "amount_review_entries": len(review),
             "payee_class_afm_propagation_lines": dict(propagated),

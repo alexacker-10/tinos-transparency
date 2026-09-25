@@ -17,8 +17,9 @@ adds commitments to payments, it is wrong.
 ## Salaries are counted but never itemised
 
 About 8,000 payment decisions are payroll. The law withholds the employee's name
-and, until late 2025, the amount too. We know the municipality paid roughly
-2.2 million euros in 2024 that is not itemised anywhere; most of that is wages.
+and, until late 2025, the amount too. The municipality's own monthly budget
+report shows 2.52 million euros paid on staff (pay, overtime and employer
+contributions) from January to November 2024; Diavgeia itemises 190 euros of it.
 From late 2025 payroll batches carry an amount and the name of one employee
 standing for the group. We keep the amount and drop the name.
 
@@ -39,7 +40,9 @@ to study procurement after 2020 will see almost nothing and conclude wrongly.
   summed. We exclude them and show the excluded amount.
 - About half of the municipality's "payments to third parties" in 2023-2024 are
   taxes, social-insurance contributions and other withholdings passed through to
-  the state. They are real payments but not purchases. We separate them.
+  the state. They are real payments but not purchases. We separate them. The
+  share is inflated by the two suspected typing errors described below; if they
+  are confirmed it falls to about a third.
 - One 2018 record from a subsidiary shows a payment of 82 million euros, roughly
   four hundred times that body's annual spending. It is a data-entry error at the
   source. We keep it, flag it, and leave it out of every total.
@@ -49,7 +52,10 @@ to study procurement after 2020 will see almost nothing and conclude wrongly.
   payment recorded as 281,880 euros whose document says 2,818.80, entered in
   cents. We have no way to check every record against its document, so a few
   wrong amounts certainly remain. Verified cases are listed in
-  `data/manual/amount_review.yaml` and left out of totals.
+  `data/manual/amount_review.yaml` and left out of totals. Two more are under
+  review and still counted: monthly withholdings statements from August 2023 and
+  February 2024 whose main line reads about 2 million euros where it normally
+  reads about 20,000.
 - About 4.7 million euros of "payments" are the municipality funding its own
   subsidiaries; a further 3.3 million went to other public bodies, 1.6 million
   to taxes and 1.4 million to loan instalments and bank charges. None of that

@@ -112,20 +112,56 @@ DuckDB `read_json_auto` over the act files exhausts memory (schema inference acr
   `dateFrom`/`dateTo`, `totalCostFrom`/`totalCostTo`, `title`, `isInitial`, `isApproved`.
 - Volume: 445 `/request` records for org 6296 in 2024.
 
-## Budget reconciliation, FY2024 (Δήμος Τήνου)
+## Budget reconciliation, FY2024 (Δήμος Τήνου), January to November
+
+**Corrected 2026-09-25.** Ψ68ΩΩΗ6-3ΓΦ is the statement for «Περίοδος: Νοέμβριος 2024»
+(signed 2024-12-10): its figures run to 30 November, not to the year end. The December
+statement is 6ΝΠΘΩΗ6-Β64 (published 2025-01-10), not yet stored or parsed, so there is no
+full-year paid figure. The earlier version of this table labelled the November figures "by
+December", set them against Diavgeia figures for the whole year taken from probe3 windows
+that were blind to 28-31 Dec (third-party payments 6,031,795.60; commitments 20,000,913.15,
+which does not reproduce from the release), and called the difference, 2,845,325.01, payroll.
+Like for like:
+
 | Figure | € | Source |
 |---|---|---|
 | Voted budget (balanced: revenue = expenditure) | 22,251,724.35 | ΨΞΕΟΩΗ6-2ΥΑ |
-| Revised budget by December | 23,630,861.94 | Ψ68ΩΩΗ6-3ΓΦ |
-| Ενταλματοποιηθέντα | 9,055,399.10 | Ψ68ΩΩΗ6-3ΓΦ |
-| **Πληρωθέντα** | **8,877,120.61** | Ψ68ΩΩΗ6-3ΓΦ |
-| Β.2.2 third-party payments (API) | 6,031,795.60 | Diavgeia metadata |
-| Residual = payroll | 2,845,325.01 | derived |
-| Β.1.3 commitments | 20,000,913.15 | Diavgeia metadata |
+| Revised budget at 30 Nov | 23,630,861.94 | Ψ68ΩΩΗ6-3ΓΦ |
+| Ενταλματοποιηθέντα, Jan-Nov | 9,055,399.10 | Ψ68ΩΩΗ6-3ΓΦ |
+| **Πληρωθέντα, Jan-Nov** | **8,877,120.61** | Ψ68ΩΩΗ6-3ΓΦ |
+| of which personnel costs, ΚΑΕ 60xx (17 rows) | 2,523,642.33 | Ψ68ΩΩΗ6-3ΓΦ |
+| of which remittances, ΚΑΕ 82xx | 1,145,923.76 | Ψ68ΩΩΗ6-3ΓΦ |
+| Β.2.2 third-party payments, Jan-Nov | 5,757,765.58 | release: 950 lines, 862 acts |
+| of which under ΚΑΕ 60 | 190.00 | release; the 651 payroll acts carry no amount |
+| of which under ΚΑΕ 82 | 3,174,526.80 | release; includes 6Ξ6ΖΩΗ6-26Β, below |
+| Β.2.2 third-party payments, full year | 6,667,197.72 | release: 1,074 lines, 967 acts |
+| Β.1.3 commitments, full year, reversals excluded | 19,824,694.80 | release; 8,486,555.56 of reversals excluded |
 
-Expenditure classes: 6 ΕΞΟΔΑ ΧΡΗΣΗΣ 11,031,542.99 · 7 ΕΠΕΝΔΥΣΕΙΣ 7,232,281.72 ·
+`SELECT sum(amount) FROM v_payment WHERE entity='6296' AND date BETWEEN '2024-01-01' AND '2024-11-30'`
+(release source digest `d29344da…`). Statement rows are the probe's parse of the PDF
+(`probe-out/exec2412.*`, PDF sha256 `78b0de36…`): 149 expenditure rows that sum exactly to
+the document's ΣΥΝΟΛΟ ΕΞΟΔΩΝ. The PDF is not yet in `data/raw`.
+
+**Paid minus third-party payments is not a payroll estimate.** Group by group the two
+sources disagree in both directions: personnel costs (60) are 2,523,642.33 in the statement
+and 190.00 in Β.2.2; the other expenditure groups are under-itemised in Β.2.2 by 2,624,505.74
+net (62, 61, 66, 81, 71, 64 and 73 each by 0.15-0.62M); remittances (82) are over-itemised
+by 2,028,603.04. The differences net to 3,119,355.03. Read payroll from the statement's
+60xx rows, not from a residual.
+
+**Suspected amount error: 6Ξ6ΖΩΗ6-26Β.** The February 2024 withholdings statement («Κατάσταση
+Κρατήσεων») carries 2,023,213.00 on its 00.8211 line; that line runs 19,508.71-20,379.14 in
+the other eleven monthly statements of 2024, and the act's other lines are ordinary
+(13,491.65 · 2,783.97 · 754.66). Read as cents, 20,232.13, the Jan-Nov Β.2.2 00.8211 lines
+total 217,858.34: exactly the statement's 8211 Πληρωθέντα. 6Ω80ΩΗ6-0Ι2 (August 2023) has the
+same shape: 2,004,276.00 on 00.8211 against 19,448.31-21,070.60 in the other 2023 statements.
+Neither is checked against its own PDF yet, so neither is in
+`data/manual/amount_review.yaml` or flagged. Until they are, the 2023 and 2024 remittance and
+third-party totals (F1, F3) each carry about 2.0M that was not paid.
+
+Expenditure classes (voted budget): 6 ΕΞΟΔΑ ΧΡΗΣΗΣ 11,031,542.99 · 7 ΕΠΕΝΔΥΣΕΙΣ 7,232,281.72 ·
 8 ΠΡΟΒΛΕΨΕΙΣ 3,954,381.31 · 9 ΑΠΟΘΕΜΑΤΙΚΟ 33,518.33.
-ΠΡΟΒΛΕΨΕΙΣ is notional — that's why execution looks like ~37% of budget.
+ΠΡΟΒΛΕΨΕΙΣ is notional — that's why execution to 30 November looks like ~37% of budget.
 
 ## Monthly execution statements — the denominator
 Published in Diavgeia as type `Β.3`, subject `ΔΗΜΟΣΙΕΥΣΗ ΣΤΟΙΧΕΙΩΝ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛΟΓΙΣΜΟΥ`.

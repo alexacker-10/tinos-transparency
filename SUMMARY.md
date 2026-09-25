@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-25T15:02:54+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated1`, curated at 2026-09-20T21:22:03+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-25T15:38:30+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated1`, curated at 2026-09-25T15:31:14+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
@@ -180,7 +180,7 @@ Commitment reversals excluded from commitment totals: 4,297 acts, 49,985,463.94 
 
 ## Coverage gaps
 
-- **Payroll is counted, never itemised.** 8,028 payment acts have an empty sponsor list because the beneficiary is an employee; Diavgeia withholds the name and the amount by design, so the FY2024 residual below is the only handle on them. From late 2025 the municipality posts payroll batches that name one representative employee plus "& ΛΟΙΠΟΙ" (796 lines) and a few payroll acts name a single person (27 lines). These carry an amount, which is kept; the name and ΑΦΜ are dropped in the curated layer and never reach the counterparty table.
+- **Payroll is counted, never itemised.** 8,028 payment acts have an empty sponsor list because the beneficiary is an employee; Diavgeia withholds the name and the amount by design, so the personnel lines (ΚΑΕ 60xx) of the municipality's monthly execution statements are the only handle on them (FY2024 below). From late 2025 the municipality posts payroll batches that name one representative employee plus "& ΛΟΙΠΟΙ" (796 lines); a few payroll acts name a single person (27 lines) and some pay a natural person under the personnel ΚΑΕ (72 lines). These carry an amount, which is kept; the name and ΑΦΜ are dropped in the curated layer and never reach the counterparty table.
 - **Direct awards left Diavgeia in 2021.** Δήμος Τήνου published 13 Δ.1 acts in 2024 against about 350 a year before 2021, while its payment volume did not change and ΚΗΜΔΗΣ contract counts stayed flat. Award values from 2021 onward must come from ΚΗΜΔΗΣ, not from this table.
 - **Award amounts and CPV are unreliable.** 626 published award rows have no amount; CPV is filled on under 15% of awards in any year.
 - **Commitments before 2017 are absent** (Β.1.3 was not used), and 4,920 published commitment rows have no per-ΚΑΕ breakdown, so their ΚΑΕ is null and the amount is the act total. In 2017 the municipality's year-end reversals exceed its posted commitments, so the commitment record for those years is incomplete, not small.
@@ -193,17 +193,16 @@ Commitment reversals excluded from commitment totals: 4,297 acts, 49,985,463.94 
 | Figure | € | Source |
 |---|---:|---:|
 | Voted budget (revenue = expenditure) | 22,251,724.35 | ΨΞΕΟΩΗ6-2ΥΑ |
-| Revised budget by December | 23,630,861.94 | Ψ68ΩΩΗ6-3ΓΦ |
-| Ενταλματοποιηθέντα (warranted) | 9,055,399.10 | Ψ68ΩΩΗ6-3ΓΦ |
-| Πληρωθέντα (paid) | 8,877,120.61 | Ψ68ΩΩΗ6-3ΓΦ |
-| Β.2.2 third-party payments, this release | 6,667,197.72 | 967 payment acts, curated |
+| Revised budget at 30 Nov | 23,630,861.94 | Ψ68ΩΩΗ6-3ΓΦ |
+| Ενταλματοποιηθέντα (warranted), Jan–Nov | 9,055,399.10 | Ψ68ΩΩΗ6-3ΓΦ |
+| Πληρωθέντα (paid), Jan–Nov | 8,877,120.61 | Ψ68ΩΩΗ6-3ΓΦ |
+| of which personnel costs (ΚΑΕ 60xx), Jan–Nov | 2,523,642.33 | Ψ68ΩΩΗ6-3ΓΦ |
+| Β.2.2 third-party payments, Jan–Nov, this release | 5,757,765.58 | 862 payment acts, curated |
+| Β.2.2 third-party payments, full year, this release | 6,667,197.72 | 967 payment acts, curated |
 | of which remittances to the state (ΚΑΕ 82 or withholdings subject) | 3,628,355.40 | curated |
-| Β.2.2 third-party payments, probe (FINDINGS.md) | 6,031,795.60 | probe windows were blind to Dec 28–31 |
-| Residual = paid − third-party (≈ payroll and unitemised) | 2,209,922.89 | derived; 725 payroll acts |
-| Β.1.3 commitments, this release (reversals excluded) | 19,824,694.80 | curated; 8,486,555.56 € of reversals excluded |
-| Β.1.3 commitments, probe (FINDINGS.md) | 20,000,913.15 | probe |
+| Β.1.3 commitments, full year, this release (reversals excluded) | 19,824,694.80 | curated; 8,486,555.56 € of reversals excluded |
 
-The execution statement (Ψ68ΩΩΗ6-3ΓΦ) is the denominator: what the municipality itself reports as paid. Third-party payments from Diavgeia metadata are a floor for itemisable spending; the residual is payroll plus anything paid without a Β.2.2 act. Commitments exceed payments by design: they are budget reservations, many multi-year, not cash.
+The execution statement (Ψ68ΩΩΗ6-3ΓΦ, period November 2024) is the denominator: what the municipality itself reports as paid, cumulative to 30 November. The December statement is not parsed yet, so there is no full-year paid figure here. Paid minus third-party payments is not a payroll estimate: ΚΑΕ by ΚΑΕ, Diavgeia's payment metadata leaves most spending groups under-itemised and remittances over-itemised (FINDINGS.md), so payroll is read from the statement's personnel lines. Two withholdings lines, 6Ω80ΩΗ6-0Ι2 (2023) and 6Ξ6ΖΩΗ6-26Β (2024), appear to have been entered in cents (about 2.0 million € each where the line normally runs about 20,000 €); they are under review and still counted in the 2023 and 2024 payment and remittance totals. Commitments exceed payments by design: they are budget reservations, many multi-year, not cash.
 
 ## Method
 

@@ -16,15 +16,15 @@ import duckdb
 from tinos.config import Settings
 from tinos.publish.privacy import PrivacyLeak, find_leaks, load_markers
 
-# Reference figures from FINDINGS.md (verified from the PDFs named there).
+# Reference figures from FINDINGS.md (verified from the PDFs named there). Ψ68ΩΩΗ6-3ΓΦ is the
+# November 2024 statement: its figures are cumulative to 30 November, not to the year end.
 FY2024_REFERENCE = [
     ("Voted budget (revenue = expenditure)", 22_251_724.35, "ΨΞΕΟΩΗ6-2ΥΑ"),
-    ("Revised budget by December", 23_630_861.94, "Ψ68ΩΩΗ6-3ΓΦ"),
-    ("Ενταλματοποιηθέντα (warranted)", 9_055_399.10, "Ψ68ΩΩΗ6-3ΓΦ"),
-    ("Πληρωθέντα (paid)", 8_877_120.61, "Ψ68ΩΩΗ6-3ΓΦ"),
+    ("Revised budget at 30 Nov", 23_630_861.94, "Ψ68ΩΩΗ6-3ΓΦ"),
+    ("Ενταλματοποιηθέντα (warranted), Jan–Nov", 9_055_399.10, "Ψ68ΩΩΗ6-3ΓΦ"),
+    ("Πληρωθέντα (paid), Jan–Nov", 8_877_120.61, "Ψ68ΩΩΗ6-3ΓΦ"),
+    ("  of which personnel costs (ΚΑΕ 60xx), Jan–Nov", 2_523_642.33, "Ψ68ΩΩΗ6-3ΓΦ"),
 ]
-PROBE_2024_THIRD_PARTY = 6_031_795.60
-PROBE_2024_COMMITMENTS = 20_000_913.15
 
 
 def _eur(v: float | None) -> str:
@@ -246,9 +246,11 @@ def write_summary(settings: Settings) -> Path:
     for line in [
         f"**Payroll is counted, never itemised.** {pk.get('no_sponsor', 0):,} payment acts have an empty sponsor "
         "list because the beneficiary is an employee; Diavgeia withholds the name and the amount by design, "
-        f"so the FY2024 residual below is the only handle on them. From late 2025 the municipality posts payroll "
-        f"batches that name one representative employee plus \"& ΛΟΙΠΟΙ\" ({pk.get('batch', 0):,} lines) and a few "
-        f"payroll acts name a single person ({pk.get('named', 0):,} lines). These carry an amount, which is kept; "
+        "so the personnel lines (ΚΑΕ 60xx) of the municipality's monthly execution statements are the only "
+        f"handle on them (FY2024 below). From late 2025 the municipality posts payroll "
+        f"batches that name one representative employee plus \"& ΛΟΙΠΟΙ\" ({pk.get('batch', 0):,} lines); a few "
+        f"payroll acts name a single person ({pk.get('named', 0):,} lines) and some pay a natural person under "
+        f"the personnel ΚΑΕ ({pk.get('personnel_kae', 0):,} lines). These carry an amount, which is kept; "
         "the name and ΑΦΜ are dropped in the curated layer and never reach the counterparty table.",
         f"**Direct awards left Diavgeia in 2021.** Δήμος Τήνου published {d1_2024} Δ.1 acts in 2024 against "
         "about 350 a year before 2021, while its payment volume did not change and ΚΗΜΔΗΣ contract counts "
@@ -276,22 +278,26 @@ def write_summary(settings: Settings) -> Path:
     w("")
     ours = q("""SELECT sum(payment_eur), sum(n_payroll_acts), sum(commitment_eur), sum(n_payment_acts), sum(remittance_eur), sum(reversal_eur)
                 FROM v_yearly WHERE entity = '6296' AND year = 2024""")[0]
-    paid = FY2024_REFERENCE[3][1]
+    jan_nov = q("""SELECT sum(amount), count(DISTINCT source_ada) FROM v_payment
+                   WHERE entity = '6296' AND date BETWEEN DATE '2024-01-01' AND DATE '2024-11-30'""")[0]
     rows = [[label, _eur(v), ada] for label, v, ada in FY2024_REFERENCE]
     rows += [
-        ["Β.2.2 third-party payments, this release", _eur(ours[0]), f"{ours[3]:,} payment acts, curated"],
+        ["Β.2.2 third-party payments, Jan–Nov, this release", _eur(jan_nov[0]), f"{jan_nov[1]:,} payment acts, curated"],
+        ["Β.2.2 third-party payments, full year, this release", _eur(ours[0]), f"{ours[3]:,} payment acts, curated"],
         ["  of which remittances to the state (ΚΑΕ 82 or withholdings subject)", _eur(ours[4]), "curated"],
-        ["Β.2.2 third-party payments, probe (FINDINGS.md)", _eur(PROBE_2024_THIRD_PARTY), "probe windows were blind to Dec 28–31"],
-        ["Residual = paid − third-party (≈ payroll and unitemised)", _eur(paid - (ours[0] or 0)), f"derived; {ours[1]:,} payroll acts"],
-        ["Β.1.3 commitments, this release (reversals excluded)", _eur(ours[2]), f"curated; {_eur(ours[5])} € of reversals excluded"],
-        ["Β.1.3 commitments, probe (FINDINGS.md)", _eur(PROBE_2024_COMMITMENTS), "probe"],
+        ["Β.1.3 commitments, full year, this release (reversals excluded)", _eur(ours[2]), f"curated; {_eur(ours[5])} € of reversals excluded"],
     ]
     w(_table(["Figure", "€", "Source"], rows, 1))
     w("")
-    w("The execution statement (Ψ68ΩΩΗ6-3ΓΦ) is the denominator: what the municipality itself reports as "
-      "paid. Third-party payments from Diavgeia metadata are a floor for itemisable spending; the residual "
-      "is payroll plus anything paid without a Β.2.2 act. Commitments exceed payments by design: they are "
-      "budget reservations, many multi-year, not cash.")
+    w("The execution statement (Ψ68ΩΩΗ6-3ΓΦ, period November 2024) is the denominator: what the municipality "
+      "itself reports as paid, cumulative to 30 November. The December statement is not parsed yet, so there is "
+      "no full-year paid figure here. Paid minus third-party payments is not a payroll estimate: ΚΑΕ by ΚΑΕ, "
+      "Diavgeia's payment metadata leaves most spending groups under-itemised and remittances over-itemised "
+      "(FINDINGS.md), so payroll is read from the statement's personnel lines. Two withholdings lines, "
+      "6Ω80ΩΗ6-0Ι2 (2023) and 6Ξ6ΖΩΗ6-26Β (2024), appear to have been entered in cents (about 2.0 million € "
+      "each where the line normally runs about 20,000 €); they are under review and still counted in the 2023 "
+      "and 2024 payment and remittance totals. Commitments exceed payments by design: they are budget "
+      "reservations, many multi-year, not cash.")
     w("")
 
     # ---- method
