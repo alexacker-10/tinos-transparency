@@ -96,8 +96,9 @@ the individual range (first digit 0-3, not 08x partnerships or 09x public
 bodies) on a name with at most four words and no legal-form token (ΟΕ, ΕΕ,
 ΑΕ, ΙΚΕ, ΕΠΕ, ΚΑΙ ΣΙΑ, ΑΦΟΙ, ΕΤΑΙΡΕΙΑ, ...), or on an imprest-account holder
 (ΥΠΟΛΟΓΟΣ). Sole traders are natural persons. The raw name stays in the Parquet (it is public at source) but
-``display_name`` is "φυσικό πρόσωπο" for natural persons and is what SUMMARY.md
-prints, with an ADA so the fact can be verified at source. See PRIVACY.md Q1.
+``display_name`` / ``counterparty_display`` is "φυσικό πρόσωπο" for natural persons
+and is the only name anything published may print, with an ADA so the fact can be
+verified at source. ``tinos privacy-check`` enforces it. See PRIVACY.md Q1.
 """
 
 from __future__ import annotations

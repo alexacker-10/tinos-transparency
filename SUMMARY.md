@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-20T21:23:40+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated1`, curated at 2026-09-20T21:22:03+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-25T15:02:54+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated1`, curated at 2026-09-20T21:22:03+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
@@ -134,7 +134,7 @@ Supplier-class payments only: payroll, remittances, internal transfers, taxes, d
 
 Counterparty registry: 1,323 distinct ΑΦΜ, 289 flagged for review (non-standard ΑΦΜ format or materially different name spellings under one ΑΦΜ). Resolution is exact-ΑΦΜ only; name variants are collected, never merged.
 
-Top 15 counterparties by supplier-class euros received, all entities, all years (published, non-suspect). Rows for natural persons were removed from this historical version on 2026-09-25 (PRIVACY.md Q1).
+Top 15 counterparties by supplier-class euros received, all entities, all years (published, non-suspect). Natural persons, sole traders included, are not ranked: a masked row would still give one person's all-years total, and the ADA printed beside it names them at source. Together, 624 natural persons received 10,017,664.26 € (21.3% of supplier-class euros) in 5,640 payments (see PRIVACY.md).
 
 | ΑΦΜ | Name | Received € | Payments | First | Last | Entities | Largest payment |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -151,6 +151,8 @@ Top 15 counterparties by supplier-class euros received, all entities, all years 
 | 094387460 | ΑΝΔΡΙΑΝΗ ΠΑΓΑΝΕΛΗ ΕΜΠΟΡΙΚΕΣ ΟΙΚΟΔΟΜΙΚΕΣ ΚΑΤΑΣΚΕΥΑΣΤΙΚΕΣ ΧΩΜΑΤΟΥΡΓΙΚΕΣ ΛΑΤΟΜΙΚΕΣ ΕΠΙΧΕΙΡΗΣΕΙΣ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ | 421,607.80 | 123 | 2014-07-03 | 2022-08-29 | 5 | 7ΜΗΤΩΗ6-Δ7Χ |
 | 094019245 | Ο.Τ.Ε. Α.Ε. | 393,993.64 | 830 | 2014-07-22 | 2026-09-14 | 7 | Ψ07ΘΟΡ07-ΡΙ8 |
 | 998535328 | KAFSIS ΜΟΝΟΠΡΟΣΩΠΗ ΒΙΟΜΗΧΑΝΙΚΗ & ΕΝΕΡΓΕΙΑΚΗ Α.Ε | 377,649.55 | 75 | 2017-10-19 | 2026-09-16 | 2 | Ψ1ΑΙΩΗ6-2ΝΑ |
+| 800300059 | ΒΙΔΑΛΗΣ ΜΠΕΤΟΝ ΑΝΩΝΥΜΗ ΒΙΟΜΗΧΑΝΙΚΗ ΚΑΙ ΕΜΠΟΡΙΚΗ ΕΤΑΙΡΕΙΑ | 376,757.47 | 61 | 2014-08-12 | 2026-09-14 | 2 | 71ΠΔΩΗ6-ΘΑΠ |
+| 800301880 | ΔΗΜΗΤΡΑ ΖΑΡΠΑ ΜΑΡΚΟΣ ΖΑΡΠΑΣ ΟΕ | 345,213.66 | 65 | 2014-07-01 | 2026-09-15 | 5 | Ω3ΨΧΩΗ6-ΕΞ4 |
 
 ## Data quality flags
 
@@ -158,10 +160,10 @@ Suspect payment lines (amount above 10,000,000 €; kept in `payment`, excluded 
 
 | Entity | Date | ADA | Amount € | Counterparty | Subject |
 |---|---|---|---:|---:|---:|
-| 53404 | 2018-06-28 | ΨΩΚΙΟΚ6Δ-ΘΟ6 | 82,310,012.00 | ΥΠΟΥΡΓΕΙΟ ΟΙΚΟΝΟΜΙΚΩΝ ΓΕΝΙΚΗ   ΔIEYΘΥΝΣΗ | Κατάσταση Κρατήσεων για την κράτηση 2.ΕΙΔΙΚΗ ΕΙΣΦ ΑΛΛΗΛΕΓΓ ΕΑΠ και την |
+| 53404 | 2018-06-28 | ΨΩΚΙΟΚ6Δ-ΘΟ6 | 82,310,012.00 | ΥΠΟΥΡΓΕΙΟ ΟΙΚΟΝΟΜΙΚΩΝ ΓΕΝΙΚΗ ΔIEYΘΥΝΣΗ | Κατάσταση Κρατήσεων για την κράτηση 2.ΕΙΔΙΚΗ ΕΙΣΦ ΑΛΛΗΛΕΓΓ ΕΑΠ και την |
 | 6296 | 2015-08-17 | Ω25ΙΩΗ6-ΟΜΘ | 281,880.00 | φυσικό πρόσωπο | Προμήθεια αθλητικού υλικού ( πάγκοι , τραπέζι , και δίχτυ βόλεϋ) για τ |
 
-Largest single supplier payment lines in the release. Each is a real record; large one-offs (an EU-funded works contract, a cash transfer to a newly created body) explain most year-to-year swings and should be read before any trend is:
+Largest single supplier payment lines in the release. Each is a real record; large one-offs (an EU-funded works contract, a cash transfer to a newly created body) explain most year-to-year swings and should be read before any trend is. A natural person appears as «φυσικό πρόσωπο»; each row is one decision, checkable at source by its ADA:
 
 | Entity | Date | ADA | Amount € | Counterparty | ΚΑΕ | Subject |
 |---|---|---|---:|---:|---:|---:|
@@ -169,10 +171,10 @@ Largest single supplier payment lines in the release. Each is a real record; lar
 | 50256 | 2019-09-03 | 61ΟΛΟΡ07-ΕΡ4 | 708,102.00 | φυσικό πρόσωπο | 30.7333.0004 | ΕΞΟΦΛΗΣΗ ΕΡΓΟΥ ΕΠΙΣΚΕΥΗ ΟΔΟΣΤΡΩΜΑΤΟΣ ΛΙΜΕΝΑ ΠΑΝΟΡΜΟΥ |
 | 50256 | 2016-11-24 | ΩΤΣΜΟΡ07-ΥΛ7 | 466,638.00 | ΑΤΤΙΚΑ ΚΤΙΡΙΑ ΤΕΧΝΙΚΗ ΟΡΓΑΝΩΣΗ ΚΑΙ ΣΥΝΤΗ | 20.6117.0010 | ΧΡΗΜΑΤΙΚΟ ΕΝΤΑΛΜΑ ΧΘ 336/2016 ΚΑΘΑΡΙΟΤΗΤΑ ΛΙΜΕΝΩΝ ΓΑΥΡΙΟΥ ΚΑΙ ΜΠΑΤΣΙΟΥ |
 | 6296 | 2015-08-10 | Ω7ΘΗΩΗ6-ΓΒΗ | 320,401.60 | φυσικό πρόσωπο | 25.7341.0002 | Εξόφληση προμήθειας αυτόνομων συστημάτων νερού στο Δήμο Τηνου (ΕΣΠΑ) ( |
-| 6296 | 2023-06-12 | 634ΧΩΗ6-ΗΕ7 | 253,969.06 | ΣΜΙΛΗ ΑΝΩΝΥΜΗ ΤΕΧΝΙΚΗ ΕΤΑΙΡΕΙΑ | 63.7312.0001 | Έργο ΕΣΠΑ εξωτερικά δίκτυα ύδρευσης Καλλονής , Υστερνίων και Πανόρμου  |
-| 6296 | 2026-09-15 | ΨΡΨΕΩΗ6-Σ7Χ | 245,638.05 | GREENMEDIA ΠΕΡΙΒΑΛΛΟΝΤΙΚΕΣ ΕΦΑΡΜΟΓΕΣ  ΕΠ | 020.2440989002 | Επεξεργασία Νέων ΑΣΑ Δήμου Τήνου – Μεταβατική Περίοδος & Μίσθωση Δεματ |
+| 6296 | 2023-06-12 | 634ΧΩΗ6-ΗΕ7 | 253,969.06 | ΣΜΙΛΗ ΑΝΩΝΥΜΗ ΤΕΧΝΙΚΗ ΕΤΑΙΡΕΙΑ | 63.7312.0001 | Έργο ΕΣΠΑ εξωτερικά δίκτυα ύδρευσης Καλλονής , Υστερνίων και Πανόρμου |
+| 6296 | 2026-09-15 | ΨΡΨΕΩΗ6-Σ7Χ | 245,638.05 | GREENMEDIA ΠΕΡΙΒΑΛΛΟΝΤΙΚΕΣ ΕΦΑΡΜΟΓΕΣ ΕΠ | 020.2440989002 | Επεξεργασία Νέων ΑΣΑ Δήμου Τήνου – Μεταβατική Περίοδος & Μίσθωση Δεματ |
 | 6296 | 2015-12-17 | ΩΔ8ΧΩΗ6-ΥΙ4 | 210,430.00 | Α Φ ΚΟΠΑΝΙΤΣΑΝΟΣ ΚΑΙ ΣΙΑ ΕΕ | 20.7336.0008 | εξόφληση 2ου λογ/σμού του έργου :Αποκατάσταση χώρου ανεξέλεγκτης διάθε |
-| 6296 | 2026-02-13 | ΨΙ0ΣΩΗ6-Δ9Ε | 201,475.56 | DIALETI ΑΝΩΝΥΜΟΣ ΤΕΧΝΙΚΗ ΕΤΑΙΡΙΑ | 515.3170103002 |  Επισκευή και συντήρηση κινηματογράφου Αιολίς Δήμου Τήνου (8ος λογαρια |
+| 6296 | 2026-02-13 | ΨΙ0ΣΩΗ6-Δ9Ε | 201,475.56 | DIALETI ΑΝΩΝΥΜΟΣ ΤΕΧΝΙΚΗ ΕΤΑΙΡΙΑ | 515.3170103002 | Επισκευή και συντήρηση κινηματογράφου Αιολίς Δήμου Τήνου (8ος λογαρια |
 
 Commitment reversals excluded from commitment totals: 4,297 acts, 49,985,463.94 €. Identified by the `recalledExpenseDecision` flag or a subject containing Ανατροπή/Ανάκληση.
 
@@ -195,7 +197,7 @@ Commitment reversals excluded from commitment totals: 4,297 acts, 49,985,463.94 
 | Ενταλματοποιηθέντα (warranted) | 9,055,399.10 | Ψ68ΩΩΗ6-3ΓΦ |
 | Πληρωθέντα (paid) | 8,877,120.61 | Ψ68ΩΩΗ6-3ΓΦ |
 | Β.2.2 third-party payments, this release | 6,667,197.72 | 967 payment acts, curated |
-|   of which remittances to the state (ΚΑΕ 82 or withholdings subject) | 3,628,355.40 | curated |
+| of which remittances to the state (ΚΑΕ 82 or withholdings subject) | 3,628,355.40 | curated |
 | Β.2.2 third-party payments, probe (FINDINGS.md) | 6,031,795.60 | probe windows were blind to Dec 28–31 |
 | Residual = paid − third-party (≈ payroll and unitemised) | 2,209,922.89 | derived; 725 payroll acts |
 | Β.1.3 commitments, this release (reversals excluded) | 19,824,694.80 | curated; 8,486,555.56 € of reversals excluded |

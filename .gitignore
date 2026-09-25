@@ -26,6 +26,9 @@ site/**
 !manifests/**
 !data/manual/**
 
+# --- Probe captures: raw API output full of payee names and ΑΦΜ (PRIVACY.md Q1) ---
+probe-out/
+
 # --- Misc ---
 *.log
 .DS_Store

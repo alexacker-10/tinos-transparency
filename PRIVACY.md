@@ -40,6 +40,20 @@ aggregation the GDPR treats as a new processing purpose. Sole traders are
 still people. Nothing is lost for accountability: every masked row carries an
 ADA, and anyone with a legitimate question can follow it to the named source.
 
+**Amended 2026-09-25: no per-person totals, even masked.** A masked row that
+ranks one person by all-years total is still a profile of that person: the ADA
+printed beside it names them at source. Natural persons are therefore left out
+of every per-payee ranking and reported as one aggregate line (how many, how
+much). They stay inside share calculations such as the top-10 share. A row that
+is a single decision (largest single payments, suspect amounts) keeps
+«φυσικό πρόσωπο» and its ADA: that is the source's own publication, not a
+profile. The rule is enforced in code. `tinos summary` refuses to write a
+SUMMARY.md that contains Diavgeia's person form (`SURNAME,,NAME`), a natural
+person's surname and first name in either order, or their ΑΦΜ. `tinos
+privacy-check` runs the same check over every file git tracks, because the
+repository is public; run it before pushing. It does not catch names in
+inflected forms (a genitive in a subject line).
+
 **Not covered by this decision.** Company names, even one-person companies
 (ΟΕ, ΕΕ, ΙΚΕ, ΑΕ), are shown. Public office holders acting in office are shown.
 Whether to publish per-person totals above some high euro threshold is left

@@ -14,6 +14,7 @@ from pathlib import Path
 import duckdb
 
 from tinos.config import Settings
+from tinos.publish.privacy import PrivacyLeak, find_leaks, load_markers
 
 # Reference figures from FINDINGS.md (verified from the PDFs named there).
 FY2024_REFERENCE = [
@@ -34,11 +35,16 @@ def _m(v: float | None) -> str:
     return "" if v is None else f"{v / 1e6:,.2f}M"
 
 
+def _cell(v: object) -> str:
+    """Source text is third-party: keep pipes, line breaks and tags from breaking or injecting Markdown."""
+    return "" if v is None else " ".join(str(v).split()).replace("|", "\\|").replace("<", "&lt;")
+
+
 def _table(headers: list[str], rows: list[list], align_right_from: int = 1) -> str:
     out = ["| " + " | ".join(headers) + " |",
            "|" + "|".join(("---:" if i >= align_right_from else "---") for i in range(len(headers))) + "|"]
     for r in rows:
-        out.append("| " + " | ".join("" if v is None else str(v) for v in r) + " |")
+        out.append("| " + " | ".join(_cell(v) for v in r) + " |")
     return "\n".join(out)
 
 
@@ -143,7 +149,7 @@ def write_summary(settings: Settings) -> Path:
     w("")
     it = q("""SELECT p.counterparty_display, count(*), sum(p.amount) FROM v_internal_transfer p
               GROUP BY 1 ORDER BY 3 DESC LIMIT 6""")
-    w("Largest internal transfers (not procurement): " + "; ".join(f"{n.strip()} {_eur(e)} € in {c} payments" for n, c, e in it) + ".")
+    w("Largest internal transfers (not procurement): " + "; ".join(f"{_cell(n)} {_eur(e)} € in {c} payments" for n, c, e in it) + ".")
     w("")
 
     # ---- supplier concentration
@@ -181,21 +187,28 @@ def write_summary(settings: Settings) -> Path:
       f"format or materially different name spellings under one ΑΦΜ). Resolution is exact-ΑΦΜ only; "
       "name variants are collected, never merged.")
     w("")
-    top = q("""SELECT afm, display_name, is_natural_person, total_received_supplier, n_payments, first_seen, last_seen,
+    top = q("""SELECT afm, display_name, total_received_supplier, n_payments, first_seen, last_seen,
                       n_entities, largest_payment_ada
-               FROM counterparty WHERE total_received_supplier > 0 ORDER BY total_received_supplier DESC LIMIT 15""")
+               FROM counterparty WHERE total_received_supplier > 0 AND NOT is_natural_person
+               ORDER BY total_received_supplier DESC LIMIT 15""")
+    people = q("""SELECT count(DISTINCT p.counterparty_afm), count(*), sum(p.amount) FROM v_supplier_payment p
+                  JOIN counterparty c ON c.afm = p.counterparty_afm WHERE c.is_natural_person""")[0]
+    supplier_eur = q("SELECT sum(amount) FROM v_supplier_payment")[0][0]
     w("Top 15 counterparties by supplier-class euros received, all entities, all years (published, "
-      "non-suspect). Natural persons are shown as «φυσικό πρόσωπο»; the ADA of their largest payment is "
-      "given so the fact can be verified at source (see PRIVACY.md).")
+      "non-suspect). Natural persons, sole traders included, are not ranked: a masked row would still "
+      "give one person's all-years total, and the ADA printed beside it names them at source. Together, "
+      f"{people[0]:,} natural persons received {_eur(people[2])} € ({people[2] / supplier_eur * 100:.1f}% of "
+      f"supplier-class euros) in {people[1]:,} payments (see PRIVACY.md).")
     w("")
     w(_table(["ΑΦΜ", "Name", "Received €", "Payments", "First", "Last", "Entities", "Largest payment"],
-             [["—" if np else a, n, _eur(t), p, f, l, e, ada] for a, n, np, t, p, f, l, e, ada in top], 2))
+             [[a, n, _eur(t), p, f, l, e, ada] for a, n, t, p, f, l, e, ada in top], 2))
     w("")
 
     # ---- data quality
     w("## Data quality flags")
     w("")
-    sus = q("""SELECT p.entity, p.date, p.source_ada, p.amount, substr(p.counterparty_name_raw, 1, 40), substr(a.subject, 1, 70)
+    # Names come from counterparty_display, never counterparty_name_raw: natural persons are masked there.
+    sus = q("""SELECT p.entity, p.date, p.source_ada, p.amount, substr(p.counterparty_display, 1, 40), substr(a.subject, 1, 70)
                FROM v_payment_suspect p JOIN act a ON a.ada = p.source_ada ORDER BY p.amount DESC""")
     w(f"Suspect payment lines (amount above 10,000,000 €; kept in `payment`, excluded from every view and total): {len(sus)}")
     w("")
@@ -203,11 +216,12 @@ def write_summary(settings: Settings) -> Path:
         w(_table(["Entity", "Date", "ADA", "Amount €", "Counterparty", "Subject"],
                  [[e, d, ada, _eur(amt), n, sub] for e, d, ada, amt, n, sub in sus], 3))
         w("")
-    big = q("""SELECT p.entity, p.date, p.source_ada, p.amount, substr(p.counterparty_name_raw, 1, 40), p.kae, substr(a.subject, 1, 70)
+    big = q("""SELECT p.entity, p.date, p.source_ada, p.amount, substr(p.counterparty_display, 1, 40), p.kae, substr(a.subject, 1, 70)
                FROM v_supplier_payment p JOIN act a ON a.ada = p.source_ada ORDER BY p.amount DESC LIMIT 8""")
     w("Largest single supplier payment lines in the release. Each is a real record; large one-offs "
       "(an EU-funded works contract, a cash transfer to a newly created body) explain most year-to-year "
-      "swings and should be read before any trend is:")
+      "swings and should be read before any trend is. A natural person appears as «φυσικό πρόσωπο»; "
+      "each row is one decision, checkable at source by its ADA:")
     w("")
     w(_table(["Entity", "Date", "ADA", "Amount €", "Counterparty", "ΚΑΕ", "Subject"],
              [[e, d, ada, _eur(amt), n, k, sub] for e, d, ada, amt, n, k, sub in big], 3))
@@ -290,5 +304,10 @@ def write_summary(settings: Settings) -> Path:
     w("- Rebuild: `tinos build && tinos release && tinos summary`.")
     w("")
     con.close()
-    settings.summary_file.write_text("\n".join(L), encoding="utf-8")
+    text = "\n".join(L)
+    # Fail closed: a summary that names a natural person is never written (PRIVACY.md Q1).
+    leaks = find_leaks(text, load_markers(db), settings.summary_file.name)
+    if leaks:
+        raise PrivacyLeak(leaks)
+    settings.summary_file.write_text(text, encoding="utf-8")
     return settings.summary_file

@@ -14,6 +14,8 @@ Read these two files before doing anything in this repo:
 - Never sum Diavgeia amounts naively — the same euro appears 3-4 times.
 - Payroll beneficiaries are absent BY DESIGN. Do not try to recover them.
 - Be polite to public endpoints: keep the delay, keep the User-Agent.
+- The GitHub repo is public: every tracked file is published. `tinos
+  privacy-check` must pass before any push (PRIVACY.md Q1).
 
 ## Current state
 Phase 1 done: Diavgeia ingester (`tinos backfill`), full corpus in `data/raw`

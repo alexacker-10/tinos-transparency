@@ -5,6 +5,8 @@ from __future__ import annotations
 import sys
 from collections import Counter
 from datetime import date, timedelta
+from pathlib import Path
+from typing import Optional
 
 import typer
 
@@ -318,10 +320,42 @@ def release() -> None:
 @app.command()
 def summary() -> None:
     """Write SUMMARY.md from releases/tinos.duckdb."""
+    from tinos.publish.privacy import PrivacyLeak
     from tinos.publish.summary import write_summary
 
     st = _settings()
-    typer.echo(f"summary -> {write_summary(st)}")
+    try:
+        typer.echo(f"summary -> {write_summary(st)}")
+    except PrivacyLeak as exc:
+        for leak in exc.leaks:
+            typer.echo(f"  {leak}", err=True)
+        typer.echo(f"refusing to write SUMMARY.md: {exc}", err=True)
+        raise typer.Exit(code=4)
+
+
+@app.command(name="privacy-check")
+def privacy_check(
+    paths: Optional[list[Path]] = typer.Argument(None, help="Files to scan. Default: every file git tracks."),
+) -> None:
+    """Fail if a published file names or identifies a natural person (PRIVACY.md Q1).
+
+    The repository is public, so every tracked file counts as published. Run
+    before pushing.
+    """
+    from tinos.publish.privacy import load_markers, scan_files, tracked_files
+
+    st = _settings()
+    db = st.releases_dir / "tinos.duckdb"
+    markers = load_markers(db) if db.is_file() else None
+    if markers is None:
+        typer.echo(f"warning: {db} not found; only the SURNAME,,NAME form is checked", err=True)
+    files = [p.resolve() for p in paths] if paths else tracked_files(st.root)
+    leaks = scan_files(files, markers, st.root)
+    for leak in leaks:
+        typer.echo(str(leak))
+    typer.echo(f"privacy-check: {len(files)} file(s), {len(leaks)} leak(s)")
+    if leaks:
+        raise typer.Exit(code=1)
 
 
 def main() -> None:  # pragma: no cover
