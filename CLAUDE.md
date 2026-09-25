@@ -27,11 +27,16 @@ Phase 1 done: Diavgeia ingester (`tinos backfill`), full corpus in `data/raw`
 docstring of `src/tinos/curated.py` before touching any money figure: it
 lists the flags (remittance, suspect, reversal, payroll kinds) and why.
 Phase 3 in progress (2026-09-25): ΚΗΜΔΗΣ ingester (`tinos khmdhs-backfill`,
-`tinos khmdhs-doctor`), records in `data/raw/khmdhs`, not yet in the curated
-layer (PRIVACY.md Q6 first). Act PDFs via `tinos fetch-doc`. Year-end budget
-execution statements 2015-2025 are parsed into `budget_line` (validated to
-the cent); `v_payment_coverage` shows that from 2019 most supplier payments
-are in ΚΗΜΔΗΣ, not in Diavgeia (FINDINGS.md F6). Tests: `.venv/bin/python -m
-unittest discover -s tests`.
-Next: verify the F7 suspects against their PDFs; a combined payment series
-(Β.2.2 + ΚΗΜΔΗΣ payments); ΚΗΜΔΗΣ curated tables.
+`tinos khmdhs-doctor`); records in `data/raw/khmdhs`, curated as `procurement`
+and `procurement_party` (`src/tinos/curated_khmdhs.py`; PRIVACY.md Q6: no
+officials, emails or addresses). Act PDFs via `tinos fetch-doc` (ask before
+downloading). Year-end budget execution statements 2015-2025 are parsed into
+`budget_line` (validated to the cent). Key views: `v_payment_coverage` and
+`v_kae_reconciliation` (statements vs Β.2.2: coverage, and wrong or
+double-posted amounts), `v_payment_combined` and `v_supplier_year_combined`
+(Β.2.2 + ΚΗΜΔΗΣ payments; since 2019 most supplier payments are only in
+ΚΗΜΔΗΣ, FINDINGS F6/F3). Verified amount errors live in
+`data/manual/amount_review.yaml` (`mismatch` by line, `duplicate`). Tests:
+`.venv/bin/python -m unittest discover -s tests`.
+Next: statements for the subsidiaries (port authority suspects in F7);
+monthly statements; the income side (grants to the municipality).

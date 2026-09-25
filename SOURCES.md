@@ -66,6 +66,45 @@ cheap.
 - `/adamChain/{referenceNumber}` returns the pre-built request → notice →
   contract → payment chain.
 
+## Candidate sources, desk research 2026-09-25 (not ingested)
+
+Read-only checks by a research pass; **re-checked** marks what was confirmed again before
+writing it here. Ranked by what they would add.
+
+- **Diavgeia full-text search ("luminapi")** — `https://opendata.diavgeia.gov.gr/luminapi/api/search`
+  with `q="ΤΗΝΟΥ"` and `fq=organizationUid:"<issuer>"`, `fq=issueDate:[DT(..) TO DT(..)]`. No key,
+  JSON, 100 results a page. **Re-checked**: Interior Ministry (uid 100054492) acts naming ΤΗΝΟΥ,
+  1-10 Nov 2024, returns exactly 2 (ΡΟ0946ΜΤΛ6-ΣΚ8, 9ΩΖΥ46ΜΤΛ6-ΡΩΗ); no `info.query` echo, so
+  any use must be checked by counts. The route to money *given to* Tinos (ΚΑΠ, «Φιλόδημος ΙΙ»,
+  grants): decisions of other issuers whose annexes list the municipality (the pass found 64
+  Interior Ministry acts naming Tinos in 2024; ΡΟ0946ΜΤΛ6-ΣΚ8's annex gives ΤΗΝΟΥ 236,601.93).
+  Amounts sit in PDF annexes; results also hit acts about private persons, so whitelist issuers
+  and subjects. The revenue side of the execution statements (`budget_line`, side `revenue`)
+  already gives the totals by category to reconcile against.
+- **Local-government indicators, Interior Ministry** — `https://deiktesota.gov.gr/reports/1008/view/`,
+  Power BI, no export, reuse with attribution. 2024 row for Tinos (reported): financial
+  independence 28.33%, direct awards 98.54% of contracts (consistent with ΚΗΜΔΗΣ: 358 of 364
+  awards in 2024). Its "53.15% executed" is not our paid ÷ revised budget (47%).
+- **Quarterly cash and debts bulletins** (a.107 ν.4714/2020) —
+  `ypes.gr/.../oikonomika-stoicheia-ota/deltia-oikonomikon-stoicheion-ota`, PDF, every municipality
+  and municipal legal person, Dec 2020 onward: cash, unpaid and overdue bills.
+- **anaptyxi.gov.gr (ΕΣΠΑ projects)** — `GetData.ashx?queryType=projects_v2&...&outputFormat=json`, no
+  key. **Re-checked**: the endpoint answers JSON, but the query tried returned a map aggregate, not
+  projects; the pass reports 3 projects (1.92M) for 2014-20 and 6 for 2007-13. Projects run by
+  other bodies (the 6.0M sewage plant, Εγνατία Οδός) are not under Tinos as beneficiary.
+- **HRMS staff positions** — `hrms.gov.gr/api/public/positions?organizationCode=86551`, current
+  snapshot, positions not people (reported: 120, 86 filled). No pay, no history.
+- **ELSTAT 2021 census** (population, per-resident figures); **TED** (21 EU-level notices,
+  2019-2026, a cross-check of ΚΗΜΔΗΣ); **Kohesio** (EU cohesion projects, bulk CSV); **ΓΕΜΗ**
+  open data (key on request; companies only, never for sole traders).
+- **Wayback Machine** is back: 4,667 archived dimostinou.eu post pages, 2014-2022 (reported).
+- Ruled out by the pass: the Interior Ministry's internal submission systems (not public),
+  EETAA's finance app (closed 2022), apografi.gov.gr (replaced by HRMS), data.gov.gr (no money
+  data for Tinos), the ΜΕΦ grants registry, Greece 2.0 (only the out-of-scope art school), Court
+  of Audit and Transparency Authority (nothing on Tinos), ΕΣΗΔΗΣ (no API), other Cyclades
+  statements as a benchmark (Tinos is the only one publishing them regularly), and other
+  transparency projects (none covers Tinos's money).
+
 ## Transcription costing (472 h of sessions)
 
 Whisper-class models on a modern GPU run roughly 8× real time, so **~60 GPU-hours**.

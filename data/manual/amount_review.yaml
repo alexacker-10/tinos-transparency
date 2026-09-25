@@ -135,6 +135,34 @@ mismatch:
       Repairs to a refuse truck (payee a natural person). The document gives 846,80; the
       metadata amount is it x100.
 
+  - ada: 61ΟΛΟΡ07-ΕΡ4
+    entity: "50256"
+    line_no: 0
+    kae: "30.7333.0004"
+    metadata_amount: 708102.00
+    document_amount: 7081.02
+    document: data/raw/diavgeia/docs/50256/61ΟΛΟΡ07-ΕΡ4.pdf
+    document_sha256: 7875f2573a3b25f7086335827627a9a47e6a8acae57aab7eb630a0791f2e276d
+    checked_on: 2026-09-25
+    note: >
+      Port authority, road-surface repair at Πάνορμος port (payee a natural person). The document
+      gives 7.081,02 six times; the metadata amount is it x100. It had made 2019 the body's
+      largest year (1.77M against 0.5-0.8M usually).
+
+  - ada: ΩΤΣΜΟΡ07-ΥΛ7
+    entity: "50256"
+    line_no: 0
+    kae: "20.6117.0010"
+    metadata_amount: 466638.00
+    document_amount: 4666.38
+    document: data/raw/diavgeia/docs/50256/ΩΤΣΜΟΡ07-ΥΛ7.pdf
+    document_sha256: f8c6b4cbc5b68deeb5ca75933d31a6f45496e7c99e4725f4139bedbe3e727baf
+    checked_on: 2026-09-25
+    note: >
+      Port authority, payment order ΧΘ 336/2016 for port cleaning. The document gives 4.666,38
+      five times; the metadata amount is it x100. It had made 2016 the body's second-largest
+      year (1.18M).
+
 duplicate:
   - ada: 61ΘΚΩΗ6-4ΤΛ
     entity: "6296"

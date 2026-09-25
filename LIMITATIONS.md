@@ -58,9 +58,9 @@ after 2020 will see almost nothing and conclude wrongly.
   source. We keep it, flag it, and leave it out of every total.
 - A 2012 record of 13.8 million euros filed as a "commitment" is in fact the
   whole annual budget summary filed under the wrong type.
-- Amounts are sometimes typed wrong at the source. Nine verified cases for the
-  municipality, all entered in cents (the amount x100), and one payment posted
-  twice. The largest was a 2015 payment recorded as 6.5 million euros, more than
+- Amounts are sometimes typed wrong at the source. Eleven verified cases, nine
+  for the municipality and two for the port authority, all entered in cents (the
+  amount x100), and one payment posted twice. The largest was a 2015 payment recorded as 6.5 million euros, more than
   everything the municipality paid that year; its document says 64,934.93. Two
   monthly withholdings statements (2023, 2024) had made "payments to third
   parties" look 2 million euros larger in each of those years. Together the nine
@@ -105,10 +105,12 @@ contract. The naive figures looked worse than the corrected ones because they
 counted the tax office and the pension funds as "suppliers". Our concentration
 tables exclude those. Use them to decide where to look, not as a conclusion.
 
-From 2019 the supplier tables also miss most small suppliers, because their
-payments moved from Diavgeia to ΚΗΜΔΗΣ (see above). The apparent fall in the
-number of suppliers after 2018 is mostly that move, not a change in who the
-municipality buys from.
+From 2019 Diavgeia alone misses most small suppliers, because their payments
+moved from Diavgeia to ΚΗΜΔΗΣ (see above): counted there, the municipality's
+suppliers seem to fall from about 200 to under 100. Our supplier tables now add
+the ΚΗΜΔΗΣ payments, and with them the count holds at about 200 to 250 a year.
+Those tables are still a floor: a ΚΗΜΔΗΣ payment to a supplier that Diavgeia
+also shows within two months is assumed to be already counted.
 
 ## Dates and years
 

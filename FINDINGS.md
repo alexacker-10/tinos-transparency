@@ -42,6 +42,12 @@ A result that doesn't name your filter in the echoed query is not filtered.
   Ingester default is `status=all`. Revocations skew early (2011-2015 for 6296,
   2013-2014 for the school committees) and by type: 2.4.7.1 53, Δ.1 46, Β.2.2 23.
 - Version log: `/opendata/decisions/{ADA}/versionlog.json`. Retroactive edits are real.
+- **Full-text search exists, on another endpoint** (checked 2026-09-25):
+  `https://opendata.diavgeia.gov.gr/luminapi/api/search?q="ΤΗΝΟΥ"&fq=organizationUid:"<uid>"&fq=issueDate:[DT(..) TO DT(..)]`
+  returns JSON (keys `decisions`, `facets`, `highlighting`, `info`) with no key: Interior Ministry
+  (100054492) acts naming ΤΗΝΟΥ, 1-10 Nov 2024 → 2. It does NOT echo the executed query
+  (`info.query` is null), so results must be checked by counts. `q=` on `/opendata/search`
+  is still silently dropped. The way to find decisions *about* Tinos issued by others.
 - Documents: `https://diavgeia.gov.gr/doc/{ADA}`. **Born-digital text, 2011-2025, no scans found.**
 
 ### Where the money is (structured, no OCR needed)
@@ -478,11 +484,14 @@ Still open, from `SELECT * FROM v_kae_reconciliation WHERE entity='6296' AND
 excess_in_diavgeia > 20000` (20 rows left): 2022 ΚΑΕ 8211 is 131,814 over with no line above
 34,490 (repeated monthly withholdings postings?); 2017 ΚΑΕ 6423 holds ΩΩ2ΜΩΗ6-ΩΡΖ at 50,952.00
 against 9,718 paid; a 2018 payment coded under a revenue ΚΑΕ (0718, 50,000.00); Β.2.2 lines with
-no parseable ΚΑΕ (63-81k a year in 2015, 2016 and 2019). The subsidiaries are unchecked: the
-port authority's two largest supplier lines, 61ΟΛΟΡ07-ΕΡ4 (2019, 708,102.00, road-surface
-repair) and ΩΤΣΜΟΡ07-ΥΛ7 (2016, 466,638.00), are round sums 24-37 times its 99th-percentile
-line (19,326) that create its only two spike years (1.77M and 1.18M against 0.5-0.8M); its
-year-end statements would settle them.
+no parseable ΚΑΕ (63-81k a year in 2015, 2016 and 2019).
+
+The subsidiaries have no parsed statements yet. The port authority's two largest supplier
+lines stood out anyway, round sums 24-37 times its 99th-percentile line (19,326) that made
+its only two spike years, and their PDFs (`data/raw/diavgeia/docs/50256/`) confirm both as
+x100: 61ΟΛΟΡ07-ΕΡ4 (2019, 30.7333.0004) 708,102.00 for 7,081.02, and ΩΤΣΜΟΡ07-ΥΛ7 (2016,
+20.6117.0010) 466,638.00 for 4,666.38. Flagged; together 1.16M overstated. Its year-end
+statements would check the rest.
 
 Corpus-wide, 37 groups of payment lines share entity, date, ΚΑΕ, amount and payee under two
 or more ADAs (amount ≥ 1,000; 0.49M counted more than once if all are duplicates). Some are
