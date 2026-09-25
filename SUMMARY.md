@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-25T17:04:05+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated2`, curated at 2026-09-25T17:01:20+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-25T17:11:55+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated3`, curated at 2026-09-25T17:09:30+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
@@ -110,25 +110,25 @@ Largest internal transfers (not procurement): ΔΗΜΟΣ ΤΗΝΟΥ 1,960,291.09
 
 ## Supplier concentration, Δήμος Τήνου
 
-Supplier-class payments only: payroll, remittances, internal transfers, taxes, debt service and other public bodies are excluded, so the state, EFKA, the tax office, the bank and the municipality's own bodies do not appear as "suppliers".
+Supplier-class payments only: payroll, remittances, internal transfers, taxes, debt service and other public bodies are excluded, so the state, EFKA, the tax office, the bank and the municipality's own bodies do not appear as "suppliers". From 2019 most supplier payments are published in ΚΗΜΔΗΣ rather than Diavgeia, so the series adds every ΚΗΜΔΗΣ payment whose payee has no Diavgeia payment line within 60 days (`v_supplier_year_combined`; a floor).
 
-| Year | Distinct suppliers | of which first paid this year | Supplier payments € | Top-10 share | Top-1 share |
-|---|---:|---:|---:|---:|---:|
-| 2014 | 132 | 132 | 1.09M | 62.6% | 17.8% |
-| 2015 | 184 | 105 | 2.84M | 65.2% | 17.0% |
-| 2016 | 218 | 102 | 2.19M | 41.6% | 7.6% |
-| 2017 | 224 | 64 | 3.20M | 50.2% | 18.6% |
-| 2018 | 188 | 39 | 2.72M | 51.9% | 20.2% |
-| 2019 | 180 | 50 | 1.70M | 60.8% | 35.6% |
-| 2020 | 107 | 23 | 0.86M | 85.9% | 67.1% |
-| 2021 | 131 | 38 | 1.40M | 79.6% | 55.1% |
-| 2022 | 102 | 14 | 2.57M | 88.2% | 51.7% |
-| 2023 | 103 | 18 | 2.51M | 90.3% | 61.1% |
-| 2024 | 77 | 19 | 2.65M | 92.0% | 59.6% |
-| 2025 | 91 | 18 | 2.87M | 91.7% | 60.9% |
-| 2026 | 210 | 95 | 4.21M | 64.8% | 17.2% |
+| Year | Suppliers in Diavgeia alone | Suppliers, with ΚΗΜΔΗΣ | of which only in ΚΗΜΔΗΣ | Supplier payments € | Top-10 share | Top-1 share |
+|---|---:|---:|---:|---:|---:|---:|
+| 2014 | 132 | 132 | 0 | 1.09M | 62.6% | 17.8% |
+| 2015 | 184 | 184 | 0 | 2.84M | 65.2% | 17.0% |
+| 2016 | 218 | 218 | 0 | 2.19M | 41.6% | 7.6% |
+| 2017 | 224 | 236 | 12 | 3.22M | 49.9% | 18.5% |
+| 2018 | 188 | 194 | 6 | 2.73M | 51.7% | 20.2% |
+| 2019 | 180 | 235 | 55 | 3.01M | 44.4% | 20.1% |
+| 2020 | 107 | 211 | 104 | 3.26M | 57.3% | 17.8% |
+| 2021 | 131 | 223 | 92 | 3.37M | 57.4% | 22.9% |
+| 2022 | 102 | 218 | 116 | 4.63M | 62.1% | 28.7% |
+| 2023 | 103 | 234 | 131 | 4.98M | 63.7% | 30.8% |
+| 2024 | 77 | 222 | 145 | 5.70M | 63.0% | 27.7% |
+| 2025 | 91 | 249 | 158 | 9.81M | 73.8% | 32.4% |
+| 2026 | 210 | 216 | 6 | 4.25M | 64.2% | 17.0% |
 
-2026 is a partial year and the first under the new chart of accounts. Its supplier count is keyed by ΑΦΜ and was checked line by line against the 2023-2024 payees: nothing that used to be a remittance or tax payee became a supplier. The jump is real: most of the new suppliers had never been paid by the municipality before, and the subjects are ordinary works and services. 2020 is a genuine trough in supplier cash-outs, not a posting gap: payment acts fell only a tenth, remittances were normal, no amounts are missing, and no works payment above 160k € was made all year while commitments doubled; the large works payments resume in December 2021.
+Diavgeia alone suggests the municipality's suppliers fell from about 200 to under 100 after 2018 and that one payee took 50-67% of the money. Neither is true: from 2019 small suppliers are paid through ΚΗΜΔΗΣ-published payment orders instead (FINDINGS.md F6), and with them the count holds at about 200-250 a year. In 2026 the municipality's new software puts supplier payments back in Diavgeia, which is why the Diavgeia-alone count jumps. 2020 was not a trough in supplier payments; its payments were simply not in Diavgeia.
 
 **Concentration has innocent explanations and is not, by itself, evidence of anything improper.** A few large payees dominate any municipal ledger: the electricity utility, waste-management and water contractors, and multi-year public-works contracts each concentrate spending in one ΑΦΜ. A single EU-funded project can put most of a year's euros with one contractor. Fewer, larger contracts (a policy choice, or a shift of small purchases to framework agreements) reduce the count of small suppliers without anyone doing anything wrong. Use this table to decide where to look, not as a finding.
 

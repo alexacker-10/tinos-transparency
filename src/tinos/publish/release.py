@@ -21,6 +21,11 @@ casual reader gets the right numbers by default:
   the same payments counted by two sources. ``v_kae_reconciliation`` does the
   same per 4-digit ΚΑΕ; a positive ``excess_in_diavgeia`` marks a wrong or
   double-posted line.
+- ``v_payment_combined`` is every Β.2.2 line with an amount plus every ΚΗΜΔΗΣ
+  payment whose payee has no Β.2.2 line within 60 days (since 2019 most
+  supplier payments are published only there, FINDINGS F6). A floor: a ΚΗΜΔΗΣ
+  payment to a payee Diavgeia also shows nearby is assumed to be already in.
+  ``v_supplier_year_combined`` is the supplier series on it (F3).
 """
 
 from __future__ import annotations
@@ -32,7 +37,8 @@ import duckdb
 
 from tinos.config import Settings
 
-TABLES = ("act", "payment", "commitment", "award", "counterparty", "entity", "budget_line")
+TABLES = ("act", "payment", "commitment", "award", "counterparty", "entity", "budget_line",
+          "procurement", "procurement_party")
 
 VIEWS = {
     "v_act": "SELECT * FROM act",
@@ -154,6 +160,43 @@ VIEWS = {
                pub.largest_ada, pub.largest_amount
         FROM stmt FULL JOIN pub ON stmt.entity = pub.entity AND stmt.year = pub.year AND stmt.kae = pub.kae
         ORDER BY 1, 2, 3
+    """,
+    "v_procurement": "SELECT * FROM procurement WHERE NOT cancelled",
+    "v_direct_award_year": """
+        SELECT entity, year, count(*) AS n_awards, sum(total_cost_without_vat) AS value_without_vat
+        FROM procurement WHERE endpoint = 'auction' AND NOT cancelled AND procedure_type LIKE 'Απευθείας%'
+        GROUP BY 1, 2 ORDER BY 1, 2
+    """,
+    "v_payment_combined": """
+        WITH d AS (
+            SELECT entity, date, year, counterparty_afm AS afm, counterparty_display AS display_name, payee_class,
+                   amount, 'diavgeia' AS source, source_ada AS ref
+            FROM payment
+            WHERE act_status = 'PUBLISHED' AND NOT amount_suspect AND NOT is_payroll AND amount IS NOT NULL),
+        k AS (
+            SELECT p.entity, p.submission_date AS date, p.year, p.afm, p.display_name,
+                   CASE WHEN p.afm IN (SELECT afm FROM entity WHERE afm IS NOT NULL)
+                        THEN 'internal_transfer' ELSE 'supplier' END AS payee_class,
+                   p.amount_with_vat AS amount, 'khmdhs' AS source, p.ref
+            FROM procurement_party p
+            WHERE p.role = 'payee' AND NOT p.cancelled AND p.amount_with_vat IS NOT NULL
+              AND NOT EXISTS (
+                  SELECT 1 FROM d WHERE d.entity = p.entity AND d.afm = p.afm
+                    AND d.date BETWEEN p.submission_date - INTERVAL 60 DAY AND p.submission_date + INTERVAL 60 DAY))
+        SELECT * FROM d UNION ALL SELECT * FROM k
+    """,
+    "v_supplier_year_combined": """
+        WITH t AS (
+            SELECT entity, year, afm, sum(amount) AS eur, bool_and(source = 'khmdhs') AS only_khmdhs
+            FROM v_payment_combined WHERE payee_class = 'supplier' AND afm IS NOT NULL GROUP BY 1, 2, 3),
+        r AS (
+            SELECT *, row_number() OVER (PARTITION BY entity, year ORDER BY eur DESC) AS rk,
+                   sum(eur) OVER (PARTITION BY entity, year) AS total FROM t)
+        SELECT entity, year, count(*) AS n_suppliers, count(*) FILTER (WHERE only_khmdhs) AS n_only_khmdhs,
+               max(total) AS supplier_eur,
+               sum(CASE WHEN rk <= 10 THEN eur END) / max(total) AS top10_share,
+               max(CASE WHEN rk = 1 THEN eur END) / max(total) AS top1_share
+        FROM r GROUP BY 1, 2 ORDER BY 1, 2
     """,
 }
 

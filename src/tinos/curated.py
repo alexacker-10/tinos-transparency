@@ -20,6 +20,11 @@ budget_line  one row per ΚΑΕ line of every stored budget execution statement
              ``tinos.extract.statements`` and kept only if every column sums
              to the document's own totals to the cent. The municipality's own
              account of what was paid: the denominator for Diavgeia payments.
+procurement, procurement_party
+             ΚΗΜΔΗΣ records (requests, notices, awards, contracts, payments)
+             and the contractors and payees they name; see
+             ``tinos.curated_khmdhs`` (PRIVACY.md Q6: no officials' names or
+             emails, no addresses; natural persons masked as here).
 
 DO NOT SUM ACROSS TABLES. ``payment`` (money that left the account),
 ``commitment`` (budget reserved) and ``award`` (contract value decided)
@@ -133,7 +138,7 @@ import pyarrow.parquet as pq
 from tinos import __version__
 from tinos.config import Settings, load_registry
 
-CURATED_SCHEMA_VERSION = 2  # 2: budget_line
+CURATED_SCHEMA_VERSION = 3  # 2: budget_line; 3: procurement, procurement_party
 PIPELINE_VERSION = f"{__version__}+curated{CURATED_SCHEMA_VERSION}"
 ATHENS = ZoneInfo("Europe/Athens")
 UTC = timezone.utc
@@ -800,6 +805,23 @@ SCHEMAS: dict[str, pa.Schema] = {
         pa.field("assessed_or_warranted", pa.float64()), pa.field("collected_or_paid", pa.float64()),
         pa.field("source_ada", S()), pa.field("source_sha256", S()), *_stamp_fields(),
     ]),
+    "procurement": pa.schema([
+        pa.field("ref", S()), pa.field("endpoint", S()), pa.field("record_type", S()), pa.field("entity", S()),
+        pa.field("organization_key", S()), pa.field("submission_date", pa.date32()), pa.field("year", pa.int32()),
+        pa.field("signed_date", pa.date32()), pa.field("cancelled", pa.bool_()), pa.field("title", S()),
+        pa.field("procedure_type", S()), pa.field("contract_type", S()),
+        pa.field("total_cost_without_vat", pa.float64()), pa.field("total_cost_with_vat", pa.float64()),
+        pa.field("contract_refs", L(S())), pa.field("auction_refs", L(S())), pa.field("notice_refs", L(S())),
+        pa.field("request_refs", L(S())), pa.field("payment_refs", L(S())), pa.field("diavgeia_adas", L(S())),
+        pa.field("cpv", L(S())), pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),
+    ]),
+    "procurement_party": pa.schema([
+        pa.field("ref", S()), pa.field("endpoint", S()), pa.field("entity", S()),
+        pa.field("submission_date", pa.date32()), pa.field("year", pa.int32()), pa.field("cancelled", pa.bool_()),
+        pa.field("role", S()), pa.field("afm", S()), pa.field("is_greek_afm", pa.bool_()), pa.field("name_raw", S()),
+        pa.field("is_natural_person", pa.bool_()), pa.field("display_name", S()), pa.field("amount_with_vat", pa.float64()),
+        pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),
+    ]),
 }
 
 SORT_KEYS = {
@@ -807,6 +829,7 @@ SORT_KEYS = {
     "commitment": ("entity", "date", "commitment_id"), "award": ("entity", "date", "award_id"),
     "counterparty": ("afm",), "entity": ("uid",),
     "budget_line": ("entity", "period_end", "side", "service", "kae"),
+    "procurement": ("entity", "endpoint", "ref"), "procurement_party": ("entity", "endpoint", "ref", "role", "afm"),
 }
 
 
@@ -871,6 +894,8 @@ def build_curated(settings: Settings) -> BuildResult:
     else:
         budget, refused = [], {}
         print("warning: pdftotext not installed; budget_line is empty", file=sys.stderr)
+    from tinos.curated_khmdhs import procurement_rows
+    procurement, parties = procurement_rows(settings.raw_dir, stamp)
     tables = {
         "act": to_table("act", acts),
         "payment": to_table("payment", payments),
@@ -879,6 +904,8 @@ def build_curated(settings: Settings) -> BuildResult:
         "counterparty": to_table("counterparty", counterparty_rows(payments, stamp)),
         "entity": to_table("entity", entity_rows(settings, stamp)),
         "budget_line": to_table("budget_line", budget),
+        "procurement": to_table("procurement", procurement),
+        "procurement_party": to_table("procurement_party", parties),
     }
     out = settings.curated_dir
     out.mkdir(parents=True, exist_ok=True)
@@ -892,6 +919,12 @@ def build_curated(settings: Settings) -> BuildResult:
         "source_digest": digest_of_hashes(source_hashes),
         "rows": {k: v.num_rows for k, v in tables.items()},
         "excluded_pending_revocation_measure_acts": dict(excluded_pending),
+        "khmdhs": {
+            "records": dict(Counter(r["endpoint"] for r in procurement)),
+            "parties": dict(Counter(r["role"] for r in parties)),
+            "natural_person_parties_masked": sum(r["is_natural_person"] for r in parties),
+            "never_carried": "authorEmail, signers and officials' names, street address and postcode",
+        },
         "budget_statements": {
             "parsed": len({r["statement_ada"] for r in budget}),
             "refused": refused,

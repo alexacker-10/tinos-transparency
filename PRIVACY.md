@@ -108,7 +108,9 @@ counterparties under Q1: legal entities named, natural persons (sole traders
 included) shown as «φυσικό πρόσωπο», never ranked or totalled per person, with
 the raw name and ΑΦΜ kept in the curated layer only for joins and checks.
 The same `is_natural_person` rule applies, and `tinos privacy-check` guards
-what is published.
+what is published. Payment records also carry each supplier's street address
+and postcode (a home address for a sole trader): never carried into the curated
+layer.
 
 ## Principles we are working from, pending decisions
 

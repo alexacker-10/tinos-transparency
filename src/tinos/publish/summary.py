@@ -156,24 +156,25 @@ def write_summary(settings: Settings) -> Path:
     # ---- supplier concentration
     w("## Supplier concentration, Δήμος Τήνου")
     w("")
-    rows = q("""WITH f AS (SELECT counterparty_afm, min(year) AS y0 FROM v_supplier_payment WHERE entity = '6296' GROUP BY 1),
-                       n AS (SELECT y0 AS year, count(*) AS new_suppliers FROM f GROUP BY 1)
-                SELECT c.year, c.n_suppliers, n.new_suppliers, c.supplier_eur, c.top10_share, c.top1_share
-                FROM v_counterparty_year c LEFT JOIN n USING (year) WHERE c.entity = '6296' ORDER BY 1""")
+    rows = q("""SELECT c.year, d.n_suppliers, c.n_suppliers, c.n_only_khmdhs, c.supplier_eur, c.top10_share, c.top1_share
+                FROM v_supplier_year_combined c LEFT JOIN v_counterparty_year d USING (entity, year)
+                WHERE c.entity = '6296' ORDER BY 1""")
     w("Supplier-class payments only: payroll, remittances, internal transfers, taxes, debt service and "
       "other public bodies are excluded, so the state, EFKA, the tax office, the bank and the "
-      "municipality's own bodies do not appear as \"suppliers\".")
+      "municipality's own bodies do not appear as \"suppliers\". From 2019 most supplier payments are "
+      "published in ΚΗΜΔΗΣ rather than Diavgeia, so the series adds every ΚΗΜΔΗΣ payment whose payee has "
+      "no Diavgeia payment line within 60 days (`v_supplier_year_combined`; a floor).")
     w("")
-    w(_table(["Year", "Distinct suppliers", "of which first paid this year", "Supplier payments €", "Top-10 share", "Top-1 share"],
-             [[y, n, nw or 0, _m(e), f"{s * 100:.1f}%", f"{t * 100:.1f}%"] for y, n, nw, e, s, t in rows]))
+    w(_table(["Year", "Suppliers in Diavgeia alone", "Suppliers, with ΚΗΜΔΗΣ", "of which only in ΚΗΜΔΗΣ",
+              "Supplier payments €", "Top-10 share", "Top-1 share"],
+             [[y, d or 0, n, k, _m(e), f"{s * 100:.1f}%", f"{t * 100:.1f}%"] for y, d, n, k, e, s, t in rows]))
     w("")
-    w("2026 is a partial year and the first under the new chart of accounts. Its supplier count is keyed "
-      "by ΑΦΜ and was checked line by line against the 2023-2024 payees: nothing that used to be a "
-      "remittance or tax payee became a supplier. The jump is real: most of the new suppliers had never "
-      "been paid by the municipality before, and the subjects are ordinary works and services. 2020 is a "
-      "genuine trough in supplier cash-outs, not a posting gap: payment acts fell only a tenth, remittances "
-      "were normal, no amounts are missing, and no works payment above 160k € was made all year while "
-      "commitments doubled; the large works payments resume in December 2021.")
+    w("Diavgeia alone suggests the municipality's suppliers fell from about 200 to under 100 after 2018 and "
+      "that one payee took 50-67% of the money. Neither is true: from 2019 small suppliers are paid through "
+      "ΚΗΜΔΗΣ-published payment orders instead (FINDINGS.md F6), and with them the count holds at about "
+      "200-250 a year. In 2026 the municipality's new software puts supplier payments back in Diavgeia, "
+      "which is why the Diavgeia-alone count jumps. 2020 was not a trough in supplier payments; its "
+      "payments were simply not in Diavgeia.")
     w("")
     w("**Concentration has innocent explanations and is not, by itself, evidence of anything improper.** "
       "A few large payees dominate any municipal ledger: the electricity utility, waste-management and "

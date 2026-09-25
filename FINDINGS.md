@@ -305,89 +305,68 @@ step never completed.
 **Consequence.** Excluded from the measure tables, kept in `act` with their status.
 Do not read them as revoked payments.
 
-## F3. Supplier concentration: the corrected series, and why the naive one misled.
+## F3. Supplier concentration: with ΚΗΜΔΗΣ payments added, the supplier count never fell.
 
-**Claim.** Counting every Β.2.2 counterparty as a "supplier" inflated the apparent
-2016-2024 concentration trend. Remittances to the state (ΚΑΕ 82, withholdings
-statements) and the 2015 ESPA outlier drove most of it. 2026 reverses it.
+**Claim (revised 2026-09-25).** On Diavgeia alone the municipality's distinct suppliers fell
+from 218 (2016) to 77 (2024) and the top payee's share rose to 60%. Both are artefacts:
+remittances and transfers inflated the naive series (corrected 2026-09-21), and from 2019
+most supplier payments are published in ΚΗΜΔΗΣ rather than in Diavgeia (F6). Adding the
+ΚΗΜΔΗΣ payments whose payees Diavgeia never shows, the municipality paid 194-249 distinct
+suppliers every year from 2017 to 2025. Concentration rose moderately, not steeply: the
+top-10 share is 44-52% in 2017-2019, 57-64% in 2020-2024 and 74% in 2025; the top-1 share
+stays at 18-32%.
 
-**Evidence** (municipality, `payee_class = 'supplier'` only: no payroll, remittances, internal
-transfers, taxes, debt service or other public bodies; `v_counterparty_year`):
+**Evidence** (municipality, `payee_class = 'supplier'`; left: `v_counterparty_year`, Β.2.2
+lines only; right: `v_supplier_year_combined`, Β.2.2 lines plus ΚΗΜΔΗΣ payments, with the
+suppliers only ΚΗΜΔΗΣ shows in brackets):
 
-| year | distinct suppliers | first paid this year | supplier € | top-10 | top-1 |
-|---|---|---|---|---|---|
-| 2016 | 218 | 102 | 2.19M | 41.6% | 7.6% |
-| 2018 | 188 | 39 | 2.72M | 51.9% | 20.2% |
-| 2020 | 107 | 23 | 0.86M | 85.9% | 67.1% |
-| 2022 | 102 | 14 | 2.72M | 88.9% | 48.8% |
-| 2024 | 77 | 19 | 2.65M | 92.0% | 59.6% |
-| 2025 | 91 | 18 | 2.87M | 91.7% | 60.9% |
-| 2026 (to Sep, new chart) | 210 | 95 | 4.21M | 64.8% | 17.2% |
+| Year | Suppliers, Β.2.2 | Top-10 | Top-1 | Suppliers, with ΚΗΜΔΗΣ | Supplier € | Top-10 | Top-1 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 2016 | 218 | 41.6% | 7.6% | 218 (0) | 2.19M | 41.6% | 7.6% |
+| 2017 | 224 | 50.2% | 18.6% | 236 (12) | 3.22M | 49.9% | 18.5% |
+| 2018 | 188 | 51.9% | 20.2% | 194 (6) | 2.73M | 51.7% | 20.2% |
+| 2019 | 180 | 60.8% | 35.6% | 235 (55) | 3.01M | 44.4% | 20.1% |
+| 2020 | 107 | 85.9% | 67.1% | 211 (104) | 3.26M | 57.3% | 17.8% |
+| 2021 | 131 | 79.6% | 55.1% | 223 (92) | 3.37M | 57.4% | 22.9% |
+| 2022 | 102 | 88.2% | 51.7% | 218 (116) | 4.63M | 62.1% | 28.7% |
+| 2023 | 103 | 90.3% | 61.1% | 234 (131) | 4.98M | 63.7% | 30.8% |
+| 2024 | 77 | 92.0% | 59.6% | 222 (145) | 5.70M | 63.0% | 27.7% |
+| 2025 | 91 | 91.7% | 60.9% | 249 (158) | 9.81M | 73.8% | 32.4% |
+| 2026 (to Sep) | 210 | 64.8% | 17.2% | 216 (6) | 4.25M | 64.2% | 17.0% |
 
+- The combined series adds a ΚΗΜΔΗΣ payment only when its payee has no Β.2.2 line within 60
+  days, so it is a floor; the payee is the ΑΦΜ on the payment's own invoice lines.
+- 2016-2018: ΚΗΜΔΗΣ adds 0-12 suppliers; Diavgeia was then the complete record.
+- 2026: ΚΗΜΔΗΣ adds 6. With the municipality's new software, supplier payments are back in
+  Diavgeia; the 2026 "jump" is the publication returning, not new suppliers.
+- 2020: supplier payments were 3.26M, not 0.86M.
+- 2025: payments almost doubled (16.6M paid per the statement, against 11.1M in 2024), and
+  a few large projects lift the top-10 share to 74%.
+
+**Earlier corrections, still valid for the Diavgeia-only series.**
 - Naive series (all counterparties): 260 → 120 distinct, top-10 50% → 88% (92% before
-  the cents entries below were flagged). About a
-  third of the 2023-2024 "top payee" euros were ΚΑΕ-82 remittances to the Ministry
-  of Finance, EFKA and pension funds (1.3M of 4.1M in 2023, 1.6M of 4.6M in 2024; this
-  read "roughly half" until two lines entered in cents, ~2.0M each, were flagged),
-  and a further 4.7M corpus-wide were transfers inside the entity family (the
-  municipality funding its own bodies), 1.6M taxes, 1.4M debt service, 3.3M other
-  public bodies. Removing them lowers the supplier count but *raises* the top-1 share
-  in 2020-2025 (the electricity bill dominates a smaller denominator); the
-  concentration is real, its interpretation is not.
+  the cents entries were flagged). About a third of the 2023-2024 "top payee" euros were
+  ΚΑΕ-82 remittances to the Ministry of Finance, EFKA and pension funds (1.3M of 4.1M in
+  2023, 1.6M of 4.6M in 2024), and a further 4.7M corpus-wide were transfers inside the
+  entity family, 1.6M taxes, 1.4M debt service, 3.3M other public bodies.
 - 2015's top-1 share looked like 64.7% because of one line: Ω1ΠΠΩΗ6-ΧΗΑ, 6,493,493.00 € to
   ΔΟΜΙΚΗ ΕΦΑΡΜΟΓΗ ΑΕ for the ESPA-funded «Κέντρο σίτισης» works, which its PDF gives as
   64,934.93 (F7). Flagged, 2015 has top-1 17.0% and top-10 65.2% (184 suppliers); the
   contractor's other eight payments 2014-2016 total 322,609.
-- The decline in distinct suppliers after 2018 begins in 2019, the year supplier payments
-  started moving from Diavgeia to ΚΗΜΔΗΣ (F6), and before the Δ.1 collapse; it reverses in
-  2026 with the new software and chart of accounts. Read it as publication (see the
-  correction below), not as the municipality buying from fewer suppliers.
+- The 2026 classification was checked on 2026-09-21: every ΑΦΜ classed remittance or tax in
+  2023-2024 keeps its class (the new chart puts remittances in group 59, now a rule), and
+  two missed payroll shapes («ΚΑΙ ΛΟΙΠΕΣ ΥΠΑΛΛΗΛΟΙ» batches; individuals under personnel
+  group 21/60) moved 169 lines / 268k € out of the supplier column.
 
-**Is the 2026 row trustworthy? Yes, with two caveats.** Tested 2026-09-21 on the
-suspicion that the 2026 chart-of-accounts change had broken the remittance rule and
-let state payees leak into "suppliers":
-- Every ΑΦΜ classed remittance or tax in 2023-2024 keeps that class in 2026; the only
-  lines that flipped to supplier total 274 € (ΟΤΕ ΑΚΙΝΗΤΑ). The new chart puts all
-  remittances in group 59, 178 lines / 904k €, now an explicit rule.
-- The count is keyed by ΑΦΜ, so the 2026 change from `SURNAME,,NAME` to `SURNAME NAME`
-  cannot inflate it. 95 suppliers received their first municipal payment in 2026,
-  against 14-19 a year in 2022-2025; both companies (39 → 109) and sole traders
-  (38 → 101) roughly tripled; monthly distinct suppliers run 43-86 against 19-39 in
-  2025; the subjects are ordinary works and services (firefighting, waste collection,
-  mosquito control, pump repairs, furniture).
-- Two payroll shapes the rules had missed were found and fixed in the same check
-  ("ΚΑΙ ΛΟΙΠΕΣ ΥΠΑΛΛΗΛΟΙ" batches; individuals paid under personnel group 21/60), 169
-  lines / 268k € moved out of the supplier column.
-Caveats: 2026 is nine months, and it is the first year on the new chart, so any rule
-that depends on ΚΑΕ semantics is weaker for it. The row is comparable as a count of
-distinct paid suppliers; its reading as "the concentration trend reversed" is real so
-far but should be re-checked at year end.
+**Withdrawn 2026-09-25.** Two readings of the earlier version were wrong, because both are
+changes in what Diavgeia publishes (F6), which the year-end statements expose: that "the
+concentration trend reversed in 2026", and that "the 2020 trough is real, not a posting
+gap". The 2020 payment acts, amounts and remittances looked normal, but the statement shows
+4.24M of supplier-type spending that year and ΚΗΜΔΗΣ carries 2.40M of payments to payees
+absent from Diavgeia.
 
-**The 2020 trough (0.86M against 1.7M in 2019 and 2.7M in 2022) is real, not a posting
-gap and not a classification effect.** Payment acts fell only from 987 to 884; no line
-lacks an amount; remittances were normal (0.99M). The extra 250 no-sponsor acts that
-year are payroll posted per employee per half-month (subjects checked), not supplier
-payments without a payee. Supplier cash-outs were low in every month of 2020, with no
-single works payment above 160k €, while the electricity bill alone (580k €) was 67% of
-the supplier total. Commitments doubled to 12.9M and awards were normal (391 Δ.1), so
-projects were being committed, not paid; the large works payments reappear in December
-2021 (452k €) and through 2022 (2.7M). This is the pandemic-year execution-delay
-pattern; the data shows the delay, not its cause.
-
-**Reading.** Use as a pointer, not a finding. Large recurring payees (electricity,
-waste, water, multi-year works) concentrate any municipal ledger legitimately.
-
-**Correction 2026-09-25: from 2019 the series measures publication, not suppliers (F6).**
-The series counts suppliers in Β.2.2 lines. Until 2018 those lines carried the supplier
-spending in the municipality's execution statements almost in full; from 2019 most supplier
-payments appear in ΚΗΜΔΗΣ's payment register and not in Diavgeia. The fall from 188
-distinct suppliers (2018) to 77 (2024) and the rise in concentration are largely that shift:
-small suppliers are exactly who stopped appearing. The 2026 jump to 210 coincides with the
-municipality's new financial software and chart of accounts and is probably publication
-again (no 2026 statement parsed yet). The 2015 top-1 share rested on a line entered x100
-(F7). Do not read 2019-2025 as a market trend until the
-series combines Β.2.2 lines with ΚΗΜΔΗΣ payments (payee through the contract's contractor
-ΑΦΜ).
+**Reading.** Use as a pointer, not a finding. Large recurring payees (electricity, waste,
+water, multi-year works) concentrate any municipal ledger legitimately.
 
 ## F4. There was no taxonomy migration.
 
@@ -415,7 +394,7 @@ of direct awards must come from ΚΗΜΔΗΣ, which carries `cpvItems` and `proc
 parsed into `budget_line`; every column equals the document's own totals to the cent). Until
 2018, Diavgeia's Β.2.2 lines carried the supplier spending in them almost in full. From 2019
 they carry about half and then less, while payments to the state (withholdings, taxes, debt)
-stay fully published. The missing supplier payments are, for 62-84% of each year's gap, in
+stay fully published. The missing supplier payments are, for 66-87% of each year's gap, in
 ΚΗΜΔΗΣ's payment register (εντολές πληρωμής), to payees that have no Β.2.2 line at all. Staff
 pay is withheld by design throughout. The pattern mirrors F1: direct awards stopped being
 copied into Diavgeia in 2021, supplier payments in 2019.
@@ -440,25 +419,25 @@ copied into Diavgeia in 2021, supplier payments in 2019.
 year, `budget_line.statement_ada`), after the corrections in F7; before them 2015 read 159%,
 2017 86% (115% excluding staff) and 2022 44%. No group now exceeds 103%.
 
-| Year | Supplier-type spending, statement* | In Β.2.2* | Gap | ΚΗΜΔΗΣ payments | of which to payees with no Β.2.2 line ±60 d |
-|---|---:|---:|---:|---:|---:|
-| 2017 | 3,778,494 | 3,639,712 | 138,782 | 1,499,071 | 3,550 |
-| 2018 | 3,268,855 | 3,057,589 | 211,266 | 2,064,753 | 5,000 |
-| 2019 | 3,896,777 | 2,137,236 | 1,759,541 | 2,512,408 | 1,231,866 |
-| 2020 | 4,238,462 | 1,332,297 | 2,906,165 | 2,595,695 | 2,231,247 |
-| 2021 | 4,321,084 | 1,982,028 | 2,339,056 | 2,603,274 | 1,845,790 |
-| 2022 | 5,927,823 | 2,808,635 | 3,119,188 | 3,339,923 | 1,932,147 |
-| 2023 | 5,806,735 | 2,703,578 | 3,103,157 | 3,377,195 | 2,260,305 |
-| 2024 | 6,565,586 | 2,944,627 | 3,620,959 | 4,148,661 | 2,863,151 |
-| 2025 | 11,467,566 | 3,637,125 | 7,830,441 | 8,954,481 | 6,588,226 |
+| Year | Supplier-type spending, statement* | In Β.2.2* | Gap | ΚΗΜΔΗΣ payments | to payees with no Β.2.2 line ±60 d | Share of gap |
+|---|---:|---:|---:|---:|---:|---:|
+| 2017 | 3,778,494 | 3,639,712 | 138,782 | 1,499,071 | 18,464 | 13% |
+| 2018 | 3,268,855 | 3,057,589 | 211,266 | 2,064,753 | 8,141 | 4% |
+| 2019 | 3,896,777 | 2,137,236 | 1,759,541 | 2,512,408 | 1,316,396 | 75% |
+| 2020 | 4,238,462 | 1,332,297 | 2,906,165 | 2,595,695 | 2,399,522 | 83% |
+| 2021 | 4,321,084 | 1,982,028 | 2,339,056 | 2,603,274 | 1,973,207 | 84% |
+| 2022 | 5,927,823 | 2,808,635 | 3,119,188 | 3,339,923 | 2,057,094 | 66% |
+| 2023 | 5,806,735 | 2,703,578 | 3,103,157 | 3,377,195 | 2,469,648 | 80% |
+| 2024 | 6,565,586 | 2,944,627 | 3,620,959 | 4,148,661 | 3,061,601 | 85% |
+| 2025 | 11,467,566 | 3,637,125 | 7,830,441 | 8,954,481 | 6,845,030 | 87% |
 
 \* ΚΑΕ groups other than 60 staff, 82 remittances, 63 taxes and 65 debt. ΚΗΜΔΗΣ payments:
-`/payment` records by submission year, `totalCostWithVAT`, not cancelled. The payee comes from
-the contract (`contractRefNo` → `contractingDataDetails.contractingMembersDataList[].vatNumber`);
-a payment counts as absent from Diavgeia when that ΑΦΜ has no Β.2.2 line within 60 days of it.
-2024 in detail: 579 ΚΗΜΔΗΣ payments, 4.15M; 20 match a Β.2.2 line by amount (0.73M); 48 go to
-payees paid in Diavgeia with other amounts (0.32M); 315 to payees with no Β.2.2 line (2.86M);
-196 have no contract record to name the payee (0.23M).
+`/payment` records by submission year, `totalCostWithVAT`, not cancelled. The payee is on the
+payment itself (`objectDetails[].vatNo`, filled on every line); a payment counts as absent from
+Diavgeia when its payee's ΑΦΜ has no Β.2.2 line within 60 days of it. 2024 in detail: 579 ΚΗΜΔΗΣ
+payments, 4.15M; 24 match a Β.2.2 line by amount (0.71M); 72 go to payees paid in Diavgeia with
+other amounts (0.38M); 483 to payees with no Β.2.2 line at all (3.06M). Before 2019 almost
+every ΚΗΜΔΗΣ payment is also in Diavgeia (18k and 8k are not).
 
 - Not timing: January 2025 carries 61,378 of Β.2.2 payments and none name 2024.
 - Not lines without amounts: no 2024 municipal Β.2.2 line lacks one.
@@ -470,8 +449,8 @@ payees paid in Diavgeia with other amounts (0.32M); 315 to payees with no Β.2.2
 - 2014 is out of reach: its "December" statement reports December alone, and the parser refuses it.
 
 **Consequence.** From 2019 every Diavgeia payment total is a floor, and supplier analyses on
-Β.2.2 alone are biased toward large, recurring and public payees (F3). A complete payment
-series needs Β.2.2 lines plus ΚΗΜΔΗΣ payments, the overlap removed by payee and amount.
+Β.2.2 alone are biased toward large, recurring and public payees. `v_payment_combined` adds the
+ΚΗΜΔΗΣ payments whose payees Diavgeia does not show (a floor itself); F3 is rebuilt on it.
 
 ## F7. Reconciliation found amounts entered x100 and a double posting; verified and flagged.
 

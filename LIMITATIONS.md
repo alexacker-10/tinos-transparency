@@ -31,7 +31,7 @@ non-salary payments in that report. From 2019 they carry about half, and less
 since: in 2024, 4.64 of the 11.13 million euros paid, about 42%. Salaries explain
 2.9 million of the gap; the rest is ordinary spending on supplies, equipment and
 works. Most of those payments did not disappear: they are recorded in ΚΗΜΔΗΣ, the
-national procurement register, instead of Diavgeia (62 to 84% of each year's gap
+national procurement register, instead of Diavgeia (66 to 87% of each year's gap
 since 2019). Treat any payment total from Diavgeia alone, from 2019 on, as a floor.
 
 ## Direct awards vanished from Diavgeia in 2021, not from reality
