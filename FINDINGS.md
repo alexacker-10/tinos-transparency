@@ -42,12 +42,8 @@ A result that doesn't name your filter in the echoed query is not filtered.
   Ingester default is `status=all`. Revocations skew early (2011-2015 for 6296,
   2013-2014 for the school committees) and by type: 2.4.7.1 53, Δ.1 46, Β.2.2 23.
 - Version log: `/opendata/decisions/{ADA}/versionlog.json`. Retroactive edits are real.
-- **Full-text search exists, on another endpoint** (checked 2026-09-25):
-  `https://opendata.diavgeia.gov.gr/luminapi/api/search?q="ΤΗΝΟΥ"&fq=organizationUid:"<uid>"&fq=issueDate:[DT(..) TO DT(..)]`
-  returns JSON (keys `decisions`, `facets`, `highlighting`, `info`) with no key: Interior Ministry
-  (100054492) acts naming ΤΗΝΟΥ, 1-10 Nov 2024 → 2. It does NOT echo the executed query
-  (`info.query` is null), so results must be checked by counts. `q=` on `/opendata/search`
-  is still silently dropped. The way to find decisions *about* Tinos issued by others.
+- **Full-text search exists, on another endpoint**, with its own contract: see "Diavgeia
+  full-text search" below. `q=` on `/opendata/search` is still silently dropped.
 - Documents: `https://diavgeia.gov.gr/doc/{ADA}`. **Born-digital text, 2011-2025, no scans found.**
 
 ### Where the money is (structured, no OCR needed)
@@ -148,6 +144,84 @@ DuckDB `read_json_auto` over the act files exhausts memory (schema inference acr
   `title`, `referenceNumber`, `procedureType`, `vatNumber`, `contractorName`, `isModified`.
 - **Every one-year count taken before 2026-09-25 was truncated** (probe7, F1, SOURCES.md): it
   covered roughly July-December. Corrected counts are in F1.
+
+## Diavgeia full-text search ("luminapi") — verified by probe 2026-09-25 (`tinos fulltext-doctor`)
+The only way to find decisions *about* Tinos issued by other bodies (grants, allocations).
+About 200 probe calls at 1.5 s, project User-Agent; probe output kept in memory only (PRIVACY Q7).
+- Base: `https://opendata.diavgeia.gov.gr/luminapi/api/search`, keyless, JSON keys `decisions`,
+  `facets`, `highlighting`, `info`.
+  `?q="ΤΗΝΟΥ"&fq=organizationUid:"<uid>"&fq=issueDate:[DT(2024-11-01T00:00:00) TO DT(2024-11-10T23:59:59)]&page=N&size=100`
+- **NO ECHO.** `info.query` is always null; `info` echoes only `page`, the executed `size`,
+  `actualSize`, `total` (`order` null). Results are treated as unfiltered until counts prove
+  otherwise, as for Diavgeia and ΚΗΜΔΗΣ.
+- **`q` must be a quoted term**: unquoted (`q=ΤΗΝΟΥ`) or absent is HTTP 400 SEARCH-001. Matching is
+  stemmed and ignores accents and case: "Τήνου" returns the same 2 as "ΤΗΝΟΥ", and the highlights
+  of 978 hits show ΤΗΝΟΥ 771, ΤΗΝΟ 26, ΤΗΝΟΣ 24 (and oddities ΤΗΝΥ, ΤΗΝΗΣ). A nonsense term returns 0.
+- **`fq` fields are validated** (`organizationUidz` is HTTP 400; an unknown uid returns 0), but
+  **unknown top-level parameters are silently ignored** (`foo=bar`, `order=asc`: HTTP 200, same
+  result). `sort=recent|relative` is honoured; any other sort value is HTTP 500 SEARCH-006 «η
+  αναζήτηση πράξεων είναι δυνατή μόνο βάσει του ΑΔΑ», the message of an unavailable index. The
+  client retries SEARCH-006 and never sorts.
+- **The org filter matches issuer OR co-issuer**: 7 of the Interior Ministry's 978 hits were joint
+  decisions issued by other ministries (`cooperatingOrganizations`).
+- **Date bounds are Athens wall-clock time, both inclusive.** ΡΟ0946ΜΤΛ6-ΣΚ8 (stored at UTC midnight
+  2024-11-04, shown `04/11/2024 02:00:00`) is matched by `[DT(2024-11-04T02:00:00) TO
+  DT(2024-11-04T02:00:00)]`, not by the same window at `T00:00:00`, and not by
+  `[DT(2024-11-03T22:00:00) TO DT(2024-11-03T23:59:59)]`. Whole-day windows `[a T00:00:00, b
+  T23:59:59]` therefore tile the calendar for both issueDate conventions.
+- **Page size is silently capped at 100** (`size=101`, `500`, `1000` all come back `info.size`
+  100; default 10). The guard compares `info.size` with the request.
+- **No truncation of long windows**, unlike `/opendata/search` and ΚΗΜΔΗΣ: Interior Ministry
+  (100054492) × ΤΗΝΟΥ, 2024 in one window 64 = halves 25 + 39 = months 4, 5, 4, 6, 2, 4, 7, 3, 4, 6,
+  10, 9; 2015-2025 in one window 426 = the sum of the eleven years. Still checked every year.
+- **Paging is stable**: 978 hits over 12 pages of 100, distinct ADAs = total in each window.
+- **Revoked acts are included** (the status facet showed 4 «Ανακληθείσα» among 242 hits of
+  2015-2016); `status` is on every record.
+- **The index is a finding aid, not a register.** Against the echo-verified `/opendata/search`
+  count of the same issuer and window, the near-universal word «ΑΠΟΦΑΣΗ» matches 3,918 of 4,045
+  acts (97%, 100054492, Jan-May 2024) but 19,893 of 26,215 (76%, 100025896, Jan-May 2017) and 25,365
+  of 30,164 (84%, 100010874, Jan-May 2016). Documents without extractable text are probably not
+  indexed, so a missing decision is not proof of no decision.
+- **Highlights carry the matched text**: 778 of 978 hits have a `documentText` fragment, e.g.
+  `230 58216 <pre>ΤΗΝΟΥ</pre> ΚΥΚΛΑΔΩΝ 121.570,34 115.031,59 236.601,93` (the Tinos row of an
+  annex); 200 have none, mostly 2015 police acts. Snippets are a finding aid; amounts are read
+  from the stored PDF.
+- **The Interior Ministry has five Diavgeia uids**: 12 (the 2009-2011 ministry, by its name; not
+  searched), 30 (3, 0 and 2 ΤΗΝΟΥ hits in 2012-2014, none from 2015), **100010874** (ΥΠΕΣΔΑ,
+  2015-2016), **100025896** (`ypesneo`, 2016-mid 2019),
+  **100054492** (`ypes_2019`, mid 2019-). ΤΗΝΟΥ hits by year: 77, 165 (100010874, 2015-2016);
+  27, 121, 129, 33 (100025896, 2016-2019); 25, 79, 43, 58, 89, 64, 68 (100054492, 2019-2025). They
+  are the `grantors` in `entities.yaml`, verified by `tinos entities --verify`.
+- In 2015-2019 the ministry also ran the police and fire service, so most of its ΤΗΝΟΥ hits are
+  the Tinos police station's own purchases (fuel, repairs, detainee transport).
+- **Acts about private people come back too** (citizenship grants, staff transfers, appointments,
+  detainees): the ingester keeps only whitelisted decisions and redacts the rest (PRIVACY.md Q7).
+- The municipality's ΑΦΜ as the term (`"800302968"`, 100054492, 2019-2025) finds 18 acts, all
+  already found by ΤΗΝΟΥ.
+- Decision metadata (`/opendata/decisions/{ADA}.json`) of these allocations carries no amounts,
+  recipients or attachments: the per-municipality table is in the act's own PDF.
+- **A document's size cannot be known before downloading it**: `HEAD /doc/{ADA}` is HTTP 405, a
+  `Range: bytes=0-0` request is ignored (200, whole body) and the body is chunked without
+  `Content-Length`.
+- Other issuers naming ΤΗΝΟΥ in 2024 (facet, top 10): Δήμος Τήνου 4,208, Ευαγγελίστρια 739,
+  Περιφέρεια Νοτίου Αιγαίου (5011) 708, ΤΕΕ 630, Λιμενικό Ταμείο 409, Αποκεντρωμένη Διοίκηση
+  Αιγαίου 213, Υπ. Παιδείας 193, Υπ. Πολιτισμού 191, Υπ. Προστασίας του Πολίτη 177, Σχολικές
+  Επιτροπές 161. The Region is the next candidate grantor.
+
+**Guard** (`tinos.sources.fulltext`): every page must echo the page and page size requested and
+hold `actualSize` records, each issued or co-issued by the organisation inside the window; the
+total must hold across pages and the distinct ADAs add up to it; each half-year window's count
+must differ from the control term's (`"ΔΗΜΟΚΡΑΤΙΑ"`, on nearly every letterhead: 9,230 for the
+ministry in 2024 against 64 for ΤΗΝΟΥ), since an ignored `q` returns the same unfiltered set for
+both; and each year searched whole must hold exactly what its halves held. A year is stored only
+after all of that passed; one ingest-log line per call. (The first rule required the control to be
+larger; it refused 2015, where only subjects are indexed and ΑΥΤΟΤΕΛΕΙΣ matched 17 acts of uid 30
+in January-June against 1 for the letterhead word. Inequality is what proves `q` was applied.)
+- **Document text is indexed only from about November 2015.** Of the ministry's ΤΗΝΟΥ hits, none
+  issued March-October 2015 carries a text highlight, 2 of 8 in November, 9 of 13 in December,
+  and all from January 2016. Earlier acts match by subject alone, so the 2015 ΚΑΠ allocations,
+  whose subjects never name Tinos, are found with the term ΑΥΤΟΤΕΛΕΙΣ (uid 30: 17 hits, 15 kept;
+  100010874: 161 hits, 118 kept, most about single municipalities).
 
 ## Budget reconciliation, FY2024 (Δήμος Τήνου)
 

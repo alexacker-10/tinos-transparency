@@ -1,5 +1,5 @@
 """``tinos`` command line: entities, doctor, backfill, fetch-doc, khmdhs-doctor,
-khmdhs-backfill, status."""
+khmdhs-backfill, fulltext-doctor, fulltext-backfill, fulltext-status, status."""
 
 from __future__ import annotations
 
@@ -74,6 +74,14 @@ def entities(
             typer.echo(f"  DRIFT    {e.uid}  {e.name}: {', '.join(issues)}")
         else:
             typer.echo(f"  ok       {e.uid}  {o.get('label')}")
+    for g in reg.grantors:
+        o = orgs.get(g.uid)
+        if o is None or o.get("label") != g.name or (g.latin_name and o.get("latinName") != g.latin_name):
+            bad += 1
+            typer.echo(f"  DRIFT    {g.uid}  grantor {g.name}: diavgeia has "
+                       f"{(o or {}).get('label')!r} / {(o or {}).get('latinName')!r}")
+        else:
+            typer.echo(f"  ok       {g.uid}  grantor {o.get('label')} ({o.get('latinName')})")
     typer.echo("verify: OK" if bad == 0 else f"verify: {bad} problem(s)")
     if bad:
         raise typer.Exit(code=1)
@@ -258,7 +266,8 @@ def fetch_doc(
 ) -> None:
     """Store the signed PDF of acts we already hold, under data/raw/diavgeia/docs.
 
-    Only acts present in the raw store are fetched: the stored act names the
+    Only acts present in the raw store are fetched (our own acts, or another
+    body's decision kept by ``fulltext-backfill``): the stored act names the
     organisation and the document belongs to it. Append-only like the rest of
     data/raw; every call is logged with the hash of the bytes kept.
     """
@@ -271,7 +280,8 @@ def fetch_doc(
     failed = 0
     with DiavgeiaClient(st) as client:
         for ada in adas:
-            act_path = store.find_diavgeia_act(ada)
+            # Our own acts, or another body's decision kept by fulltext-backfill.
+            act_path = store.find_diavgeia_act(ada) or store.find_fulltext_decision(ada)
             if act_path is None:
                 typer.echo(f"  {ada}: no such act in data/raw, skipped", err=True)
                 failed += 1
@@ -428,6 +438,236 @@ def khmdhs_backfill(
         typer.echo(f"calls made: {client.calls}  throttled: {client.throttled}")
     typer.echo(f"done: records={grand['total']} new={grand['new']} changed={grand['changed']} "
                f"unchanged={grand['unchanged']} dup={grand['dup']}")
+
+
+# --------------------------------------------------------------------------
+@app.command(name="fulltext-doctor")
+def fulltext_doctor() -> None:
+    """Prove the full-text guard's premises against the live API (about 12 calls).
+
+    (1) a ten-day window passes the guard and the term narrows it against the
+    control term; (2) a nonsense term finds nothing; (3) a year equals the sum
+    of its halves (no truncation); (4) a misspelt fq field is HTTP 400; (5) an
+    unknown top-level parameter is silently ignored (reported, the known
+    hazard); (6) size above 100 is capped and says so in info.size; (7) the
+    query is still not echoed.
+    """
+    from tinos.sources.fulltext import (CONTROL_TERM, MAX_PAGE_SIZE, FulltextClient, GuardViolation,
+                                        SearchRequest, check_control)
+
+    st = _settings()
+    org, term = "100054492", "ΤΗΝΟΥ"
+    ok = True
+    typer.echo(f"base={st.fulltext_base}")
+    typer.echo(f"user-agent={st.user_agent}  delay={st.fulltext_delay}s")
+    with FulltextClient(st) as client:
+        narrow = SearchRequest(term, org, date(2024, 11, 1), date(2024, 11, 10))
+        baseline = None
+        try:
+            pages = list(client.search_all(narrow))
+            baseline = pages[0].total
+            control = client.count(narrow, CONTROL_TERM).total
+            check_control(narrow, baseline, control)
+            typer.echo(f"[1] {term} {org} 2024-11-01..10: guard OK, total={baseline}, control {CONTROL_TERM}={control}")
+        except GuardViolation as exc:
+            ok = False
+            typer.echo(f"[1] FAIL {exc}")
+
+        nonsense = client.count(narrow, "ΖΞΨΚΦΘ").total
+        if nonsense == 0:
+            typer.echo("[2] nonsense term: 0 hits (q is applied)")
+        else:
+            ok = False
+            typer.echo(f"[2] FAIL nonsense term returned {nonsense}: q may be ignored")
+
+        year = SearchRequest(term, org, date(2024, 1, 1), date(2024, 12, 31))
+        whole = client.count(year).total
+        halves = [client.count(SearchRequest(term, org, a, b)).total
+                  for a, b in ((date(2024, 1, 1), date(2024, 6, 30)), (date(2024, 7, 1), date(2024, 12, 31)))]
+        if whole == sum(halves) and whole > 0:
+            typer.echo(f"[3] 2024 whole={whole}, halves={halves}: no truncation")
+        else:
+            ok = False
+            typer.echo(f"[3] FAIL 2024 whole={whole}, halves={halves}: long windows are truncated or empty")
+
+        params = narrow.params()
+        typo = client.get_raw([("fq", 'organizationUidz:"100054492"') if p[1].startswith("organizationUid") else p
+                               for p in params])
+        if typo.status_code == 400:
+            typer.echo("[4] misspelt fq field: HTTP 400 (rejected, not ignored)")
+        else:
+            ok = False
+            typer.echo(f"[4] FAIL misspelt fq field returned HTTP {typo.status_code}: fq fields may be ignored")
+
+        extra = client.get_raw(params + [("foo", "bar")])
+        same = extra.status_code == 200 and extra.json().get("info", {}).get("total") == baseline
+        typer.echo(f"[5] unknown top-level parameter: HTTP {extra.status_code}, "
+                   + ("silently ignored (the known hazard: send only q, fq, page, size)" if same
+                      else "not silently ignored now: re-verify the contract"))
+
+        capped = client.get_raw([(k, "500") if k == "size" else (k, v) for k, v in params])
+        size = capped.json().get("info", {}).get("size") if capped.status_code == 200 else None
+        if size == MAX_PAGE_SIZE:
+            typer.echo(f"[6] size=500 executed as size={size} (capped, echoed)")
+        else:
+            ok = False
+            typer.echo(f"[6] FAIL size=500 came back as size={size}: the page-size premise changed")
+
+        query = capped.json().get("info", {}).get("query") if capped.status_code == 200 else "?"
+        typer.echo(f"[7] info.query = {query!r}" + (" (still no echo)" if query is None else " (ECHO NOW PRESENT: re-verify)"))
+        ok = ok and query is None
+        typer.echo(f"calls made: {client.calls}  retried: {client.retried}")
+    typer.echo("fulltext-doctor: PASS" if ok else "fulltext-doctor: FAIL")
+    if not ok:
+        raise typer.Exit(code=1)
+
+
+@app.command(name="fulltext-backfill")
+def fulltext_backfill(
+    start: str = typer.Option(..., "--start", help="First issue date, YYYY-MM-DD (inclusive)."),
+    end: str = typer.Option(..., "--end", help="Last issue date, YYYY-MM-DD (inclusive)."),
+    issuer: Optional[list[str]] = typer.Option(None, "--issuer", help="Grantor uid (entities.yaml grantors); repeatable. Default: all."),
+    term: Optional[list[str]] = typer.Option(None, "--term", help="Search term, one word in capitals; repeatable. Default: ΤΗΝΟΥ."),
+) -> None:
+    """Find other bodies' decisions naming Tinos, via Diavgeia full-text search.
+
+    Walks each calendar year in two half-year windows. A year is stored only
+    after every page passed the guard, each window's hits were fewer than the
+    control term's, and the whole year searched at once held exactly what its
+    windows held. Pages are stored redacted and only whitelisted decisions are
+    kept (PRIVACY.md Q7). One ingest-log line per call.
+    """
+    import httpx
+
+    from tinos.sources.fulltext import (CONTROL_TERM, FulltextClient, GuardViolation, SearchRequest, check_control,
+                                        check_year, redact_page, whitelist_reason, year_windows)
+
+    st = _settings()
+    reg = load_registry(st.entities_file)
+    grantors = {g.uid: g for g in reg.grantors}
+    issuers = issuer or list(grantors)
+    unknown = [u for u in issuers if u not in grantors]
+    if unknown:
+        typer.echo(f"refusing: {unknown} not among the grantors in entities.yaml", err=True)
+        raise typer.Exit(code=2)
+    terms = term or ["ΤΗΝΟΥ"]
+    d0, d1 = _parse_date(start), _parse_date(end)
+    if d1 < d0:
+        raise typer.BadParameter("--end is before --start")
+
+    store = RawStore(st.raw_dir)
+    log = IngestLog(st.ingest_log)
+    run_id = utc_now_iso()
+    grand: Counter[str] = Counter()
+    seen: set[str] = set()
+    typer.echo(f"fulltext-backfill {d0}..{d1}  issuers={issuers}  terms={terms}  run={run_id}")
+    with FulltextClient(st) as client:
+        for org in issuers:
+            for t in terms:
+                for (y0, y1), windows in year_windows(d0, d1):
+                    calls: list[dict] = []  # ingest-log lines for this year, written once it is settled
+                    base = {"source": "diavgeia-fulltext", "run": run_id, "issuer": org, "term": t}
+                    try:
+                        fetched = []  # (window, pages, control total)
+                        for a, b in windows:
+                            req = SearchRequest(t, org, a, b)
+                            pages = []
+                            for page in client.search_all(req):
+                                pages.append(page)
+                                calls.append({**base, "kind": "page", "from": a.isoformat(), "to": b.isoformat(),
+                                              "page": page.request.page, "size": page.request.size, "total": page.total,
+                                              "returned": len(page.decisions), "received_sha256": page.received_sha256})
+                            control = client.count(req, CONTROL_TERM)
+                            calls.append({**base, "kind": "control", "control_term": CONTROL_TERM, "from": a.isoformat(),
+                                          "to": b.isoformat(), "total": control.total,
+                                          "received_sha256": control.received_sha256})
+                            check_control(req, pages[0].total, control.total)
+                            fetched.append(((a, b), pages))
+                        whole = client.count(SearchRequest(t, org, y0, y1))
+                        calls.append({**base, "kind": "year", "from": y0.isoformat(), "to": y1.isoformat(),
+                                      "total": whole.total, "received_sha256": whole.received_sha256})
+                        check_year(org, t, y0, y1, whole.total, [p[0].total for _, p in fetched])
+                    except (GuardViolation, httpx.HTTPError) as exc:
+                        kind = "GUARD_VIOLATION" if isinstance(exc, GuardViolation) else "HTTP_ERROR"
+                        for line in calls:
+                            log.append({**line, "stored": None})
+                        log.append({**base, "kind": "error", "from": y0.isoformat(), "to": y1.isoformat(),
+                                    "status": kind, "error": str(exc)})
+                        typer.echo(f"  {org} {t} {y0}..{y1}: {kind}, year discarded: {exc}", err=True)
+                        raise typer.Exit(code=3)
+
+                    # Settled: store the year's pages (redacted) and its whitelisted decisions.
+                    tally: Counter[str] = Counter()
+                    page_lines = iter([c for c in calls if c["kind"] == "page"])
+                    for (a, b), pages in fetched:
+                        for page in pages:
+                            keep, dropped = set(), Counter()
+                            for rec in page.decisions:
+                                reason = whitelist_reason(rec)
+                                if reason is None:
+                                    keep.add(rec["ada"])
+                                else:
+                                    dropped[reason] += 1
+                            snap = store.put_fulltext_page(org, t, a.isoformat(), b.isoformat(), page.request.page,
+                                                           redact_page(page.raw, keep))
+                            decisions: Counter[str] = Counter()
+                            for rec in page.decisions:
+                                if rec["ada"] not in keep:
+                                    continue
+                                if rec["ada"] in seen:
+                                    decisions["dup"] += 1
+                                    continue
+                                seen.add(rec["ada"])
+                                decisions[store.put_fulltext_decision(rec).outcome] += 1
+                            line = next(page_lines)
+                            line.update({"stored": {"path": str(snap.path.relative_to(st.root)), "sha256": snap.sha256,
+                                                    "outcome": snap.outcome},
+                                         "kept": len(keep), "dropped": dict(dropped), "decisions": dict(decisions)})
+                            tally["hits"] += len(page.decisions)
+                            tally["kept"] += len(keep)
+                            tally.update({f"dropped_{k}": v for k, v in dropped.items()})
+                            tally.update({f"decision_{k}": v for k, v in decisions.items()})
+                    for line in calls:
+                        log.append(line if line["kind"] == "page" else {**line, "stored": None})
+                    grand.update(tally)
+                    typer.echo(f"  {org:>9} {t} {y0.year}: hits={tally['hits']:>4} kept={tally['kept']:>4} "
+                               f"personal={tally['dropped_personal']:>3} other={tally['dropped_not_a_grant']:>4} "
+                               f"new={tally['decision_new']} changed={tally['decision_changed']} "
+                               f"unchanged={tally['decision_unchanged']} dup={tally['decision_dup']}  "
+                               f"(calls {client.calls})")
+        typer.echo(f"calls made: {client.calls}  retried: {client.retried}")
+    typer.echo(f"done: hits={grand['hits']} kept={grand['kept']} dropped personal={grand['dropped_personal']} "
+               f"not a grant={grand['dropped_not_a_grant']}  decisions new={grand['decision_new']} "
+               f"changed={grand['decision_changed']} unchanged={grand['decision_unchanged']}")
+
+
+@app.command(name="fulltext-status")
+def fulltext_status(
+    missing_docs: bool = typer.Option(False, "--missing-docs", help="List kept decisions whose PDF is not stored yet."),
+) -> None:
+    """Kept full-text decisions by issuer and year, and which PDFs are stored."""
+    import json
+
+    from tinos.sources.fulltext import issue_day
+
+    st = _settings()
+    store = RawStore(st.raw_dir)
+    rows = []
+    for path in store.iter_fulltext_decisions():
+        rec = json.loads(path.read_bytes())
+        org = path.parent.name
+        doc = store.diavgeia_doc_path(org, rec["ada"])
+        rows.append((org, issue_day(rec["issueDate"]), rec, doc.is_file()))
+    counts = Counter((org, day.year) for org, day, _, _ in rows)
+    have = Counter((org, day.year) for org, day, _, stored in rows if stored)
+    typer.echo(f"kept decisions: {len(rows)}  PDFs stored: {sum(1 for r in rows if r[3])}")
+    for (org, year), n in sorted(counts.items()):
+        typer.echo(f"  {org:>10} {year}: {n:>4} kept, {have[(org, year)]:>4} with PDF")
+    if missing_docs:
+        for org, day, rec, stored in sorted(rows, key=lambda r: (r[1], r[2]["ada"])):
+            if not stored:
+                typer.echo(f"{rec['ada']}\t{org}\t{day}\t{(rec.get('decisionType') or {}).get('uid')}\t"
+                           f"{rec.get('status')}\t{' '.join(str(rec.get('subject')).split())[:110]}")
 
 
 # --------------------------------------------------------------------------

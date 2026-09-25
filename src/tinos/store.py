@@ -30,6 +30,8 @@ _ORG_UID_RE = re.compile(r"\d+")
 # 24PROC..., 24AWRD..., 24SYMV..., 24PAY...). ASCII capitals and digits only.
 _KHMDHS_REF_RE = re.compile(r"[0-9A-Z]{6,40}")
 _KHMDHS_ENDPOINT_RE = re.compile(r"request|notice|auction|contract|payment")
+# A full-text search term: one word in capitals (Greek or Latin) or digits.
+_TERM_RE = re.compile(r"[0-9Α-ΩA-Z]{2,40}")
 
 
 def _path_part(value: Any, pattern: re.Pattern[str], what: str) -> str:
@@ -197,6 +199,42 @@ class RawStore:
     def iter_khmdhs_records(self) -> list[Path]:
         base = self.raw_dir / "khmdhs" / "records"
         return sorted(base.glob("*/*/*.json")) if base.is_dir() else []
+
+    # -- diavgeia full-text layout -----------------------------------------
+    # search/<issuer>/<term>/<from>_<to>_p<NNN>_<sha12>.json: pages as stored,
+    #   i.e. redacted (tinos.sources.fulltext.redact_page, PRIVACY.md Q7).
+    # decisions/<issuer>/<ADA>.json: whitelisted records, keyed by ADA, under
+    #   the record's own issuer (a co-issued act is filed under its issuer).
+
+    def fulltext_page_path(self, org_uid: str, term: str, date_from: str, date_to: str,
+                           page: int, digest: str) -> Path:
+        base = self.raw_dir / "diavgeia" / "fulltext" / "search"
+        name = f"{date_from}_{date_to}_p{page:03d}_{digest[:12]}.json"
+        return base / _path_part(org_uid, _ORG_UID_RE, "org uid") / _path_part(term, _TERM_RE, "search term") / name
+
+    def put_fulltext_page(self, org_uid: str, term: str, date_from: str, date_to: str, page: int,
+                          body: dict) -> StoreResult:
+        return self.put_content_addressed(
+            lambda d: self.fulltext_page_path(org_uid, term, date_from, date_to, page, d), body)
+
+    def fulltext_decision_path(self, org_uid: str, ada: str) -> Path:
+        org = _path_part(org_uid, _ORG_UID_RE, "org uid")
+        return self.raw_dir / "diavgeia" / "fulltext" / "decisions" / org / f"{safe_ada(ada)}.json"
+
+    def put_fulltext_decision(self, record: dict) -> StoreResult:
+        """One whitelisted record, keyed by ADA; a re-indexed record becomes a sibling."""
+        org = (record.get("organization") or {}).get("uid")
+        return self.put_keyed(self.fulltext_decision_path(str(org) if org is not None else None, record.get("ada")), record)
+
+    def iter_fulltext_decisions(self) -> list[Path]:
+        """First capture of every whitelisted record (``<ADA>.<sha12>.json`` siblings excluded)."""
+        base = self.raw_dir / "diavgeia" / "fulltext" / "decisions"
+        return sorted(p for p in base.glob("*/*.json") if "." not in p.stem) if base.is_dir() else []
+
+    def find_fulltext_decision(self, ada: str) -> Path | None:
+        base = self.raw_dir / "diavgeia" / "fulltext" / "decisions"
+        hits = sorted(base.glob(f"*/{safe_ada(ada)}.json")) if base.is_dir() else []
+        return hits[0] if hits else None
 
 
 class IngestLog:

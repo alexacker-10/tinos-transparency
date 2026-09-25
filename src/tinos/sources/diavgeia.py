@@ -209,7 +209,8 @@ class DiavgeiaClient:
     # -- endpoints ---------------------------------------------------------
 
     def organizations(self) -> list[dict[str, Any]]:
-        doc = self._get_json("/organizations.json")
+        """Every organisation, inactive ones included (dissolved bodies, former ministries)."""
+        doc = self._get_json("/organizations.json", {"status": "all"})
         return list(doc.get("organizations", []))
 
     def search_page(self, req: SearchRequest) -> tuple[SearchPage, dict[str, str | None]]:

@@ -50,6 +50,13 @@ class Settings:
     khmdhs_window_days: int = 150
     khmdhs_backoff: float = 60.0
     khmdhs_max_retries: int = 5
+    # Diavgeia full-text search ("luminapi"): no echo of the executed query, so
+    # every window is checked by counts (FINDINGS.md). No throttling was seen at
+    # one call every 1.5 s; keep at least that.
+    fulltext_base: str = "https://opendata.diavgeia.gov.gr/luminapi/api/search"
+    fulltext_delay: float = 1.5
+    fulltext_backoff: float = 30.0
+    fulltext_max_retries: int = 3
 
     @property
     def user_agent(self) -> str:
@@ -98,6 +105,8 @@ def load_settings() -> Settings:
         kwargs["request_delay"] = float(env["TINOS_DELAY"])
     if "TINOS_KHMDHS_DELAY" in env:
         kwargs["khmdhs_delay"] = float(env["TINOS_KHMDHS_DELAY"])
+    if "TINOS_FULLTEXT_DELAY" in env:
+        kwargs["fulltext_delay"] = float(env["TINOS_FULLTEXT_DELAY"])
     return Settings(**kwargs)
 
 
@@ -116,10 +125,21 @@ class Entity:
     reason: str | None = None
 
 
+@dataclass(frozen=True)
+class Grantor:
+    """A public body whose decisions give money to Tinos: an issuer we search, never ingest as ours."""
+    uid: str
+    name: str
+    latin_name: str | None
+    active_years: tuple[int, int] | None
+    note: str | None = None
+
+
 @dataclass
 class Registry:
     version: int
     entities: list[Entity] = field(default_factory=list)
+    grantors: list[Grantor] = field(default_factory=list)
 
     @property
     def in_scope(self) -> list[Entity]:
@@ -155,4 +175,9 @@ def load_registry(path: Path) -> Registry:
 
     reg.entities += [mk(r, True) for r in doc.get("in_scope", [])]
     reg.entities += [mk(r, False) for r in doc.get("out_of_scope", [])]
+    for raw in doc.get("grantors", []) or []:
+        years = raw.get("active_years")
+        reg.grantors.append(Grantor(
+            uid=str(raw["uid"]), name=str(raw["name"]), latin_name=raw.get("latin_name"),
+            active_years=(int(years[0]), int(years[1])) if years else None, note=raw.get("note")))
     return reg

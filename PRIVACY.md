@@ -112,6 +112,37 @@ what is published. Payment records also carry each supplier's street address
 and postcode (a home address for a sole trader): never carried into the curated
 layer.
 
+## Q7. Full-text search hits about private people — DECIDED (2026-09-25)
+
+Diavgeia's full-text search is how we find other bodies' decisions giving
+money to Tinos (FINDINGS.md, "Diavgeia full-text search"). A search for ΤΗΝΟΥ
+at the Interior Ministry also returns decisions about private people: grants
+of Greek citizenship naming the person, staff allocations, appointments and
+transfers, detainee transport by the Tinos police station, day-care vouchers
+naming the owners of private nurseries (a street called Τήνου in Attica).
+
+**Position**, set by the project owner in the brief for this phase: keep
+nothing about them beyond what the guard needs. `tinos fulltext-backfill`
+applies a whitelist before anything is written
+(`tinos.sources.fulltext.whitelist_reason`): a decision is kept only if its
+subject is about allocations, grants, financing or programme inclusion, or it
+is a Β.1.1 public-investment act, and never if the subject is about people
+(citizenship, staff, posts, imprest holders, committees, election teams,
+detainees, donors, day-care vouchers; that rule is checked first). Every other
+hit is cut, in the stored page, to its ADA, issuer, co-issuers, issue date and
+status, the fields the guard checks; its subject and text snippet are dropped
+in memory and the response body is not kept (its SHA-256 is in the ingest
+log). The ingest log records only counts of what was dropped and why.
+
+**Reasoning.** The raw layer normally keeps bytes as fetched. Here that would
+mean building, as a side effect of a search about municipal money, a local
+index of people who were naturalised or detained with a Tinos connection:
+data we have no purpose for. The ADA of a dropped hit is kept because the
+guard needs it (paging, dedup) and it only points to the public source.
+
+**Not covered.** A whitelisted allocation table can still name a person in
+a row we do not parse; the stored PDFs are raw data, never published.
+
 ## Principles we are working from, pending decisions
 
 - Public office holders acting in office: name them.
