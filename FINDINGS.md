@@ -107,17 +107,40 @@ DuckDB `read_json_auto` over the act files exhausts memory (schema inference acr
 - `read_json_auto` in DuckDB over the 76k act files exhausts >10 GB; scan with plain
   `json` or pass explicit `columns=`.
 
-## ΚΗΜΔΗΣ — keyless, CC BY 4.0
+## ΚΗΜΔΗΣ — keyless, CC BY 4.0 (re-verified by probe 2026-09-25; `tinos khmdhs-doctor`)
 - Base: `https://cerpp.eprocurement.gov.gr/khmdhs-opendata`
 - OpenAPI: `/v3/api-docs` · Swagger UI: `/swagger-ui/index.html`
-- **POST** with JSON body (GET times out). `?page=N`. Response: `{total, pages, content[]}`.
-- **Uses the SAME org uid as Diavgeia: `6296`.** ΑΦΜ 404s.
-- Endpoints: `/request` `/notice` `/auction` `/contract` `/payment` `/pde`
-  `/adamChain/{referenceNumber}` + `/{type}/attachment/{referenceNumber}`
-- **`/adamChain/` returns the pre-built act chain** — use instead of reconstructing.
-- Body fields: `organizations[]`, `cpvItems[]`, `signer`, `contractType`,
-  `dateFrom`/`dateTo`, `totalCostFrom`/`totalCostTo`, `title`, `isInitial`, `isApproved`.
-- Volume: 445 `/request` records for org 6296 in 2024.
+- **POST** `/{request|notice|auction|contract|payment}?page=N` with JSON
+  `{"organizations": ["<uid>"], "dateFrom": "YYYY-MM-DD", "dateTo": "YYYY-MM-DD"}` (GET times
+  out). Response: `{totalElements, totalPages, number, size, content[]}`, 50 a page, unsorted.
+- **Uses the SAME org uid as Diavgeia: `6296`.** Records carry `organization.key`.
+- Record type by referenceNumber: `REQ` request (αίτημα), `PROC` notice (προκήρυξη), `AWRD`
+  auction (κατακύρωση/ανάθεση), `SYMV` contract (σύμβαση), `PAY` payment (εντολή πληρωμής).
+- **The date filter applies to `submissionDate`, both bounds inclusive.** One month, all five
+  endpoints: every record's submissionDate inside the window; signedDate not always.
+- **CRITICAL: ranges wider than 180 days are silently truncated to `[dateTo − 180 d, dateTo]`**,
+  the same clamp as Diavgeia's but with no echo to catch it. 2024-07-01..2024-12-31 returns
+  what 2024-07-04..2024-12-31 returns (445 requests) although 29 were submitted on 1-3 July;
+  2024-01-01..2024-12-31 also returns 445, three 150-day windows return 727. A body without
+  dates is not "all time" either: 124 municipal contracts, a default window. The client
+  refuses windows over 180 days, walks 150-day windows and checks every record's
+  organisation and submissionDate against the request.
+- **Unlike Diavgeia, unknown fields and malformed dates are rejected**: HTTP 400 for
+  `organizationz`, and "Invalid date format. Expected format: yyyy-MM-dd".
+- **No match is HTTP 404** `{"message": "No auctions found for the given criteria"}` (that
+  wording on every endpoint), not an empty page. An unknown uid or an ΑΦΜ gets the same 404.
+- **Throttled**: HTTP 429 at about one call a second sustained, with no Retry-After or
+  rate-limit headers; none at one call every 3 s. The client paces at 3 s and backs off
+  exponentially.
+- Paging was stable in tests (445 of 445 distinct over 9 pages); the client checks every window.
+- **`/adamChain/{referenceNumber}` returns the pre-built act chain**; attachments at
+  `/{type}/attachment/{referenceNumber}`.
+- Join keys to Diavgeia: contract `diavgeiaADA`, `contractRelatedADA`, `decisionRelatedAda`;
+  request `approvalADA`, `commitmentNo`; payment `paymentRelatedAda`, `paymentCommitmentCode`.
+- Other body fields (OpenAPI): `cpvItems[]`, `signer`, `contractType`, `totalCostFrom`/`To`,
+  `title`, `referenceNumber`, `procedureType`, `vatNumber`, `contractorName`, `isModified`.
+- **Every one-year count taken before 2026-09-25 was truncated** (probe7, F1, SOURCES.md): it
+  covered roughly July-December. Corrected counts are in F1.
 
 ## Budget reconciliation, FY2024 (Δήμος Τήνου)
 

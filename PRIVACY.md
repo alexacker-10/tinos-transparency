@@ -94,6 +94,16 @@ Signer ids are kept in `act.signer_ids`. Resolving them to names (public office
 holders acting in office) is almost certainly fine; publishing per-signer
 statistics ("who signed the most direct awards") is a judgement we have not made.
 
+## Q6. ΚΗΜΔΗΣ records — UNDECIDED, raw only for now
+
+ΚΗΜΔΗΣ records name more people than Diavgeia metadata does: the email of the
+civil servant who entered each record (`authorEmail`), the signers, and the
+contractor's name and ΑΦΜ, sole traders included. Since 2026-09-25 they are
+stored in `data/raw/khmdhs` (not tracked in git) and nothing derived reads them
+yet. Current handling, until decided: before any curated table or published
+figure uses them, drop `authorEmail`; treat natural-person contractors exactly
+as in Q1 (masked, no per-person totals); keep signers out until Q5 is decided.
+
 ## Principles we are working from, pending decisions
 
 - Public office holders acting in office: name them.

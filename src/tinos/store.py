@@ -26,7 +26,10 @@ Outcome = Literal["new", "unchanged", "changed"]
 # else is refused rather than allowed to steer a path out of data/raw.
 _ADA_RE = re.compile(r"[0-9Α-Ω]+-[0-9Α-Ω]+")
 _ORG_UID_RE = re.compile(r"\d+")
-
+# ΚΗΜΔΗΣ reference numbers: two-digit year, type code, digits (24REQ014452842,
+# 24PROC..., 24AWRD..., 24SYMV..., 24PAY...). ASCII capitals and digits only.
+_KHMDHS_REF_RE = re.compile(r"[0-9A-Z]{6,40}")
+_KHMDHS_ENDPOINT_RE = re.compile(r"request|notice|auction|contract|payment")
 
 
 def _path_part(value: Any, pattern: re.Pattern[str], what: str) -> str:
@@ -167,6 +170,33 @@ class RawStore:
         """The act's signed PDF, byte for byte; a re-issued file becomes a sibling."""
         return self.put_keyed_bytes(self.diavgeia_doc_path(org_uid, ada), data)
 
+    # -- khmdhs layout -----------------------------------------------------
+
+    def _khmdhs_base(self, kind: str, endpoint: str, org_uid: str) -> Path:
+        ep = _path_part(endpoint, _KHMDHS_ENDPOINT_RE, "ΚΗΜΔΗΣ endpoint")
+        return self.raw_dir / "khmdhs" / kind / ep / _path_part(org_uid, _ORG_UID_RE, "org uid")
+
+    def khmdhs_record_path(self, endpoint: str, org_uid: str, ref: str) -> Path:
+        name = _path_part(ref, _KHMDHS_REF_RE, "ΚΗΜΔΗΣ referenceNumber")
+        return self._khmdhs_base("records", endpoint, org_uid) / f"{name}.json"
+
+    def khmdhs_page_path(self, endpoint: str, org_uid: str, date_from: str, date_to: str,
+                         page: int, digest: str) -> Path:
+        name = f"{date_from}_{date_to}_p{page:03d}_{digest[:12]}.json"
+        return self._khmdhs_base("search", endpoint, org_uid) / name
+
+    def put_khmdhs_page(self, endpoint: str, org_uid: str, date_from: str, date_to: str,
+                        page: int, body: dict) -> StoreResult:
+        return self.put_content_addressed(
+            lambda d: self.khmdhs_page_path(endpoint, org_uid, date_from, date_to, page, d), body)
+
+    def put_khmdhs_record(self, endpoint: str, org_uid: str, record: dict) -> StoreResult:
+        """One record, keyed by referenceNumber; an edited record becomes a sibling."""
+        return self.put_keyed(self.khmdhs_record_path(endpoint, org_uid, record.get("referenceNumber")), record)
+
+    def iter_khmdhs_records(self) -> list[Path]:
+        base = self.raw_dir / "khmdhs" / "records"
+        return sorted(base.glob("*/*/*.json")) if base.is_dir() else []
 
 
 class IngestLog:

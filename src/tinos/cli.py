@@ -1,8 +1,10 @@
-"""``tinos`` command line: entities, doctor, backfill, fetch-doc, status."""
+"""``tinos`` command line: entities, doctor, backfill, fetch-doc, khmdhs-doctor,
+khmdhs-backfill, status."""
 
 from __future__ import annotations
 
 import sys
+import time
 from collections import Counter
 from datetime import date, timedelta
 from pathlib import Path
@@ -294,6 +296,141 @@ def fetch_doc(
 
 
 # --------------------------------------------------------------------------
+@app.command(name="khmdhs-doctor")
+def khmdhs_doctor() -> None:
+    """Prove the ΚΗΜΔΗΣ guard's premises against the live API (about 8 calls).
+
+    (1) a one-month window passes the guard; (2) a 366-day window comes back
+    truncated, with fewer records than its three sub-windows, which is why the
+    client refuses windows over 180 days; (3) a misspelled body field is
+    rejected with HTTP 400, not silently ignored.
+    """
+    from tinos.sources.khmdhs import GuardViolation, KhmdhsClient, SearchRequest
+    from tinos.sources.khmdhs import iter_windows as khmdhs_windows
+
+    st = _settings()
+    ok = True
+    typer.echo(f"base={st.khmdhs_base}")
+    typer.echo(f"user-agent={st.user_agent}  delay={st.khmdhs_delay}s  window={st.khmdhs_window_days}d")
+    with KhmdhsClient(st) as client:
+        try:
+            pages = list(client.search_all(SearchRequest("contract", "6296", date(2024, 3, 1), date(2024, 3, 31))))
+            typer.echo(f"[1] contract 6296 2024-03: guard OK, total={pages[0].total}, pages={len(pages)}")
+        except GuardViolation as exc:
+            ok = False
+            typer.echo(f"[1] FAIL {exc}")
+
+        wide = client.post_raw("request", {"organizations": ["6296"], "dateFrom": "2024-01-01", "dateTo": "2024-12-31"})
+        wide_total = wide.json().get("totalElements") if wide.status_code == 200 else None
+        parts = [client.search_page(SearchRequest("request", "6296", a, b)).total
+                 for a, b in khmdhs_windows(date(2024, 1, 1), date(2024, 12, 31), st.khmdhs_window_days)]
+        if wide_total is not None and wide_total < sum(parts):
+            typer.echo(f"[2] request 6296 2024 in one window: {wide_total}, in {len(parts)} windows: {sum(parts)} "
+                       "-> server truncation confirmed; windows stay under 180 days")
+        else:
+            ok = False
+            typer.echo(f"[2] FAIL one window={wide_total} vs windows={parts}: the clamp premise no longer holds")
+
+        typo = client.post_raw("contract", {"organizationz": ["6296"], "dateFrom": "2024-03-01", "dateTo": "2024-03-31"})
+        if typo.status_code == 400:
+            typer.echo("[3] misspelled field: HTTP 400 (rejected, not ignored)")
+        else:
+            ok = False
+            typer.echo(f"[3] FAIL misspelled field returned HTTP {typo.status_code}: unknown fields may be ignored")
+        typer.echo(f"calls made: {client.calls}  throttled: {client.throttled}")
+    typer.echo("khmdhs-doctor: PASS" if ok else "khmdhs-doctor: FAIL")
+    if not ok:
+        raise typer.Exit(code=1)
+
+
+@app.command(name="khmdhs-backfill")
+def khmdhs_backfill(
+    start: str = typer.Option(..., "--start", help="First submissionDate, YYYY-MM-DD (inclusive)."),
+    end: str = typer.Option(..., "--end", help="Last submissionDate, YYYY-MM-DD (inclusive)."),
+    entity: Optional[list[str]] = typer.Option(None, "--entity", help="Organisation uid; repeatable. Default: all in scope."),
+    endpoint: Optional[list[str]] = typer.Option(None, "--endpoint", help="request|notice|auction|contract|payment; repeatable. Default: all."),
+) -> None:
+    """Fetch ΚΗΜΔΗΣ records into data/raw/khmdhs, window by window.
+
+    A window is stored only after every page of it passed the guard. Every
+    window, including empty ones, gets an ingest-log line.
+    """
+    import httpx
+
+    from tinos.sources.khmdhs import ENDPOINTS, GuardViolation, KhmdhsClient, SearchRequest
+    from tinos.sources.khmdhs import iter_windows as khmdhs_windows
+
+    st = _settings()
+    reg = load_registry(st.entities_file)
+    orgs = entity or [e.uid for e in reg.in_scope]
+    for org in orgs:
+        ent = reg.get(org)
+        if ent is not None and not ent.in_scope:
+            typer.echo(f"refusing: {org} ({ent.name}) is out of scope: {ent.reason}", err=True)
+            raise typer.Exit(code=2)
+    eps = endpoint or list(ENDPOINTS)
+    bad = [e for e in eps if e not in ENDPOINTS]
+    if bad:
+        raise typer.BadParameter(f"unknown endpoint(s) {bad}; choose from {ENDPOINTS}")
+    d0, d1 = _parse_date(start), _parse_date(end)
+    if d1 < d0:
+        raise typer.BadParameter("--end is before --start")
+
+    store = RawStore(st.raw_dir)
+    log = IngestLog(st.ingest_log)
+    run_id = utc_now_iso()
+    grand: Counter[str] = Counter()
+    typer.echo(f"khmdhs-backfill {d0}..{d1}  entities={orgs}  endpoints={eps}  run={run_id}")
+    with KhmdhsClient(st) as client:
+        for org in orgs:
+            for ep in eps:
+                seen: set[str] = set()
+                per: Counter[str] = Counter()
+                for a, b in khmdhs_windows(d0, d1, st.khmdhs_window_days):
+                    req = SearchRequest(ep, org, a, b)
+                    for attempt in (1, 2):
+                        try:
+                            pages = list(client.search_all(req))
+                            break
+                        except (GuardViolation, httpx.HTTPError) as exc:
+                            kind = "GUARD_VIOLATION" if isinstance(exc, GuardViolation) else "HTTP_ERROR"
+                            log.append({"source": "khmdhs", "run": run_id, "endpoint": ep, "org": org,
+                                        "from": a.isoformat(), "to": b.isoformat(), "status": kind,
+                                        "attempt": attempt, "error": str(exc)})
+                            typer.echo(f"  {ep} {org} {a}..{b}: {kind} (attempt {attempt}): {exc}", err=True)
+                            if attempt == 2:
+                                raise typer.Exit(code=3)
+                            time.sleep(st.khmdhs_backoff)
+                    tally: Counter[str] = Counter()
+                    logged_pages = []
+                    for page in pages:
+                        if "notFound" not in page.raw:  # a 404 has no body worth keeping
+                            snap = store.put_khmdhs_page(ep, org, a.isoformat(), b.isoformat(), page.request.page, page.raw)
+                            logged_pages.append({"page": page.request.page, "sha256": snap.sha256,
+                                                 "stored": snap.outcome == "new"})
+                        for rec in page.records:
+                            if rec["referenceNumber"] in seen:
+                                tally["dup"] += 1
+                                continue
+                            seen.add(rec["referenceNumber"])
+                            tally[store.put_khmdhs_record(ep, org, rec).outcome] += 1
+                    total = pages[0].total
+                    log.append({"source": "khmdhs", "run": run_id, "endpoint": ep, "org": org,
+                                "from": a.isoformat(), "to": b.isoformat(), "body": req.body(), "total": total,
+                                "pages": logged_pages, "new": tally["new"], "changed": tally["changed"],
+                                "unchanged": tally["unchanged"], "dup": tally["dup"]})
+                    per.update(tally)
+                    per["total"] += total
+                typer.echo(f"  {ep:9} {org:>10}: total={per['total']:>5} new={per['new']} changed={per['changed']} "
+                           f"unchanged={per['unchanged']} dup={per['dup']}  (calls so far {client.calls}, "
+                           f"throttled {client.throttled})")
+                grand.update(per)
+        typer.echo(f"calls made: {client.calls}  throttled: {client.throttled}")
+    typer.echo(f"done: records={grand['total']} new={grand['new']} changed={grand['changed']} "
+               f"unchanged={grand['unchanged']} dup={grand['dup']}")
+
+
+# --------------------------------------------------------------------------
 @app.command()
 def status() -> None:
     """Summarise what is in data/raw and the ingest log."""
@@ -326,6 +463,14 @@ def status() -> None:
         for (org, yr, status), n in sorted(counts.items()):
             e = reg.get(org)
             typer.echo(f"{org:<10} {yr:<6} {status:<19} {n:>6} {len(adas[(org, yr, status)]):>6}  {e.name if e else '?'}")
+    kfiles = store.iter_khmdhs_records()
+    if kfiles:
+        # records/<endpoint>/<org>/<ref>.json
+        kc = Counter((p.parent.parent.name, p.parent.name) for p in kfiles)
+        typer.echo(f"khmdhs record files: {len(kfiles)}")
+        for (ep, org), n in sorted(kc.items()):
+            e = reg.get(org)
+            typer.echo(f"  {ep:<9} {org:<10} {n:>6}  {e.name if e else '?'}")
     log = IngestLog(st.ingest_log).read()
     typer.echo(f"ingest log: {len(log)} record(s)  ({st.ingest_log})")
     if log:

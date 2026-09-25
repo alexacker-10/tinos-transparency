@@ -43,6 +43,13 @@ class Settings:
     # We walk in windows well inside that limit so we never sit on the edge.
     window_days: int = 150
     page_size: int = 500
+    # ΚΗΜΔΗΣ: same 180-day clamp (to [dateTo-180d, dateTo]), and it throttles with
+    # HTTP 429 without saying how much: slower pace, exponential back-off.
+    khmdhs_base: str = "https://cerpp.eprocurement.gov.gr/khmdhs-opendata"
+    khmdhs_delay: float = 3.0
+    khmdhs_window_days: int = 150
+    khmdhs_backoff: float = 60.0
+    khmdhs_max_retries: int = 5
 
     @property
     def user_agent(self) -> str:
@@ -89,6 +96,8 @@ def load_settings() -> Settings:
         kwargs["contact_url"] = contact
     if "TINOS_DELAY" in env:
         kwargs["request_delay"] = float(env["TINOS_DELAY"])
+    if "TINOS_KHMDHS_DELAY" in env:
+        kwargs["khmdhs_delay"] = float(env["TINOS_KHMDHS_DELAY"])
     return Settings(**kwargs)
 
 
