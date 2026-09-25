@@ -64,6 +64,7 @@ class Standard(unittest.TestCase):
         self.assertEqual([(ln.side, ln.kae) for ln in st.lines],
                          [("revenue", "0111"), ("revenue", "0129"), ("spending", "6011"), ("spending", "8211")])
         self.assertEqual(st.totals["spending"][2], 151685834)
+        self.assertEqual(st.lines[0].description, "Μισθώματα από αστικά ακίνητα")
 
     def test_totals_that_do_not_add_up_are_refused(self):
         with self.assertRaises(StatementError):
@@ -81,6 +82,10 @@ class Layout2025(unittest.TestCase):
         self.assertEqual([(ln.side, ln.service, ln.kae, ln.collected_or_paid) for ln in st.lines], [
             ("revenue", None, "0111", 1300000), ("revenue", None, "3123", 432915947),
             ("spending", "00", "6031", 6735133), ("spending", "00", "6723", 0), ("spending", None, "9111", 0)])
+        # The name is the row's own text, or the next line's when the row has none.
+        self.assertEqual([ln.description for ln in st.lines], [
+            "Μισθώματα από αστικά ακίνητα", "Αναπτυξιακά - Επενδυτικά δάνεια Πρόγραμμα «Αντώνης Τρίτσης»",
+            "Αποδοχές (άρθρα 230,242 ΚΔΚ)", "Κράτηση 0,50% υπέρ λογαριασμού", "Αποθεματικό"])
 
     def test_row_with_a_missing_amount_is_refused(self):
         broken = NEW_2025.replace("67.351,33         67.351,33", "67.351,33", 1)

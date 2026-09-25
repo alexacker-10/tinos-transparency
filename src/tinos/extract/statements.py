@@ -63,6 +63,7 @@ class Line:
     budgeted: int  # cents: Προϋπολογισθέντα / τελικός προϋπολογισμός
     assessed_or_warranted: int  # cents: Βεβαιωθέντα (revenue) / Ενταλματοποιηθέντα (spending)
     collected_or_paid: int  # cents: Εισπραχθέντα (revenue) / Πληρωθέντα (spending)
+    description: str = ""  # the line's name as printed (may be cut short by the layout)
 
 
 @dataclass(frozen=True)
@@ -123,7 +124,8 @@ def _parse_standard(text: str) -> Statement:
             if (side, kae) in seen:
                 raise StatementError(f"ΚΑΕ {kae} appears twice")
             seen.add((side, kae))
-            lines.append(Line(side, None, kae, cents(r.group(3)), cents(r.group(4)), cents(r.group(5))))
+            lines.append(Line(side, None, kae, cents(r.group(3)), cents(r.group(4)), cents(r.group(5)),
+                              " ".join(r.group(2).split())))
     end = date(year, month, calendar.monthrange(year, month)[1])
     return Statement("standard", end, tuple(lines), totals)
 
@@ -131,8 +133,9 @@ def _parse_standard(text: str) -> Statement:
 def _parse_2025(text: str) -> Statement:
     side: str | None = None
     period_end: date | None = None
-    records: list[tuple[str, str | None, str, list[int]]] = []
+    records: list[tuple[str, str | None, str, list[int], list[str]]] = []
     current: list[int] | None = None
+    names: list[str] = []
     totals: dict[str, tuple[int, int, int]] = {}
     for raw in text.splitlines():
         if s := _NEW_SECTION.search(raw):
@@ -154,16 +157,21 @@ def _parse_2025(text: str) -> Statement:
         start = (_NEW_REVENUE if side == "revenue" else _NEW_SPENDING).match(raw)
         if start:
             service, kae = (None, start.group(1)) if side == "revenue" else (start.group(1), start.group(2))
-            current = []
-            records.append((side, service, kae, current))
+            current, names = [], []
+            records.append((side, service, kae, current, names))
             raw = raw[start.end():]
         if current is not None:
+            # The name is the first text on the row, or on the next line when the row has none;
+            # text after all three amounts (page footers, headers) is not part of it.
+            text = " ".join(AMOUNT.sub(" ", raw).split())
+            if text and not names and len(current) < 3:
+                names.append(text)
             current.extend(cents(a) for a in AMOUNT.findall(raw))
     lines = []
-    for rside, service, kae, amounts in records:
+    for rside, service, kae, amounts, name in records:
         if len(amounts) != 3:
             raise StatementError(f"{rside} {service or ''}-{kae}: {len(amounts)} amounts, expected 3")
-        lines.append(Line(rside, service, kae, *amounts))
+        lines.append(Line(rside, service, kae, *amounts, name[0] if name else ""))
     if period_end is None:
         raise StatementError("no section header with a period end")
     return Statement("2025", period_end, tuple(lines), totals)

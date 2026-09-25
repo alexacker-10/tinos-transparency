@@ -138,7 +138,7 @@ import pyarrow.parquet as pq
 from tinos import __version__
 from tinos.config import Settings, load_registry
 
-CURATED_SCHEMA_VERSION = 3  # 2: budget_line; 3: procurement, procurement_party
+CURATED_SCHEMA_VERSION = 4  # 2: budget_line; 3: procurement, procurement_party; 4: budget_line.description
 PIPELINE_VERSION = f"{__version__}+curated{CURATED_SCHEMA_VERSION}"
 ATHENS = ZoneInfo("Europe/Athens")
 UTC = timezone.utc
@@ -719,6 +719,7 @@ def budget_rows(raw_dir: Path, statements: dict[str, tuple[str, date | None]],
                 "period_end": st.period_end, "period_year": st.period_end.year,
                 "period_month": st.period_end.month, "is_year_end": year_end, "layout": st.layout,
                 "side": ln.side, "service": ln.service, "kae": ln.kae, "kae_group": ln.kae[:2],
+                "description": ln.description,
                 "budgeted": ln.budgeted / 100, "assessed_or_warranted": ln.assessed_or_warranted / 100,
                 "collected_or_paid": ln.collected_or_paid / 100,
                 "source_ada": ada, "source_sha256": sha, **stamp,
@@ -801,7 +802,7 @@ SCHEMAS: dict[str, pa.Schema] = {
         pa.field("statement_ada", S()), pa.field("entity", S()), pa.field("statement_date", pa.date32()),
         pa.field("period_end", pa.date32()), pa.field("period_year", pa.int32()), pa.field("period_month", pa.int32()),
         pa.field("is_year_end", pa.bool_()), pa.field("layout", S()), pa.field("side", S()), pa.field("service", S()),
-        pa.field("kae", S()), pa.field("kae_group", S()), pa.field("budgeted", pa.float64()),
+        pa.field("kae", S()), pa.field("kae_group", S()), pa.field("description", S()), pa.field("budgeted", pa.float64()),
         pa.field("assessed_or_warranted", pa.float64()), pa.field("collected_or_paid", pa.float64()),
         pa.field("source_ada", S()), pa.field("source_sha256", S()), *_stamp_fields(),
     ]),
