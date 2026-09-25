@@ -61,7 +61,9 @@ cheap.
 - Volume for 6296 (full backfill 2026-09-25, by submission year, 2018-2025): requests
   427-930, notices 9-454 (the jump comes in 2021), awards 240-468, contracts 153-274,
   payments 429-840 a year; 17,502 records from 2017 to September 2026, none before
-  2017. (This line used to say contracts 100-143 and requests 246-493: one-year
+  2017. All bodies together: 24,238 records (port authority 4,523; the other six
+  in-scope bodies 232-496 each; the slaughterhouse none; the two bodies dissolved
+  before 2016 not queried). (This line used to say contracts 100-143 and requests 246-493: one-year
   windows the API had truncated to their last 180 days.)
 - `/adamChain/{referenceNumber}` returns the pre-built request → notice →
   contract → payment chain.

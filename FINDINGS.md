@@ -268,10 +268,12 @@ always the primary venue, Diavgeia carried a parallel copy, and the copy stopped
   and years: 391 / 1.65M, 145 / 0.36M, 100 / 0.59M, 90 / 0.41M, 13 / 0.14M, 133 / 0.59M.
   2021-2024: 7.68M of municipal direct awards in ΚΗΜΔΗΣ against 1.50M in Diavgeia. ΚΗΜΔΗΣ
   fills `procedureType` only from 2019, so earlier direct awards cannot be picked out there.
-- Award value that has no Diavgeia record: against the 2017-2020 average of
-  3.08M €/yr, 2021-2024 carry 2.79M in total instead of ~12.3M, i.e. **~9.5M €** (all
-  entities, extrapolated; for the municipality the ΚΗΜΔΗΣ measurement above gives 6.2M excl.
-  VAT, and the VAT basis of Δ.1 `awardAmount` is not stated).
+- Award value that has no Diavgeia record, measured: across all bodies, ΚΗΜΔΗΣ holds 10.40M of
+  direct awards (excl. VAT) submitted 2021-2024, Diavgeia Δ.1 2.79M, so **~7.6M** has no
+  Diavgeia record (municipality 7.68M in ΚΗΜΔΗΣ, port authority 1.68M, the rest under 0.6M
+  each). `SELECT * FROM v_direct_award_year` against `v_award`. The first version of this
+  bullet extrapolated ~9.5M from the 2017-2020 Diavgeia average (3.08M/yr); the order was
+  right. The VAT basis of Δ.1 `awardAmount` is not stated.
   `SELECT year, sum(amount) FROM v_award WHERE award_type='Δ.1' GROUP BY 1`
 - Partial recovery: 2025 174 acts / 0.83M, 2026 to Sep 247 / 1.19M.
 - Independent confirmation: pending-revocation 6ΥΝ1ΟΡ07-0ΨΠ carries the operator note

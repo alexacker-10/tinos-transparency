@@ -27,7 +27,7 @@ Phase 1 done: Diavgeia ingester (`tinos backfill`), full corpus in `data/raw`
 docstring of `src/tinos/curated.py` before touching any money figure: it
 lists the flags (remittance, suspect, reversal, payroll kinds) and why.
 Phase 3 in progress (2026-09-25): ΚΗΜΔΗΣ ingester (`tinos khmdhs-backfill`,
-`tinos khmdhs-doctor`); records in `data/raw/khmdhs`, curated as `procurement`
+`tinos khmdhs-doctor`); 24,238 records (2017-2026, 8 bodies) in `data/raw/khmdhs`, curated as `procurement`
 and `procurement_party` (`src/tinos/curated_khmdhs.py`; PRIVACY.md Q6: no
 officials, emails or addresses). Act PDFs via `tinos fetch-doc` (ask before
 downloading). Year-end budget execution statements 2015-2025 are parsed into
