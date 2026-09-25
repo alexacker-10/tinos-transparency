@@ -18,7 +18,9 @@ casual reader gets the right numbers by default:
   per ΚΑΕ group (one statement per entity and year, the latest published);
   ``v_payment_coverage`` sets its paid column against the Β.2.2 lines that
   carry an amount, per year and ΚΑΕ group. Coverage, not a sum: the two are
-  the same payments counted by two sources.
+  the same payments counted by two sources. ``v_kae_reconciliation`` does the
+  same per 4-digit ΚΑΕ; a positive ``excess_in_diavgeia`` marks a wrong or
+  double-posted line.
 """
 
 from __future__ import annotations
@@ -127,6 +129,31 @@ VIEWS = {
                coalesce(pub.paid_in_diavgeia, 0) / nullif(stmt.paid_per_statement, 0) AS coverage,
                stmt.statement_ada
         FROM stmt LEFT JOIN pub USING (entity, year, kae_group) ORDER BY 1, 2, 3
+    """,
+    # The systematic check for wrong amounts: a 4-digit ΚΑΕ where Diavgeia lines exceed what the
+    # statement says was paid holds a line entered wrong (often x100) or posted twice (FINDINGS F7).
+    "v_kae_reconciliation": r"""
+        WITH years AS (SELECT DISTINCT entity, year, statement_ada FROM v_budget_year),
+        stmt AS (
+            SELECT y.entity, y.year, b.kae, sum(b.collected_or_paid) AS paid_per_statement
+            FROM budget_line b JOIN years y ON y.statement_ada = b.statement_ada
+            WHERE b.side = 'spending' GROUP BY 1, 2, 3),
+        pub AS (
+            SELECT p.entity, p.year,
+                   coalesce(nullif(regexp_extract(p.kae, '^\d{2}[.\-](\d{4})', 1), ''),
+                            regexp_extract(p.kae, '^(\d{4})', 1)) AS kae,
+                   sum(p.amount) AS paid_in_diavgeia, arg_max(p.source_ada, p.amount) AS largest_ada,
+                   max(p.amount) AS largest_amount
+            FROM payment p JOIN (SELECT DISTINCT entity, year FROM years) y USING (entity, year)
+            WHERE p.act_status = 'PUBLISHED' AND NOT p.amount_suspect AND p.amount IS NOT NULL
+            GROUP BY 1, 2, 3)
+        SELECT coalesce(stmt.entity, pub.entity) AS entity, coalesce(stmt.year, pub.year) AS year,
+               coalesce(stmt.kae, pub.kae) AS kae, coalesce(stmt.paid_per_statement, 0) AS paid_per_statement,
+               coalesce(pub.paid_in_diavgeia, 0) AS paid_in_diavgeia,
+               coalesce(pub.paid_in_diavgeia, 0) - coalesce(stmt.paid_per_statement, 0) AS excess_in_diavgeia,
+               pub.largest_ada, pub.largest_amount
+        FROM stmt FULL JOIN pub ON stmt.entity = pub.entity AND stmt.year = pub.year AND stmt.kae = pub.kae
+        ORDER BY 1, 2, 3
     """,
 }
 

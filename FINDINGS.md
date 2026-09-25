@@ -485,6 +485,14 @@ its own PDF, so none is in `data/manual/amount_review.yaml`; natural persons unn
 | 76Λ6ΩΗ6-1ΝΓ | 2015-11-26 | 20.6263 | 84,680.00 | Repairs to a refuse truck (payee a natural person); with the line above, group 62's 2015 excess is 198,915. |
 | ΨΧΥΧΩΗ6-8ΚΖ, 61ΘΚΩΗ6-4ΤΛ | 2022-12-22 | 63.7312.0001 | 154,224.42 twice | Same day, contractor, ΚΑΕ and amount under two ADAs: a double posting; group 73's 2022 excess is 132,218. |
 
+The same check per 4-digit ΚΑΕ is a release view: `SELECT * FROM v_kae_reconciliation WHERE
+entity='6296' AND excess_in_diavgeia > 20000 ORDER BY excess_in_diavgeia DESC` (26 rows; every
+line in the table above explains its own row almost exactly). Smaller leads it adds: 2022 ΚΑΕ
+8211 is 131,814 over with no line above 34,490 (repeated monthly withholdings postings?); 2017
+ΚΑΕ 6423 holds ΩΩ2ΜΩΗ6-ΩΡΖ at 50,952.00 against 9,718 paid; a 2018 payment coded under a
+revenue ΚΑΕ (0718, 50,000.00); Β.2.2 lines with no parseable ΚΑΕ (63-81k a year in 2015,
+2016 and 2019).
+
 Corpus-wide, 37 groups of payment lines share entity, date, ΚΑΕ, amount and payee under two
 or more ADAs (amount ≥ 1,000; 0.49M counted more than once if all are duplicates). Some are
 legitimate (equal instalments paid the same day); only the documents can separate them.

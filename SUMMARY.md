@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-25T16:52:06+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated2`, curated at 2026-09-25T16:44:00+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-25T16:54:12+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated2`, curated at 2026-09-25T16:44:00+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
