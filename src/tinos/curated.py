@@ -85,7 +85,10 @@ Flags (deterministic, documented, never applied by hand):
 - ``payment.suspect_reason``: ``threshold`` (above) or ``document_mismatch``,
   applied from ``data/manual/amount_review.yaml`` where a human compared the
   metadata amount with the PDF and found it wrong (Ω25ΙΩΗ6-ΟΜΘ: 281,880.00 in
-  the metadata, 2,818.80 in the document; entered in cents).
+  the metadata, 2,818.80 in the document; entered in cents). An entry with
+  ``line_no`` flags that sponsor line only, and the build fails if the line no
+  longer carries the recorded ``metadata_amount``; without it, every line of
+  the act is flagged.
 
 Counterparties. Resolution is exact-ΑΦΜ only. Name variants are collected,
 never fuzzy-merged. ``needs_review`` flags an ΑΦΜ whose format is not a
@@ -330,6 +333,28 @@ def load_amount_review(path: Path) -> dict[str, dict[str, Any]]:
     return {str(e["ada"]): e for e in doc.get("mismatch", [])}
 
 
+def review_flags_line(entry: dict[str, Any] | None, i: int, kae: Any, amount: float | None) -> bool:
+    """True when a review entry flags sponsor line ``i`` of its act.
+
+    An entry without ``line_no`` flags every line of the act. With ``line_no``
+    it flags that line only, and the line must still carry the recorded
+    ``metadata_amount`` (and ``kae``, if given): a re-published act whose lines
+    moved must fail the build, not silently flag the wrong euro.
+    """
+    if entry is None:
+        return False
+    if entry.get("line_no") is None:
+        return True
+    if int(entry["line_no"]) != i:
+        return False
+    want_kae = entry.get("kae")
+    if amount is None or round(amount, 2) != round(float(entry["metadata_amount"]), 2) or (
+            want_kae is not None and str(kae) != str(want_kae)):
+        raise ValueError(f"amount_review: {entry['ada']} line {i} is now kae={kae} amount={amount}; "
+                         f"the entry expects kae={want_kae} amount={entry['metadata_amount']}")
+    return True
+
+
 def payroll_kind_of(name: str | None, subject: str | None) -> str | None:
     """'batch' for "X & ΛΟΙΠΟΙ" sponsors, 'named' for a payroll-worded act paid
     to a natural person, else None."""
@@ -387,7 +412,7 @@ def payment_rows(a: RawAct, stamp: dict[str, Any], family_afms: frozenset[str] =
                  review: dict[str, dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """Β.2.2 -> one row per sponsor line; empty/null sponsor -> one payroll row."""
     d, ev = a.doc, a.ev
-    doc_mismatch = bool(review and a.ada in review)
+    entry = review.get(a.ada) if review else None
     base = {
         "entity": str(d.get("organizationId")),
         "date": athens_date(d.get("issueDate")),
@@ -400,6 +425,9 @@ def payment_rows(a: RawAct, stamp: dict[str, Any], family_afms: frozenset[str] =
         **stamp,
     }
     sponsors = as_list(ev.get("sponsor"))
+    if entry is not None and entry.get("line_no") is not None and not 0 <= int(entry["line_no"]) < len(sponsors):
+        raise ValueError(f"amount_review: {a.ada} has {len(sponsors)} sponsor line(s); "
+                         f"no line_no {entry['line_no']}")
     if not sponsors:
         return [{
             "payment_id": f"{a.ada}:payroll", "line_no": 0, "is_payroll": True, "payroll_kind": "no_sponsor",
@@ -430,6 +458,7 @@ def payment_rows(a: RawAct, stamp: dict[str, Any], family_afms: frozenset[str] =
             afm=afm, name=name, subject=d.get("subject"), kae_major=major,
             is_remittance=remit, family_afms=family_afms)
         over = amt is not None and amt > SUSPECT_PAYMENT_EUR
+        doc_mismatch = review_flags_line(entry, i, s.get("kae"), amt)
         rows.append({
             "payment_id": f"{a.ada}:{i}", "line_no": i, "is_payroll": kind is not None, "payroll_kind": kind,
             "payee_class": klass, "payee_class_rule": "line", "is_internal_transfer": klass == "internal_transfer",

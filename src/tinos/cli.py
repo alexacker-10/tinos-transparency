@@ -1,4 +1,4 @@
-"""``tinos`` command line: entities, doctor, backfill, status."""
+"""``tinos`` command line: entities, doctor, backfill, fetch-doc, status."""
 
 from __future__ import annotations
 
@@ -247,6 +247,50 @@ def backfill(
         f"done: acts={len(seen_adas)} new={tally['new']} changed={tally['changed']} "
         f"unchanged={tally['unchanged']} dup={tally['dup']}  by status={dict(status_tally)}"
     )
+
+
+# --------------------------------------------------------------------------
+@app.command(name="fetch-doc")
+def fetch_doc(
+    adas: list[str] = typer.Argument(..., help="ADA(s) of acts already in data/raw."),
+) -> None:
+    """Store the signed PDF of acts we already hold, under data/raw/diavgeia/docs.
+
+    Only acts present in the raw store are fetched: the stored act names the
+    organisation and the document belongs to it. Append-only like the rest of
+    data/raw; every call is logged with the hash of the bytes kept.
+    """
+    import httpx
+
+    st = _settings()
+    store = RawStore(st.raw_dir)
+    log = IngestLog(st.ingest_log)
+    run_id = utc_now_iso()
+    failed = 0
+    with DiavgeiaClient(st) as client:
+        for ada in adas:
+            act_path = store.find_diavgeia_act(ada)
+            if act_path is None:
+                typer.echo(f"  {ada}: no such act in data/raw, skipped", err=True)
+                failed += 1
+                continue
+            org = act_path.parent.name
+            try:
+                data, meta = client.document(ada)
+            except (httpx.HTTPError, ValueError) as exc:
+                log.append({"source": "diavgeia-doc", "run": run_id, "org": org, "ada": ada,
+                            "status": "ERROR", "error": str(exc)})
+                typer.echo(f"  {ada}: FAILED {exc}", err=True)
+                failed += 1
+                continue
+            res = store.put_diavgeia_doc(org, ada, data)
+            rel = res.path.relative_to(st.root)
+            log.append({"source": "diavgeia-doc", "run": run_id, "org": org, "ada": ada, **meta,
+                        "sha256": res.sha256, "outcome": res.outcome, "path": str(rel)})
+            typer.echo(f"  {ada}: {res.outcome}  {meta['bytes']:,} bytes  sha256={res.sha256}  -> {rel}")
+        typer.echo(f"calls made: {client.calls}")
+    if failed:
+        raise typer.Exit(code=1)
 
 
 # --------------------------------------------------------------------------

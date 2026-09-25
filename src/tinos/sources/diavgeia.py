@@ -45,6 +45,7 @@ from typing import Any, Iterator
 import httpx
 
 from tinos.config import Settings
+from tinos.store import safe_ada
 
 MAX_PAGE_SIZE = 500
 CLAMP_DAYS = 180
@@ -237,3 +238,21 @@ class DiavgeiaClient:
 
     def versionlog(self, ada: str) -> dict[str, Any]:
         return self._get_json(f"/decisions/{ada}/versionlog.json")
+
+    def document(self, ada: str) -> tuple[bytes, dict[str, Any]]:
+        """The signed PDF of one act, exactly as served, plus what the server said.
+
+        Refuses anything that is not a PDF (checked on the bytes, not only the
+        header), so an error page can never be stored as the act's document.
+        """
+        url = f"{self.settings.diavgeia_doc_base}/{safe_ada(ada)}"
+        resp = self._http.get(url, headers={"Accept": "application/pdf"})
+        self.calls += 1
+        time.sleep(self.settings.request_delay)
+        resp.raise_for_status()
+        ctype = resp.headers.get("content-type", "")
+        if not resp.content.startswith(b"%PDF-"):
+            raise ValueError(f"{ada}: expected a PDF, got {ctype or 'no content-type'} "
+                             f"({len(resp.content)} bytes)")
+        return resp.content, {"url": str(resp.url), "http_status": resp.status_code,
+                              "content_type": ctype, "bytes": len(resp.content)}

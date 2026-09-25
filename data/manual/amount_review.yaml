@@ -1,8 +1,10 @@
 # Human-verified amount checks against the source document. Tracked in git.
 # The curated build applies `amount_suspect = true, suspect_reason = 'document_mismatch'`
-# to the payment lines of any ADA listed under `mismatch`. Nothing is corrected:
-# the metadata amount stays in the table, flagged, and the document amount is
-# recorded here for the reader.
+# to the payment lines of any ADA listed under `mismatch`: every line of the act, or
+# only sponsor line `line_no` when one is given (the build then fails unless that line
+# still carries `metadata_amount`, and `kae` if given). Nothing is corrected: the
+# metadata amount stays in the table, flagged, and the document amount is recorded
+# here for the reader.
 version: 1
 mismatch:
   - ada: Ω25ΙΩΗ6-ΟΜΘ
@@ -17,3 +19,34 @@ mismatch:
     note: >
       Payment order ΧΘ 600 of 17/08/2015, sports equipment for the indoor gym
       (ΚΑΕ 15.7135.0001). Metadata amount is the document amount x100: entered in cents.
+
+  - ada: 6Ξ6ΖΩΗ6-26Β
+    entity: "6296"
+    line_no: 2
+    kae: "00.8211"
+    metadata_amount: 2023213.00
+    document_amount: 20232.13
+    document: data/raw/diavgeia/docs/6296/6Ξ6ΖΩΗ6-26Β.pdf
+    document_sha256: 278e4494786565dce2f65db3229ebaa460b0df95e025ddafcd96191a113231f2
+    checked_on: 2026-09-25
+    note: >
+      Withholdings statement («Κατάσταση Κρατήσεων») for February 2024, four lines. The
+      document gives 00.8211 as 20.232,13 and the act's total payable as 37.262,41; the
+      metadata line is the document amount x100, entered in cents. The other three lines
+      match the document. With the document amount, the 2024 Β.2.2 lines on 00.8211 total
+      238,237.48, equal to ΚΑΕ 8211 Πληρωθέντα in the December 2024 execution statement
+      (6ΝΠΘΩΗ6-Β64).
+
+  - ada: 6Ω80ΩΗ6-0Ι2
+    entity: "6296"
+    line_no: 1
+    kae: "00.8211"
+    metadata_amount: 2004276.00
+    document_amount: 20042.76
+    document: data/raw/diavgeia/docs/6296/6Ω80ΩΗ6-0Ι2.pdf
+    document_sha256: 5bcc852b3505700ba4d068105033561a3e349b45fb41b9ca5e72c69190e3e06d
+    checked_on: 2026-09-25
+    note: >
+      Withholdings statement for August 2023, four lines. The document gives 00.8211 as
+      20.042,76 and the act's total payable as 34.262,96; the metadata line is the
+      document amount x100, entered in cents. The other three lines match the document.

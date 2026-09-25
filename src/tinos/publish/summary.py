@@ -16,14 +16,15 @@ import duckdb
 from tinos.config import Settings
 from tinos.publish.privacy import PrivacyLeak, find_leaks, load_markers
 
-# Reference figures from FINDINGS.md (verified from the PDFs named there). Ψ68ΩΩΗ6-3ΓΦ is the
-# November 2024 statement: its figures are cumulative to 30 November, not to the year end.
+# Reference figures from FINDINGS.md (verified from the PDFs named there). 6ΝΠΘΩΗ6-Β64 is the
+# December 2024 execution statement, i.e. the whole year; stored in data/raw/diavgeia/docs.
 FY2024_REFERENCE = [
     ("Voted budget (revenue = expenditure)", 22_251_724.35, "ΨΞΕΟΩΗ6-2ΥΑ"),
-    ("Revised budget at 30 Nov", 23_630_861.94, "Ψ68ΩΩΗ6-3ΓΦ"),
-    ("Ενταλματοποιηθέντα (warranted), Jan–Nov", 9_055_399.10, "Ψ68ΩΩΗ6-3ΓΦ"),
-    ("Πληρωθέντα (paid), Jan–Nov", 8_877_120.61, "Ψ68ΩΩΗ6-3ΓΦ"),
-    ("  of which personnel costs (ΚΑΕ 60xx), Jan–Nov", 2_523_642.33, "Ψ68ΩΩΗ6-3ΓΦ"),
+    ("Revised budget at 31 Dec", 23_669_482.09, "6ΝΠΘΩΗ6-Β64"),
+    ("Ενταλματοποιηθέντα (warranted)", 11_153_794.10, "6ΝΠΘΩΗ6-Β64"),
+    ("Πληρωθέντα (paid)", 11_134_283.87, "6ΝΠΘΩΗ6-Β64"),
+    ("  of which personnel costs (ΚΑΕ 60xx)", 2_925_750.54, "6ΝΠΘΩΗ6-Β64"),
+    ("  of which remittances (ΚΑΕ 82xx)", 1_597_701.22, "6ΝΠΘΩΗ6-Β64"),
 ]
 
 
@@ -126,7 +127,7 @@ def write_summary(settings: Settings) -> Path:
       "amount; before that payroll acts carry no amount at all. In 2026 the municipality adopted a new "
       "chart of accounts, so ΚΑΕ-based classification is weaker for that year. Commitments exclude year-end reversals "
       "(Ανατροπές), which Diavgeia posts as positive Β.1.3 amounts; the excluded euros are shown so the "
-      "effect is visible. Β.1.3 is in consistent use only from 2017; the 2012 municipal figure is the whole "
+      "effect is visible. Β.1.3 is in consistent use from 2017 and carries amounts reliably from 2020; the 2012 municipal figure is the whole "
       "annual budget summary posted under that type, not a commitment. Awards (Δ.1) collapse from 2021 "
       "while payments hold steady: the money did not move, the award record stopped being duplicated "
       "into Diavgeia (see coverage gaps).")
@@ -208,13 +209,15 @@ def write_summary(settings: Settings) -> Path:
     w("## Data quality flags")
     w("")
     # Names come from counterparty_display, never counterparty_name_raw: natural persons are masked there.
-    sus = q("""SELECT p.entity, p.date, p.source_ada, p.amount, substr(p.counterparty_display, 1, 40), substr(a.subject, 1, 70)
+    sus = q("""SELECT p.entity, p.date, p.source_ada, p.amount, p.suspect_reason, substr(p.counterparty_display, 1, 40), substr(a.subject, 1, 70)
                FROM v_payment_suspect p JOIN act a ON a.ada = p.source_ada ORDER BY p.amount DESC""")
-    w(f"Suspect payment lines (amount above 10,000,000 €; kept in `payment`, excluded from every view and total): {len(sus)}")
+    w("Suspect payment lines (above 10,000,000 € = `threshold`, or checked against the decision's PDF and "
+      "found wrong = `document_mismatch`, see `data/manual/amount_review.yaml`; kept in `payment`, excluded "
+      f"from every view and total): {len(sus)}")
     w("")
     if sus:
-        w(_table(["Entity", "Date", "ADA", "Amount €", "Counterparty", "Subject"],
-                 [[e, d, ada, _eur(amt), n, sub] for e, d, ada, amt, n, sub in sus], 3))
+        w(_table(["Entity", "Date", "ADA", "Amount €", "Reason", "Counterparty", "Subject"],
+                 [[e, d, ada, _eur(amt), why, n, sub] for e, d, ada, amt, why, n, sub in sus], 3))
         w("")
     big = q("""SELECT p.entity, p.date, p.source_ada, p.amount, substr(p.counterparty_display, 1, 40), p.kae, substr(a.subject, 1, 70)
                FROM v_supplier_payment p JOIN act a ON a.ada = p.source_ada ORDER BY p.amount DESC LIMIT 8""")
@@ -243,6 +246,12 @@ def write_summary(settings: Settings) -> Path:
     weak = [str(y) for (y,) in q("""SELECT year FROM v_yearly WHERE entity = '6296' AND year >= 2017
                                      AND coalesce(reversal_eur, 0) > coalesce(commitment_eur, 0) ORDER BY 1""")]
     pk = dict(q("SELECT payroll_kind, count(*) FROM payment WHERE is_payroll GROUP BY 1"))
+    # Municipal Β.1.3 acts per year, and how many carry no usable amount (null or zero on every line).
+    b13 = q("""WITH a AS (SELECT year, source_ada, max(coalesce(amount, 0)) AS m FROM commitment
+                          WHERE entity = '6296' AND act_status = 'PUBLISHED' GROUP BY 1, 2)
+               SELECT year, count(*) FILTER (WHERE m = 0), count(*) FROM a GROUP BY 1 ORDER BY 1""")
+    pre = (min(t for y, _, t in b13 if y < 2017), max(t for y, _, t in b13 if y < 2017))
+    thin = [(y, n, t) for y, n, t in b13 if y >= 2017 and n > 0.05 * t]
     for line in [
         f"**Payroll is counted, never itemised.** {pk.get('no_sponsor', 0):,} payment acts have an empty sponsor "
         "list because the beneficiary is an employee; Diavgeia withholds the name and the amount by design, "
@@ -257,8 +266,12 @@ def write_summary(settings: Settings) -> Path:
         "stayed flat. Award values from 2021 onward must come from ΚΗΜΔΗΣ, not from this table.",
         f"**Award amounts and CPV are unreliable.** {noamt:,} published award rows have no amount; CPV is "
         "filled on under 15% of awards in any year.",
-        f"**Commitments before 2017 are absent** (Β.1.3 was not used), and {nokae:,} published commitment "
-        "rows have no per-ΚΑΕ breakdown, so their ΚΑΕ is null and the amount is the act total. "
+        f"**Commitment euros are complete only from {thin[-1][0] + 1 if thin else 2017}.** Before 2017 "
+        f"Δήμος Τήνου barely used Β.1.3 ({pre[0]}–{pre[1]} acts a year); from 2017 it posts about a thousand a "
+        "year, but many carry no amount: "
+        + ", ".join(f"{n:,} of {tot:,} in {y}" for y, n, tot in thin)
+        + f". {nokae:,} published commitment rows have no per-ΚΑΕ breakdown, so their ΚΑΕ is null and the "
+        "amount is the act total. "
         + (f"In {', '.join(weak)} the municipality's year-end reversals exceed its posted commitments, so the "
            "commitment record for those years is incomplete, not small." if weak else ""),
         f"**Revocations.** {rev:,} acts are REVOKED and are excluded from every total. {pend:,} acts are "
@@ -278,26 +291,23 @@ def write_summary(settings: Settings) -> Path:
     w("")
     ours = q("""SELECT sum(payment_eur), sum(n_payroll_acts), sum(commitment_eur), sum(n_payment_acts), sum(remittance_eur), sum(reversal_eur)
                 FROM v_yearly WHERE entity = '6296' AND year = 2024""")[0]
-    jan_nov = q("""SELECT sum(amount), count(DISTINCT source_ada) FROM v_payment
-                   WHERE entity = '6296' AND date BETWEEN DATE '2024-01-01' AND DATE '2024-11-30'""")[0]
+    paid = FY2024_REFERENCE[3][1]
     rows = [[label, _eur(v), ada] for label, v, ada in FY2024_REFERENCE]
     rows += [
-        ["Β.2.2 third-party payments, Jan–Nov, this release", _eur(jan_nov[0]), f"{jan_nov[1]:,} payment acts, curated"],
-        ["Β.2.2 third-party payments, full year, this release", _eur(ours[0]), f"{ours[3]:,} payment acts, curated"],
+        ["Β.2.2 third-party payments, this release", _eur(ours[0]), f"{ours[3]:,} payment acts, curated"],
         ["  of which remittances to the state (ΚΑΕ 82 or withholdings subject)", _eur(ours[4]), "curated"],
-        ["Β.1.3 commitments, full year, this release (reversals excluded)", _eur(ours[2]), f"curated; {_eur(ours[5])} € of reversals excluded"],
+        ["Β.1.3 commitments, this release (reversals excluded)", _eur(ours[2]), f"curated; {_eur(ours[5])} € of reversals excluded"],
     ]
     w(_table(["Figure", "€", "Source"], rows, 1))
     w("")
-    w("The execution statement (Ψ68ΩΩΗ6-3ΓΦ, period November 2024) is the denominator: what the municipality "
-      "itself reports as paid, cumulative to 30 November. The December statement is not parsed yet, so there is "
-      "no full-year paid figure here. Paid minus third-party payments is not a payroll estimate: ΚΑΕ by ΚΑΕ, "
-      "Diavgeia's payment metadata leaves most spending groups under-itemised and remittances over-itemised "
-      "(FINDINGS.md), so payroll is read from the statement's personnel lines. Two withholdings lines, "
-      "6Ω80ΩΗ6-0Ι2 (2023) and 6Ξ6ΖΩΗ6-26Β (2024), appear to have been entered in cents (about 2.0 million € "
-      "each where the line normally runs about 20,000 €); they are under review and still counted in the 2023 "
-      "and 2024 payment and remittance totals. Commitments exceed payments by design: they are budget "
-      "reservations, many multi-year, not cash.")
+    w("The December execution statement (6ΝΠΘΩΗ6-Β64) is the denominator: what the municipality itself "
+      f"reports as paid in the year. Diavgeia's payment decisions carry amounts for {(ours[0] or 0) / paid:.0%} "
+      "of it. Personnel costs are almost entirely missing there, and so are whole spending groups such as "
+      "consumables, equipment and works (FINDINGS.md). Paid minus third-party payments is therefore not a "
+      "payroll estimate; payroll is read from the statement's personnel lines. Two withholdings lines, "
+      "6Ω80ΩΗ6-0Ι2 (2023) and 6Ξ6ΖΩΗ6-26Β (2024), were entered in cents (about 2.0 million € each where the "
+      "document says about 20,000 €); they are verified against their PDFs, flagged and excluded. Commitments "
+      "exceed payments by design: they are budget reservations, many multi-year, not cash.")
     w("")
 
     # ---- method

@@ -4,8 +4,9 @@ Invariants (CLAUDE.md):
 - ``data/raw/`` is append-only. This module never overwrites or deletes a
   file there. A document whose content changed since it was first captured
   is written as a *new* file next to the original, never on top of it.
-- Every stored document is addressed by the SHA-256 of its canonical JSON,
-  so any derived figure can be traced back to an exact stored byte string.
+- Every stored document is addressed by the SHA-256 of its canonical JSON
+  (PDFs: of their bytes as served), so any derived figure can be traced back
+  to an exact stored byte string.
 """
 
 from __future__ import annotations
@@ -27,10 +28,16 @@ _ADA_RE = re.compile(r"[0-9Α-Ω]+-[0-9Α-Ω]+")
 _ORG_UID_RE = re.compile(r"\d+")
 
 
+
 def _path_part(value: Any, pattern: re.Pattern[str], what: str) -> str:
     if not isinstance(value, str) or not pattern.fullmatch(value):
         raise ValueError(f"refusing unsafe {what} {value!r} as a path component")
     return value
+
+
+def safe_ada(value: Any) -> str:
+    """``value`` if it has the shape of an ADA, else ValueError (paths and URLs)."""
+    return _path_part(value, _ADA_RE, "ADA")
 
 
 def canonical_json(obj: Any) -> bytes:
@@ -78,7 +85,10 @@ class RawStore:
         - Different bytes      -> keep the old file, write a sibling
           ``<stem>.<sha12>.json`` holding the new version, ``changed``.
         """
-        data = canonical_json(obj)
+        return self.put_keyed_bytes(path, canonical_json(obj))
+
+    def put_keyed_bytes(self, path: Path, data: bytes) -> StoreResult:
+        """``put_keyed`` for bytes stored exactly as fetched (PDFs)."""
         digest = sha256_hex(data)
         if not path.exists():
             self._write_new(path, data)
@@ -142,6 +152,21 @@ class RawStore:
     def iter_diavgeia_acts(self) -> list[Path]:
         base = self.raw_dir / "diavgeia" / "acts"
         return sorted(base.glob("*/*.json")) if base.is_dir() else []
+
+    def find_diavgeia_act(self, ada: str) -> Path | None:
+        """The stored act file for ``ada`` (first capture), or None."""
+        base = self.raw_dir / "diavgeia" / "acts"
+        hits = sorted(base.glob(f"*/{safe_ada(ada)}.json")) if base.is_dir() else []
+        return hits[0] if hits else None
+
+    def diavgeia_doc_path(self, org_uid: str, ada: str) -> Path:
+        org = _path_part(org_uid, _ORG_UID_RE, "org uid")
+        return self.raw_dir / "diavgeia" / "docs" / org / f"{safe_ada(ada)}.pdf"
+
+    def put_diavgeia_doc(self, org_uid: str, ada: str, data: bytes) -> StoreResult:
+        """The act's signed PDF, byte for byte; a re-issued file becomes a sibling."""
+        return self.put_keyed_bytes(self.diavgeia_doc_path(org_uid, ada), data)
+
 
 
 class IngestLog:

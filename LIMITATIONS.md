@@ -17,11 +17,21 @@ adds commitments to payments, it is wrong.
 ## Salaries are counted but never itemised
 
 About 8,000 payment decisions are payroll. The law withholds the employee's name
-and, until late 2025, the amount too. The municipality's own monthly budget
-report shows 2.52 million euros paid on staff (pay, overtime and employer
-contributions) from January to November 2024; Diavgeia itemises 190 euros of it.
-From late 2025 payroll batches carry an amount and the name of one employee
-standing for the group. We keep the amount and drop the name.
+and, until late 2025, the amount too. The municipality's own year-end budget
+report shows 2.93 million euros paid on staff (pay, overtime and employer
+contributions) in 2024; Diavgeia's payment decisions carry amounts for about
+48,000 euros of it. From late 2025 payroll batches carry an amount and the name
+of one employee standing for the group. We keep the amount and drop the name.
+
+## Diavgeia's payment decisions show less than half of what was paid
+
+The municipality reports paying 11.13 million euros in 2024. Its payment
+decisions on Diavgeia carry amounts for 4.64 million, about 42%. Salaries explain
+2.9 million of the gap. The rest is spread across ordinary spending: most
+purchases of consumables, equipment and small works that the budget report shows
+as paid have no payment decision with an amount. We do not yet know where, or
+whether, those payments are published. Treat every Diavgeia payment total as a
+floor, not as what was spent.
 
 ## Direct awards vanished from Diavgeia in 2021, not from reality
 
@@ -38,24 +48,22 @@ to study procurement after 2020 will see almost nothing and conclude wrongly.
   published as if it were a new commitment with a positive amount. Around
   50 million euros of such reversals across the corpus would double-count if
   summed. We exclude them and show the excluded amount.
-- About half of the municipality's "payments to third parties" in 2023-2024 are
-  taxes, social-insurance contributions and other withholdings passed through to
-  the state. They are real payments but not purchases. We separate them. The
-  share is inflated by the two suspected typing errors described below; if they
-  are confirmed it falls to about a third.
+- About a third of the municipality's "payments to third parties" in 2023-2024
+  are taxes, social-insurance contributions and other withholdings passed through
+  to the state. They are real payments but not purchases. We separate them.
 - One 2018 record from a subsidiary shows a payment of 82 million euros, roughly
   four hundred times that body's annual spending. It is a data-entry error at the
   source. We keep it, flag it, and leave it out of every total.
 - A 2012 record of 13.8 million euros filed as a "commitment" is in fact the
   whole annual budget summary filed under the wrong type.
-- Amounts are sometimes typed wrong at the source. One verified case: a 2015
-  payment recorded as 281,880 euros whose document says 2,818.80, entered in
-  cents. We have no way to check every record against its document, so a few
-  wrong amounts certainly remain. Verified cases are listed in
-  `data/manual/amount_review.yaml` and left out of totals. Two more are under
-  review and still counted: monthly withholdings statements from August 2023 and
-  February 2024 whose main line reads about 2 million euros where it normally
-  reads about 20,000.
+- Amounts are sometimes typed wrong at the source. Three verified cases, all
+  entered in cents: a 2015 payment recorded as 281,880 euros whose document says
+  2,818.80, and monthly withholdings statements from August 2023 and February
+  2024 whose main line reads about 2 million euros where the document says about
+  20,000. The last two had made "payments to third parties" look 2 million euros
+  larger in each of those years. We have no way to check every record against its
+  document, so a few wrong amounts certainly remain. Verified cases are listed in
+  `data/manual/amount_review.yaml` and left out of totals.
 - About 4.7 million euros of "payments" are the municipality funding its own
   subsidiaries; a further 3.3 million went to other public bodies, 1.6 million
   to taxes and 1.4 million to loan instalments and bank charges. None of that
@@ -63,8 +71,10 @@ to study procurement after 2020 will see almost nothing and conclude wrongly.
 
 ## Some records are simply missing or thin
 
-- Commitments were not published in structured form before 2017, and in 2017 the
-  published commitments are far smaller than the reversals that refer to them.
+- The municipality's commitments are complete only from 2020. Before 2017 it
+  barely published them; from 2017 it published about a thousand a year, but most
+  of those from 2017 and 2018, and a third from 2019, carry no amount. In 2017 the
+  recorded commitments are far smaller than the reversals that refer to them.
 - Award decisions rarely say what was bought in a machine-readable way: the
   product classification (CPV) is filled in on fewer than one in seven.
 - Council sessions on video: 2021 is entirely absent from the channel and 2022

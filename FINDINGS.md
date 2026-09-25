@@ -78,13 +78,17 @@ DuckDB `read_json_auto` over the act files exhausts memory (schema inference acr
   kept, flagged `amount_suspect`, excluded from views.
 - **Amounts can be entered in cents.** Ω25ΙΩΗ6-ΟΜΘ (6296, 2015) carries 281,880.00 EUR in
   the metadata; the PDF (payment order ΧΘ 600, sha256 872acd76…) says 2,818.80 (2,430.00
-  net + 388.80 VAT) for gym equipment. Exactly x100. The 10M threshold cannot catch this
-  class of error; verified cases go in `data/manual/amount_review.yaml` and are flagged
-  `suspect_reason = document_mismatch`. Expect more; a systematic check (metadata
-  amount vs. commitment amount vs. PDF) is future work.
+  net + 388.80 VAT) for gym equipment. Exactly x100. Two more were found by reconciling
+  Β.2.2 lines against the execution statements (FY2024 below): one withholdings line each
+  in 6Ω80ΩΗ6-0Ι2 (2023) and 6Ξ6ΖΩΗ6-26Β (2024), ~2.0M where the document says ~20k. The 10M
+  threshold cannot catch this class of error; verified cases go in
+  `data/manual/amount_review.yaml` (the whole act, or one `line_no`) and are flagged
+  `suspect_reason = document_mismatch`. Expect more; the execution statements, ΚΑΕ by ΚΑΕ
+  against Β.2.2 lines, are the systematic check.
 - **Remittances dominate naive top-payee lists.** ΚΑΕ group 82 (αποδόσεις κρατήσεων)
   and "Κατάσταση Κρατήσεων" subjects are pass-through withholdings to the state,
-  EFKA, IKA and pension funds: 3.6M of 6.7M municipal third-party payments in 2024.
+  EFKA, IKA and pension funds: 1.6M of 4.6M municipal third-party payments in 2024
+  (3.6M of 6.7M before the two cents entries above were flagged).
 - **New chart of accounts in 2026.** Δήμος Τήνου ΚΑΕ changed from `NN.NNNN[.NNNN]`
   (sometimes `NN-NNNN.NNNN`) to `NNN.NNNNNNN[.NNN]` on 2026-01-01. Groups seen, from
   subject sampling: 21 personnel, 22 supplies, 23 transfers and levies, 24 services,
@@ -96,7 +100,10 @@ DuckDB `read_json_auto` over the act files exhausts memory (schema inference acr
   1.87M in 2026 to September). The curated layer keeps the amount and drops the person.
 - **Pre-2017 Β.1.3 is not commitments.** Β4Β7ΩΗ6-Μ8Ω (2012) is the whole annual budget
   summary (13.77M) posted under Β.1.3. In 2017 reversals (2.31M) exceed posted
-  commitments (0.12M): the record is incomplete, not small.
+  commitments (0.12M): the record is incomplete, not small. Municipal Β.1.3 runs at 8-40
+  acts a year to 2016 and ~1,000 from 2017, but acts with no amount on any line are 657 of
+  963 (2017), 913 of 1,121 (2018), 400 of 1,137 (2019), 0 of 1,173 (2020); ΚΑΕ lines become
+  routine in 2019-2020. Count commitment acts from 2017; sum commitment euros from 2020.
 - `read_json_auto` in DuckDB over the 76k act files exhausts >10 GB; scan with plain
   `json` or pass explicit `columns=`.
 
@@ -112,56 +119,64 @@ DuckDB `read_json_auto` over the act files exhausts memory (schema inference acr
   `dateFrom`/`dateTo`, `totalCostFrom`/`totalCostTo`, `title`, `isInitial`, `isApproved`.
 - Volume: 445 `/request` records for org 6296 in 2024.
 
-## Budget reconciliation, FY2024 (Δήμος Τήνου), January to November
+## Budget reconciliation, FY2024 (Δήμος Τήνου)
 
-**Corrected 2026-09-25.** Ψ68ΩΩΗ6-3ΓΦ is the statement for «Περίοδος: Νοέμβριος 2024»
-(signed 2024-12-10): its figures run to 30 November, not to the year end. The December
-statement is 6ΝΠΘΩΗ6-Β64 (published 2025-01-10), not yet stored or parsed, so there is no
-full-year paid figure. The earlier version of this table labelled the November figures "by
-December", set them against Diavgeia figures for the whole year taken from probe3 windows
-that were blind to 28-31 Dec (third-party payments 6,031,795.60; commitments 20,000,913.15,
-which does not reproduce from the release), and called the difference, 2,845,325.01, payroll.
-Like for like:
+**Corrected 2026-09-25.** The earlier version of this table took its paid figures from
+Ψ68ΩΩΗ6-3ΓΦ, the statement for «Περίοδος: Νοέμβριος 2024», labelled them "by December", set
+them against Diavgeia figures for the whole year from probe3 windows blind to 28-31 Dec
+(third-party payments 6,031,795.60; commitments 20,000,913.15, which does not reproduce from
+the release) and called the difference, 2,845,325.01, payroll. Full-year figures now come
+from the December statement, 6ΝΠΘΩΗ6-Β64 (published 2025-01-10, «Περίοδος: Δεκέμβριος 2024»).
 
-| Figure | € | Source |
-|---|---|---|
-| Voted budget (balanced: revenue = expenditure) | 22,251,724.35 | ΨΞΕΟΩΗ6-2ΥΑ |
-| Revised budget at 30 Nov | 23,630,861.94 | Ψ68ΩΩΗ6-3ΓΦ |
-| Ενταλματοποιηθέντα, Jan-Nov | 9,055,399.10 | Ψ68ΩΩΗ6-3ΓΦ |
-| **Πληρωθέντα, Jan-Nov** | **8,877,120.61** | Ψ68ΩΩΗ6-3ΓΦ |
-| of which personnel costs, ΚΑΕ 60xx (17 rows) | 2,523,642.33 | Ψ68ΩΩΗ6-3ΓΦ |
-| of which remittances, ΚΑΕ 82xx | 1,145,923.76 | Ψ68ΩΩΗ6-3ΓΦ |
-| Β.2.2 third-party payments, Jan-Nov | 5,757,765.58 | release: 950 lines, 862 acts |
-| of which under ΚΑΕ 60 | 190.00 | release; the 651 payroll acts carry no amount |
-| of which under ΚΑΕ 82 | 3,174,526.80 | release; includes 6Ξ6ΖΩΗ6-26Β, below |
-| Β.2.2 third-party payments, full year | 6,667,197.72 | release: 1,074 lines, 967 acts |
-| Β.1.3 commitments, full year, reversals excluded | 19,824,694.80 | release; 8,486,555.56 of reversals excluded |
+| Figure | Jan-Nov € | Full year € | Source |
+|---|---:|---:|---|
+| Voted budget (balanced: revenue = expenditure) | | 22,251,724.35 | ΨΞΕΟΩΗ6-2ΥΑ |
+| Revised budget at period end | 23,630,861.94 | 23,669,482.09 | statements |
+| Ενταλματοποιηθέντα | 9,055,399.10 | 11,153,794.10 | statements |
+| **Πληρωθέντα** | **8,877,120.61** | **11,134,283.87** | statements |
+| of which personnel costs, ΚΑΕ 60xx | 2,523,642.33 | 2,925,750.54 | statements |
+| of which remittances, ΚΑΕ 82xx | 1,145,923.76 | 1,597,701.22 | statements |
+| Β.2.2 third-party payments | 3,734,552.58 | 4,643,984.72 | release: 949 / 1,073 lines |
+| of which under ΚΑΕ 60 | 190.00 | 47,507.39 | release |
+| of which under ΚΑΕ 82 | 1,151,313.80 | 1,604,947.25 | release |
+| Β.1.3 commitments, reversals excluded | | 19,824,694.80 | release; 8,486,555.56 of reversals excluded |
 
-`SELECT sum(amount) FROM v_payment WHERE entity='6296' AND date BETWEEN '2024-01-01' AND '2024-11-30'`
-(release source digest `d29344da…`). Statement rows are the probe's parse of the PDF
-(`probe-out/exec2412.*`, PDF sha256 `78b0de36…`): 149 expenditure rows that sum exactly to
-the document's ΣΥΝΟΛΟ ΕΞΟΔΩΝ. The PDF is not yet in `data/raw`.
+Statements: Ψ68ΩΩΗ6-3ΓΦ for Jan-Nov (probe copy `probe-out/exec2412.pdf`, sha256 `78b0de36…`,
+not in `data/raw`) and 6ΝΠΘΩΗ6-Β64 for the year (`data/raw/diavgeia/docs/6296/`, sha256
+`808e051a…`). Both parsed from `pdftotext -layout`: 98 revenue and 149 expenditure rows each,
+every column summing exactly to the document's own ΣΥΝΟΛΟ ΕΣΟΔΩΝ and ΣΥΝΟΛΟ ΕΞΟΔΩΝ. Release:
+`SELECT sum(amount) FROM v_payment WHERE entity='6296' AND year=2024` (and `date <= '2024-11-30'`),
+source digest `d29344da…`, with the two cents entries below flagged.
 
-**Paid minus third-party payments is not a payroll estimate.** Group by group the two
-sources disagree in both directions: personnel costs (60) are 2,523,642.33 in the statement
-and 190.00 in Β.2.2; the other expenditure groups are under-itemised in Β.2.2 by 2,624,505.74
-net (62, 61, 66, 81, 71, 64 and 73 each by 0.15-0.62M); remittances (82) are over-itemised
-by 2,028,603.04. The differences net to 3,119,355.03. Read payroll from the statement's
-60xx rows, not from a residual.
+**Diavgeia's payment metadata itemises 42% of what the municipality paid in 2024**
+(4,643,984.72 of 11,134,283.87). Personnel costs are almost entirely absent: 47,507.39 of
+2,925,750.54, and the 725 payroll acts of 2024 carry no amount. The rest of the gap is not
+timing: January 2025 carries 61,378 of Β.2.2 payments and none name 2024. Whole ΚΑΕ groups
+are thin in Β.2.2 (itemised of paid, thousands €): 61 third-party fees 670 of 1,615;
+62 services 1,744 of 2,527; 64 other general expenses 37 of 285; 66 consumables 17 of 681;
+71 equipment 7 of 418; 73 works 2 of 149; 81 prior-year bills 169 of 548. Where these
+payments are published, if at all, is open; payment orders filed under 2.4.7.1 without
+structured amounts is the first hypothesis to test. So paid minus Β.2.2 is not a payroll
+estimate: read payroll from the statements' 60xx rows.
 
-**Suspected amount error: 6Ξ6ΖΩΗ6-26Β.** The February 2024 withholdings statement («Κατάσταση
-Κρατήσεων») carries 2,023,213.00 on its 00.8211 line; that line runs 19,508.71-20,379.14 in
-the other eleven monthly statements of 2024, and the act's other lines are ordinary
-(13,491.65 · 2,783.97 · 754.66). Read as cents, 20,232.13, the Jan-Nov Β.2.2 00.8211 lines
-total 217,858.34: exactly the statement's 8211 Πληρωθέντα. 6Ω80ΩΗ6-0Ι2 (August 2023) has the
-same shape: 2,004,276.00 on 00.8211 against 19,448.31-21,070.60 in the other 2023 statements.
-Neither is checked against its own PDF yet, so neither is in
-`data/manual/amount_review.yaml` or flagged. Until they are, the 2023 and 2024 remittance and
-third-party totals (F1, F3) each carry about 2.0M that was not paid.
+**Two metadata amounts entered in cents, verified 2026-09-25.** Both are monthly
+withholdings statements («Κατάσταση Κρατήσεων») whose 00.8211 line carries the document
+amount x100; the other three lines of each act match the PDF.
+
+| ADA | Month | 00.8211 metadata | 00.8211 PDF | Same line, other months |
+|---|---|---:|---:|---:|
+| 6Ω80ΩΗ6-0Ι2 | Aug 2023 | 2,004,276.00 | 20,042.76 | 19,448.31-21,070.60 |
+| 6Ξ6ΖΩΗ6-26Β | Feb 2024 | 2,023,213.00 | 20,232.13 | 19,508.71-20,379.14 |
+
+With the document amount, the 2024 Β.2.2 lines on 00.8211 total 238,237.48: exactly ΚΑΕ 8211
+Πληρωθέντα in 6ΝΠΘΩΗ6-Β64 (Jan-Nov: 217,858.34, exactly Ψ68ΩΩΗ6-3ΓΦ). Both lines are listed by
+`line_no` in `data/manual/amount_review.yaml`, flagged `document_mismatch` and excluded from
+the views: third-party payments fall from 6.11M to 4.11M (2023) and 6.67M to 4.64M (2024),
+remittances from 3.30M to 1.29M and 3.63M to 1.61M. Supplier figures are unchanged.
 
 Expenditure classes (voted budget): 6 ΕΞΟΔΑ ΧΡΗΣΗΣ 11,031,542.99 · 7 ΕΠΕΝΔΥΣΕΙΣ 7,232,281.72 ·
 8 ΠΡΟΒΛΕΨΕΙΣ 3,954,381.31 · 9 ΑΠΟΘΕΜΑΤΙΚΟ 33,518.33.
-ΠΡΟΒΛΕΨΕΙΣ is notional — that's why execution to 30 November looks like ~37% of budget.
+ΠΡΟΒΛΕΨΕΙΣ is notional — that's why the year's payments are ~47% of the revised budget.
 
 ## Monthly execution statements — the denominator
 Published in Diavgeia as type `Β.3`, subject `ΔΗΜΟΣΙΕΥΣΗ ΣΤΟΙΧΕΙΩΝ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛΟΓΙΣΜΟΥ`.
@@ -208,7 +223,8 @@ always the primary venue, Diavgeia carried a parallel copy, and the copy stopped
   school committees 54500 in 2022 (77 → 0); community enterprise 53952 after 2019
   (117 → 17 → 0) while still publishing 500-600 acts a year.
 - Municipality payment acts ~1,700/yr from 2016 to 2026 with no dip; third-party
-  payment euros 3.3M (2021) → 6.7M (2024); commitments (reversals excluded) 12.9M
+  payment euros 3.3M (2021) → 4.6M (2024; 6.7M before two cents entries were flagged,
+  see the FY2024 reconciliation); commitments (reversals excluded) 12.9M
   (2020) → 19.8M (2024). `SELECT * FROM v_yearly WHERE entity='6296'`
 - ΚΗΜΔΗΣ, org 6296, POST `/contract` and `/request` with `dateFrom/dateTo` per year,
   first page validated on `contractSignedDate` / `signedDate`:
@@ -272,9 +288,11 @@ transfers, taxes, debt service or other public bodies; `v_counterparty_year`):
 | 2025 | 91 | 18 | 2.87M | 91.7% | 60.9% |
 | 2026 (to Sep, new chart) | 210 | 95 | 4.21M | 64.8% | 17.2% |
 
-- Naive series (all counterparties): 260 → 120 distinct, top-10 50% → 92%. Roughly
-  half of the 2023-2024 "top payee" euros were ΚΑΕ-82 remittances to the Ministry
-  of Finance, EFKA and pension funds (3.3M of 6.1M in 2023, 3.6M of 6.7M in 2024),
+- Naive series (all counterparties): 260 → 120 distinct, top-10 50% → 88% (92% before
+  the cents entries below were flagged). About a
+  third of the 2023-2024 "top payee" euros were ΚΑΕ-82 remittances to the Ministry
+  of Finance, EFKA and pension funds (1.3M of 4.1M in 2023, 1.6M of 4.6M in 2024; this
+  read "roughly half" until two lines entered in cents, ~2.0M each, were flagged),
   and a further 4.7M corpus-wide were transfers inside the entity family (the
   municipality funding its own bodies), 1.6M taxes, 1.4M debt service, 3.3M other
   public bodies. Removing them lowers the supplier count but *raises* the top-1 share
