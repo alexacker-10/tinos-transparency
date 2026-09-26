@@ -55,13 +55,26 @@ Education (4 uids) and Culture (3 uids) ministries. Readers in `tinos.extract.gr
 font, `figures_only`), `read_other`; per-item `recipient_entity`. Views:
 `v_grant_reconciliation` (by revenue category; the foundation's is 2119, prior years'
 revenue, not all its), `v_budget_month` (monthly receipts from the cumulative statements,
-Feb 2015-Nov 2025; F11). 2015-2025: the ministry 29.06M (F8), the Region 0.85M (F9), the
+Feb 2015-Nov 2025; F11). 2015-2025 (morning; revised below): the ministry 29.06M (F8), the Region 0.85M (F9), the
 foundation 2.50M (F10: all 25 payments are 2119 jumps), others 0.07M; 52 line-years exact
 to the cent, 18 exactly 0.15% less. Verified x100 lines: 13 (F7).
-Next: grantors not yet searched whose money sits in open lines (1329: 200,000.00 over
-2018-2019 and 2020/2023 receipts; 1219/1322 remainders): the Green Fund, the Ministry of
-Economy's ΠΔΕ, ΕΟΤ; leads in 50203's legality reviews (listed, PDFs unread). The foundation's
-2119 receipts of October 2015 and December 2018 have no decision; 0619 remainders (Sept
-2015 50,653.90, May-Aug 2016 42,093.28, Nov-Dec 2024 115,304.49); programme-agreement
-lines 2015/2017/2020/2023-2025. Parse the 2026 statements (new chart of accounts,
-«010.1310101» codes). Ask before downloading.
+Phase 4 continued (2026-09-26, evening): the municipality's own acceptances (`acceptance`, titles only, F12)
+name its grantors; the Regional Union of Municipalities (53992), the Green Fund (99201054), the Shipping Ministry's
+Aegean secretariat (100015969), the public-investment ministries (15, 100016002, 100025890, 100054495, 100081597),
+Infrastructure (100025905, 100016011), Digital Governance (100054486), ΕΟΤ and Tourism are registered and read
+(`tinos.extract.grantors`). Money counts once, at the document that moves it: `grant_decision.paid_by` marks an
+approval paid by the transfer that cites it, a Union grant paid by a payment order or replaced by a later decision
+(`_mark_paid_through`). A Tinos project code anchors a search like an ΑΦΜ (entities.yaml `anchor_codes`). 1216
+joins `investment_programmes`; `recovery_fund` is 1324 / 1350109. The 2026 statements are read (new chart, F13,
+`NEW_CHART_CATEGORIES`); `v_budget_month` carries a line a later statement drops at zero (`absent`); a statement
+bearing another Tinos body's letterhead is refused. 2015-2025: the Interior Ministry 29.02M (2020's arrears grants
+are ceilings, listed), the Region 0.90M, the foundation 2.50M, the other grantors 2.20M to the municipality (F12).
+0619's remainders, 1219 of 2021-2025, 1329 and 1216 of 2024 are explained; the rest of the programme-agreement
+lines is the port fund's own money (F9). 213 PDFs fetched; 13 staff-travel records purged on the owner's word.
+Next: 2025's investment receipts (1.0M in 1216/1322: the Economy Ministry's 2025 transfers for the waste-processing
+transition and the Infrastructure Ministry's 2025 road works, not in the index; try their 2025 project codes as
+anchors), 1322 of December 2021 (287,403.57) and the other 2021-2023 investment gaps; state grants 2022 (1211,
+54,369.77), 2024-2025 (18,379.20, 11,594.93); 2026: 1310101 receives ~5,440 a month less than the ΚΑΠ allocations,
+1310114 (179,763.13) and 1340102 (96,049.09) have no document; 1213 of 2017 (23,084.00) and 2023 (1,620.00); the
+foundation's 2119 of October 2015 and December 2018; the 27 legality reviews (stored, unread) for the acceptances
+naming no grantor. Ask before downloading.
