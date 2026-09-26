@@ -41,20 +41,27 @@ double-posted amounts), `v_payment_combined` and `v_supplier_year_combined`
 `data/manual/amount_review.yaml` (`mismatch` by line, `duplicate`). Tests:
 `.venv/bin/python -m unittest discover -s tests`.
 Phase 4 (2026-09-26): money given TO Tinos. Diavgeia full-text search
-(`tinos fulltext-backfill`, `tinos fulltext-doctor`, `tinos fulltext-status`,
+(`tinos fulltext-backfill`, `tinos fulltext-doctor`, `tinos fulltext-status [--names]`,
 `tinos fulltext-purge`; no query echo: every window is proved by counts; PRIVACY.md
-Q7: hits about people are redacted at ingestion, and records later found to be about
-a person are deleted by the purge, logged). Grantors in `entities.yaml`: the four
-Interior Ministry uids (ΤΗΝΟΥ, and ΑΥΤΟΤΕΛΕΙΣ for national tables the index holds by
-title only) and the Region of South Aegean (5011: ΤΗΝΟΥ and the municipality's ΑΦΜ,
-an anchored term). Amounts read and validated by `tinos.extract.grants`
-(`read_decision`; the Region's `read_region`) into `grant_decision` / `grant_line`
-(`grantor`, `found_by`, `text_indexed`); `v_grant_reconciliation` sets both grantors
-against the statements' revenue lines. 2015-2025: the ministry 28.83M (F8), the Region
-0.30M (F9); 48 line-years exact to the cent, 18 exactly 0.15% less. Subsidiaries'
-December statements parsed for five bodies (24). Verified x100 lines: 13 (F7).
-Next: the programme-agreement lines (1213/1326, 0.75M booked, 22k found: the Region's
-payment orders are findable by ΑΦΜ only from 2021; 43 Region credits for its own
-projects and the 33 agreement PDFs are unread for amounts); other grantors (Αποκεντρωμένη
-Διοίκηση Αιγαίου, the education, culture and civil-protection ministries, per the
-2024 facet in FINDINGS); monthly statements. Ask before downloading.
+Q7: hits about people are redacted at ingestion, records later found to be about a
+person are deleted by the purge, logged). Grantors in `entities.yaml`, each with its
+own whitelist `keep` rules and reporting `group`: the four Interior Ministry uids
+(ΤΗΝΟΥ; ΑΥΤΟΤΕΛΕΙΣ and «3756» for national tables the index holds by title only), the
+Region of South Aegean (5011) and its development fund (14763, the paying agent: count
+the fund's payment once, list the credit behind it), the Evangelistria foundation
+(99206908: tinos_body + statutory_grant), the Decentralised Administration (50203), the
+Education (4 uids) and Culture (3 uids) ministries. Readers in `tinos.extract.grants`:
+`read_decision` (ministry), `read_region`/`read_fund`, `read_foundation` (items, shifted
+font, `figures_only`), `read_other`; per-item `recipient_entity`. Views:
+`v_grant_reconciliation` (by revenue category; the foundation's is 2119, prior years'
+revenue, not all its), `v_budget_month` (monthly receipts from the cumulative statements,
+Feb 2015-Nov 2025; F11). 2015-2025: the ministry 29.06M (F8), the Region 0.85M (F9), the
+foundation 2.50M (F10: all 25 payments are 2119 jumps), others 0.07M; 52 line-years exact
+to the cent, 18 exactly 0.15% less. Verified x100 lines: 13 (F7).
+Next: grantors not yet searched whose money sits in open lines (1329: 200,000.00 over
+2018-2019 and 2020/2023 receipts; 1219/1322 remainders): the Green Fund, the Ministry of
+Economy's ΠΔΕ, ΕΟΤ; leads in 50203's legality reviews (listed, PDFs unread). The foundation's
+2119 receipts of October 2015 and December 2018 have no decision; 0619 remainders (Sept
+2015 50,653.90, May-Aug 2016 42,093.28, Nov-Dec 2024 115,304.49); programme-agreement
+lines 2015/2017/2020/2023-2025. Parse the 2026 statements (new chart of accounts,
+«010.1310101» codes). Ask before downloading.
