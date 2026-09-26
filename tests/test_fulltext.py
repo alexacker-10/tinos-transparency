@@ -149,13 +149,26 @@ class Whitelist(unittest.TestCase):
         for subject in (CITIZEN, "Κατανομή προσωπικού", "Περιλήψεις μετάταξης υπαλλήλων",
                         "Διορισμός συγγενούς αποβιώσαντος", "Ορισμός υπολόγου – διαχειριστή για το έργο 2001ΣΕ05500002",
                         "Διαταγή συγκρότησης επιτροπής", "ΒΕΒΑΙΩΣΗ ΠΛΗΡΩΜΗΣ ΤΗΣ ΔΡΑΣΗΣ «ΕΝΑΡΜΟΝΙΣΗ ΟΙΚΟΓΕΝΕΙΑΚΗΣ ΖΩΗΣ»",
-                        "Έγκριση δαπάνης τροφοδοσίας κρατουμένων αλλοδαπών", "Κατανομή πιστώσεων για πλήρωση θέσεων"):
+                        "Έγκριση δαπάνης τροφοδοσίας κρατουμένων αλλοδαπών", "Κατανομή πιστώσεων για πλήρωση θέσεων",
+                        # kept by the 2015 subject pass before 2026-09-26: «Αυτοτελούς» matched ΑΥΤΟΤΕΛ
+                        "Έγκριση δέσμευσης πίστωσης για τη μετακίνηση εκτός έδρας της κ. Ονόματος Επωνύμου, "
+                        "υπαλλήλου του Αυτοτελούς Τμήματος Διεθνών Σχέσεων",
+                        "Έγκριση πίστωσης για την αποζημίωση του κου Επωνύμου", "Επιχορήγηση των κ.κ. Επωνύμων",
+                        "Ορισμός αναπλήρωσης Προϊσταμένου του Αυτοτελούς Κλιμακίου Ξάνθης"):
             with self.subTest(subject=subject[:40]):
                 self.assertEqual(whitelist_reason(rec(subject=subject, dtype="Β.1.1")), "personal")
+
+    def test_kap_abbreviations_are_not_a_person(self):
+        for subject in ("Κατανομή από τους Κ.Α.Π. του Δήμου", "Απόδοση εσόδων στους Δήμους της Χώρας (Κ.Α.Π.)"):
+            with self.subTest(subject=subject):
+                self.assertIsNone(whitelist_reason(rec(subject=subject, dtype="Α.2")))
 
     def test_a_ministrys_own_purchases_are_not_grants(self):
         self.assertEqual(whitelist_reason(rec(subject="ΑΠΟΦΑΣΗ ΑΝΑΛΗΨΗΣ ΥΠΟΧΡΕΩΣΗΣ", dtype="Β.1.3")), "not_a_grant")
         self.assertEqual(whitelist_reason(rec(subject="Προμήθεια καυσίμων του Α.Τ. Τήνου", dtype="Δ.1")), "not_a_grant")
+        # «Αυτοτελούς Κλιμακίου» is a ministry unit, not the ΚΑΠ
+        self.assertEqual(whitelist_reason(rec(subject="Παράταση της σύμβασης καθαριότητας του Αυτοτελούς Κλιμακίου",
+                                              dtype="Δ.1")), "not_a_grant")
 
     def test_redaction_keeps_only_what_the_guard_checks(self):
         kept, dropped = rec(), rec(ada="ΨΨΨΨ46ΜΤΛ6-ΑΒΓ", subject=CITIZEN)

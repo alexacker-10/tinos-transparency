@@ -143,6 +143,18 @@ guard needs it (paging, dedup) and it only points to the public source.
 **Not covered.** A whitelisted allocation table can still name a person in
 a row we do not parse; the stored PDFs are raw data, never published.
 
+**Corrected 2026-09-26.** The grant pattern «ΑΥΤΟΤΕΛ» (for «Κεντρικοί
+Αυτοτελείς Πόροι») also matched «Αυτοτελούς Τμήματος», a ministry department,
+so the 2015 subject pass kept whole six acts about named employees' travel
+and one acting head's designation. The pattern now needs «Αυτοτελείς/Αυτοτελών
+Πόροι», and staff travel («εκτός έδρας»), heads of unit («προϊσταμένου») and a
+named person («του κ. ...», «της κας ...») are checked as personal first. The
+curated layer applies the whitelist again, so those records never reach it.
+Their raw files (seven decision records and the 2015 search pages that hold
+them whole) remain in `data/raw`, which is append-only, local and untracked:
+deleting them would be a deliberate exception to that invariant, the owner's
+call. **Open.**
+
 ## Principles we are working from, pending decisions
 
 - Public office holders acting in office: name them.

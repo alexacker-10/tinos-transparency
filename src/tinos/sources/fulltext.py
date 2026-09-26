@@ -266,10 +266,14 @@ PERSONAL_RE = re.compile("|".join([
     r"ΣΥΓΚΡΟΤΗΣ", r"ΣΥΝΕΡΓΕΙ", r"ΑΝΤΙΔΗΜΑΡΧ",                   # committees, election teams, office holders
     r"ΚΡΑΤΟΥΜΕΝ", r"ΑΛΛΟΔΑΠ", r"ΔΩΡΕΑ",                          # detainees, donors
     r"ΕΝΑΡΜΟΝΙΣ",                                               # day-care vouchers: private structures and owners
+    r"ΕΚΤΟΣ ΕΔΡΑΣ", r"ΠΡΟΙΣΤΑΜΕΝ",                              # staff travel; heads of unit
+    # a named person: «του κ. Ονόματος», «της κας ...», «των κ.κ. ...»
+    _word(r"(?:ΤΟΥ|ΤΗΣ|ΤΩΝ|ΤΟΝ|ΤΗΝ|ΤΟΥΣ|ΤΙΣ|ΣΤΟΝ|ΣΤΗΝ|ΣΤΟΥΣ|ΣΤΙΣ) (?:Κ\.|Κ\.Κ\.|ΚΟΥ|ΚΑΣ|ΚΥΡΙΟΥ|ΚΥΡΙΑΣ)") + r" ?[Α-Ω]{2}",
 ]))
-# Money given to municipalities: allocations, grants, financing, programme inclusion.
+# Money given to municipalities: allocations, grants, financing, programme inclusion. «Κεντρικοί
+# Αυτοτελείς Πόροι» (ΚΑΠ) needs its noun: «Αυτοτελούς Τμήματος», a ministry department, is staff.
 GRANT_RE = re.compile("|".join([
-    r"ΚΑΤΑΝΟΜ", r"ΑΠΟΔΟΣ[ΗΕ]", r"ΕΠΙΧΟΡΗΓ", r"ΧΡΗΜΑΤΟΔΟΤ", r"ΑΥΤΟΤΕΛ", _word(r"ΚΑΠ|ΣΑΤΑ"),
+    r"ΚΑΤΑΝΟΜ", r"ΑΠΟΔΟΣ[ΗΕ]", r"ΕΠΙΧΟΡΗΓ", r"ΧΡΗΜΑΤΟΔΟΤ", r"ΑΥΤΟΤΕΛ(?:ΕΙΣ|ΩΝ) ΠΟΡ", _word(r"ΚΑΠ|ΣΑΤΑ"),
     r"ΦΙΛΟΔΗΜ", r"ΤΡΙΤΣΗ", r"ΕΝΤΑΞ", r"ΠΙΣΤΩΣ", r"ΒΟΗΘΕΙΑ ΣΤΟ ΣΠΙΤΙ",
 ]))
 # Β.1.1 from a ministry is public-investment financing and budget acts.

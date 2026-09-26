@@ -4,7 +4,11 @@ grant_decision  one row per decision kept by ``tinos fulltext-backfill`` (the
                 whitelist, PRIVACY.md Q7): another body's act naming Tinos
                 that allocates, grants or finances. Classified by subject into
                 a family and a revenue category (``tinos.extract.grants``);
-                ``pdf_sha256`` is set once the act's PDF is stored.
+                ``pdf_sha256`` is set once the act's PDF is stored. The
+                whitelist is applied again here, so a record kept under an
+                earlier, looser version of it (2015: six staff-travel acts
+                naming employees) never reaches the curated layer; data/raw
+                is append-only.
 grant_line      one row per amount for a Tinos body read from a stored PDF
                 (``tinos.extract.grants.read_decision``), with how it was
                 validated against the document.
@@ -29,7 +33,7 @@ from pathlib import Path
 from typing import Any
 
 from tinos.extract.grants import CATEGORY_OF_FAMILY, TINOS_TPD_CODE, budget_year, family_of, read_decision
-from tinos.sources.fulltext import issue_day
+from tinos.sources.fulltext import issue_day, whitelist_reason
 
 
 def _iso(ts: Any) -> str:
@@ -54,6 +58,8 @@ def grant_rows(raw_dir: Path, stamp: dict[str, Any]) -> tuple[list[dict[str, Any
     """(grant_decision rows, grant_line rows). Reads each stored PDF with ``pdftotext -layout``."""
     decisions, lines = [], []
     for path, sha, rec in iter_grant_decisions(raw_dir):
+        if whitelist_reason(rec) is not None:  # kept by an earlier whitelist; not carried (PRIVACY.md Q7)
+            continue
         issuer = path.parent.name
         day = issue_day(rec["issueDate"])
         subject = " ".join(str(rec.get("subject") or "").split())
