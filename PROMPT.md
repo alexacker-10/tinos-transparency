@@ -32,7 +32,7 @@ Payments, commitments and awards are three measures of the same euro and are sho
 ## Invariants
 
 - Every Diavgeia response is accepted only if `info.query` echoes the requested organisation, both date bounds, status clause and page. The API drops unknown parameters and clamps date ranges silently, always HTTP 200.
-- `data/raw` is append-only. Re-fetches that differ are stored as new versions, never overwritten.
+- `data/raw` is append-only. Re-fetches that differ are stored as new versions, never overwritten. The one exception is privacy: full-text records later found to be about a person are deleted by `tinos fulltext-purge`, each deletion logged (PRIVACY.md Q7).
 - Every published figure traces to a stored document hash.
 - Never sum across the three measure tables.
 - Payroll beneficiaries are absent by design; do not attempt recovery.

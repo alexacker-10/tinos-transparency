@@ -79,9 +79,13 @@ in_scope:
     name: ΚΕΦΑΛΑΙΟ ΑΠΟΖΗΜΙΩΣΕΩΣ ΦΟΡΤΟΕΚΦΟΡΤΩΤΩΝ (ΚΑΦ) ΛΙΜΕΝΑ ΤΗΝΟΥ
     afm: "800302606"
     category: NPDD
-    parent: "6296"
+    parent: "100081533"
     active_years: [2011, 2014]
     approx_acts: 17
+    note: >
+      Diavgeia names the Ministry of Labour and Social Insurance (100081533) as its supervisor, not the
+      municipality (verify 2026-09-26; recorded as 6296 before). Kept in scope, 17 acts; whether it
+      belongs is the owner's call.
 
 # Public bodies operating on Tinos that are NOT municipal. Deliberately excluded.
 out_of_scope:
@@ -120,3 +124,12 @@ grantors:
     name: ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ
     latin_name: ypes_2019
     active_years: [2019, 2026]
+  - uid: "5011"
+    name: ΠΕΡΙΦΕΡΕΙΑ ΝΟΤΙΟΥ ΑΙΓΑΙΟΥ
+    latin_name: pnai
+    active_years: [2011, 2026]
+    note: >
+      Searched from 2026-09-26 for ΤΗΝΟΥ and for the municipality's ΑΦΜ (800302968; the other bodies'
+      ΑΦΜ return nothing, 2015-2025). Its money to Tinos is in acts that name a Tinos body without a
+      grant word (regional investment credits for municipal projects, programme agreements) and in
+      payment orders titled only «ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ», found by the ΑΦΜ (probe 2026-09-26).

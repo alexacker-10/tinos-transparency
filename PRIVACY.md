@@ -128,7 +128,14 @@ applies a whitelist before anything is written
 subject is about allocations, grants, financing or programme inclusion, or it
 is a Β.1.1 public-investment act, and never if the subject is about people
 (citizenship, staff, posts, imprest holders, committees, election teams,
-detainees, donors, day-care vouchers; that rule is checked first). Every other
+detainees, donors, day-care vouchers; that rule is checked first). Added
+2026-09-26 for the Region of South Aegean, whose money to the municipality
+sits in acts without a grant word: a subject naming a Tinos body (the
+municipality or one of its bodies) is kept too, and so is any hit of a search
+for a Tinos body's own ΑΦΜ (the Region's payment orders are titled only
+«ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ»). Both keep only acts about public bodies; the rule about
+people still comes first, and now also covers staff travel, heads of unit,
+named persons («του κ. ...») and the designation of a person to a role. Every other
 hit is cut, in the stored page, to its ADA, issuer, co-issuers, issue date and
 status, the fields the guard checks; its subject and text snippet are dropped
 in memory and the response body is not kept (its SHA-256 is in the ingest
@@ -151,9 +158,28 @@ and one acting head's designation. The pattern now needs «Αυτοτελείς/
 named person («του κ. ...», «της κας ...») are checked as personal first. The
 curated layer applies the whitelist again, so those records never reach it.
 Their raw files (seven decision records and the 2015 search pages that hold
-them whole) remain in `data/raw`, which is append-only, local and untracked:
-deleting them would be a deliberate exception to that invariant, the owner's
-call. **Open.**
+them whole) remained in `data/raw`, which is append-only, local and untracked.
+
+**Widened and applied to the store, 2026-09-26.** Reading every stored subject
+before searching the Region of South Aegean showed more: ministry expense acts
+naming one employee (with an e-mail address in one), the Region's travel of a
+named official, sole traders named in award decisions, school-bus operators
+named in contracts, litigants, fishermen named on a licence. The rules about
+people now also cover one named employee («υπαλλήλου», not «υπαλλήλων»),
+«στο όνομα του», a person's travel, the Region's local official (Έπαρχος),
+identity numbers and e-mail addresses, lawyers, sole proprietorships, award
+contracts (their contractors include sole traders), applications for
+annulment and similar filings, fishing licences, and a business's investment
+plan. A scan of every kept subject for common Greek first names then found
+only place and saint names. The owner decided to delete what the rules now
+call personal rather than keep it under the append-only rule: `tinos
+fulltext-purge --apply` deleted 38 decision records and the 21 stored search
+pages holding them whole, after the affected years were searched again so
+that their pages are stored redacted. Each deletion is a line in
+`manifests/ingest_log.jsonl` (`source: privacy-deletion`: path, SHA-256,
+ADAs, never a subject). The command refuses to delete a page without a later
+capture of it and anything outside the full-text store; it is the store's
+only exception to append-only.
 
 ## Principles we are working from, pending decisions
 

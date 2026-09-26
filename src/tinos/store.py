@@ -122,6 +122,23 @@ class RawStore:
         self._write_new(path, data)
         return StoreResult("new", path, digest)
 
+    # -- the one exception to append-only -----------------------------------
+
+    def purge_fulltext(self, path: Path) -> str:
+        """Delete one stored full-text file (a decision record or a search page); return its SHA-256.
+
+        The only deletion the store allows, decided by the project owner on 2026-09-26 (PRIVACY.md
+        Q7): full-text records found, after they were stored, to be about a person. Anything outside
+        ``diavgeia/fulltext`` is refused.
+        """
+        base = (self.raw_dir / "diavgeia" / "fulltext").resolve()
+        target = path.resolve()
+        if base not in target.parents or not target.is_file():
+            raise ValueError(f"refusing to delete {path}: not a stored full-text file")
+        digest = sha256_hex(target.read_bytes())
+        target.unlink()
+        return digest
+
     # -- diavgeia layout ---------------------------------------------------
 
     def diavgeia_act_path(self, org_uid: str, ada: str) -> Path:

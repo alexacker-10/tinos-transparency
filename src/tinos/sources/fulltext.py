@@ -52,7 +52,9 @@ Guard, raised as :class:`GuardViolation`:
 
 Privacy (PRIVACY.md Q7). A search for ΤΗΝΟΥ also finds acts about private
 people: citizenship grants, appointments and transfers, detainee transport,
-day-care vouchers naming their owners. Pages are stored *redacted*
+day-care vouchers naming their owners. A search for a Tinos body's own ΑΦΜ is
+*anchored*: every hit is about that body, and is kept unless it is about a
+person. Pages are stored *redacted*
 (:func:`redact_page`): a record outside the whitelist (:func:`whitelist_reason`)
 keeps only the fields the guard checks (ADA, issuer and co-issuers, issue
 date, status); its subject, text snippet and everything else are dropped
@@ -263,10 +265,25 @@ PERSONAL_RE = re.compile("|".join([
     r"ΑΠΟΣΠΑΣ", r"ΑΠΟΛΥΣ", r"ΛΥΣΗ ΣΥΜΒΑΣΗΣ", r"ΠΕΙΘΑΡΧ",        # appointment, transfer, dismissal
     _word(r"ΘΕΣ(?:Η|ΗΣ|ΕΙΣ|ΕΩΝ)"),                              # posts to fill
     _word(r"ΥΠΟΛΟΓ(?:ΟΣ|ΟΥ|Ο|ΟΙ|ΩΝ|ΟΥΣ)"),                       # imprest-account holders (not ΥΠΟΛΟΓΙΣΜΟΣ)
-    r"ΣΥΓΚΡΟΤΗΣ", r"ΣΥΝΕΡΓΕΙ", r"ΑΝΤΙΔΗΜΑΡΧ",                   # committees, election teams, office holders
+    r"ΣΥΓΚΡΟΤΗΣ", r"ΣΥΝΕΡΓΕΙ", r"ΑΝΤΙΔΗΜΑΡΧ", r"ΑΝΤΙΠΕΡΙΦΕΡΕΙΑΡΧ",  # committees, election teams, office holders
     r"ΚΡΑΤΟΥΜΕΝ", r"ΑΛΛΟΔΑΠ", r"ΔΩΡΕΑ",                          # detainees, donors
     r"ΕΝΑΡΜΟΝΙΣ",                                               # day-care vouchers: private structures and owners
     r"ΕΚΤΟΣ ΕΔΡΑΣ", r"ΠΡΟΙΣΤΑΜΕΝ",                              # staff travel; heads of unit
+    # one employee or official by name, not staff in general («υπαλλήλων» stays): expenses, travel,
+    # payments «στο όνομα του», the Region's local official (Έπαρχος; «Επαρχιακή Οδός» is a road)
+    _word(r"ΥΠΑΛΛΗΛ(?:ΟΣ|ΟΥ|Ο)"), r"ΣΤΟ ΟΝΟΜΑ Τ(?:ΟΥ|ΗΣ)", r"ΜΕΤΑΚΙΝΗΣΗΣ? Τ(?:ΟΥ|ΗΣ) ",
+    _word(r"ΕΠΑΡΧ(?:ΟΣ|ΟΥ|Ο|ΟΙ|ΩΝ)"),
+    _word(r"ΑΜΚΑ"), r"Α\.Δ\.Τ\.", r"@", r"ΔΙΚΗΓΟΡ",                  # identity numbers, e-mail, lawyers
+    r"ΕΠΕΝΔΥΤΙΚ\w* ΣΧΕΔΙ",                                     # a business's investment plan (a sole trader)
+    r"(?:^|(?<=[\s,(]))(?:Κ|ΚΚ|Κ\.Κ)\. [Α-Ω]{3,}",              # «..., κ. Ιωάννη ...» (not «ΚΕ.Δ.Α.Κ. για»)
+    # who is named in a contract or a case: award contracts (sole traders among the contractors),
+    # sole proprietorships, litigants, fishermen's licences
+    r"ΣΥΜΒΑΣ\w* ΑΝΑΘΕΣΗΣ", r"ΑΝΑΘΕΣΗ ΣΤ(?:ΗΝ|ΟΝ|Ο|Η) ", r"ΑΤΟΜΙΚ\w* ΕΠΙΧΕΙΡΗΣ",
+    r"ΑΙΤΗΣ\w* (?:ΑΚΥΡΩΣΗΣ|ΑΝΑΣΤΟΛΗΣ|ΑΝΑΙΡΕΣΗΣ)", r"ΚΑΤΑ ΤΗΣ ΠΡΟΣΒΑΛΛΟΜΕΝΗΣ", r"ΔΙΚΑΙΩΜΑΤΟΣ ΠΑΡΕΜΒΑΣΗΣ",
+    r"ΑΔΕΙ\w* ΑΛΙΕΙΑΣ", r"ΑΛΙΕΥΤΙΚ\w* (?:ΕΡΓΑΛΕΙ|ΣΚΑΦ)",        # not «αλιευτικό καταφύγιο», a works project
+    # designating a person: a supervisor, representative, member, officer (not «Καθορισμός», not posts)
+    _word(r"ΟΡΙΣΜΟΣ|ΟΡΙΣΜΟΥ") + r" (?:ΤΟΥ |ΤΗΣ |ΤΩΝ )?(?:ΕΠΟΠΤ|ΕΚΠΡΟΣΩΠ|ΜΕΛ[ΩΟΗ]|ΥΠΕΥΘΥΝ|ΑΝΑΠΛΗΡΩ|ΓΡΑΜΜΑΤΕ|ΠΡΟΕΔΡ|"
+    r"ΧΕΙΡΙΣΤ|ΣΥΝΤΟΝΙΣΤ|ΕΛΕΓΚΤ|ΔΙΑΧΕΙΡΙΣΤ|ΕΠΙΒΛΕΠ|ΑΞΙΟΛΟΓΗΤ|ΥΠΑΛΛΗΛ|ΥΠΟΛΟΓ)",
     # a named person: «του κ. Ονόματος», «της κας ...», «των κ.κ. ...»
     _word(r"(?:ΤΟΥ|ΤΗΣ|ΤΩΝ|ΤΟΝ|ΤΗΝ|ΤΟΥΣ|ΤΙΣ|ΣΤΟΝ|ΣΤΗΝ|ΣΤΟΥΣ|ΣΤΙΣ) (?:Κ\.|Κ\.Κ\.|ΚΟΥ|ΚΑΣ|ΚΥΡΙΟΥ|ΚΥΡΙΑΣ)") + r" ?[Α-Ω]{2}",
 ]))
@@ -278,22 +295,32 @@ GRANT_RE = re.compile("|".join([
 ]))
 # Β.1.1 from a ministry is public-investment financing and budget acts.
 GRANT_TYPES = frozenset({"Β.1.1"})
+# A Tinos body named in the subject (entities.yaml in_scope): the Region's money to the municipality
+# is mostly in acts that name it without a grant word («Κατανομή ποσού ... για το έργο ... Δήμου
+# Τήνου», «Προγραμματική Σύμβαση ... Δήμου Τήνου»).
+TINOS_BODY_RE = re.compile("|".join([
+    r"ΔΗΜΟ[ΣΥ]? ΤΗΝΟΥ", r"ΛΙΜΕΝΙΚ\w* ΤΑΜΕΙ\w* ΤΗΝΟΥ", r"ΚΩΣΤΑ ΤΣΟΚΛΗ", r"ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ",
+    r"ΑΓΙΑΣ ΤΡΙΑΔΟΣ ΓΥΡΛΑΣ", r"ΣΦΑΓΕΙΟΥ ΕΛΑΙΟΤΡΙΒΕΙΟΥ",
+]))
 
 
-def whitelist_reason(rec: dict[str, Any]) -> str | None:
+def whitelist_reason(rec: dict[str, Any], anchored: bool = False) -> str | None:
     """None when the record is kept; otherwise ``'personal'`` or ``'not_a_grant'``.
 
     Kept: a subject about allocations, grants, financing or programme
-    inclusion (:data:`GRANT_RE`) or a Β.1.1 act, unless the subject is about
-    people (:data:`PERSONAL_RE`, checked first). Everything else found by a
-    search for ΤΗΝΟΥ at a ministry (its own police and fire stations' purchases,
-    traffic orders, circulars) is ``not_a_grant``. See PRIVACY.md Q7.
+    inclusion (:data:`GRANT_RE`), a Β.1.1 act, a subject naming a Tinos body
+    (:data:`TINOS_BODY_RE`), or any record found by a Tinos body's own ΑΦΜ
+    (``anchored``: the Region's payment orders are titled only «ΕΝΤΑΛΜΑ
+    ΠΛΗΡΩΜΗΣ»); never a subject about people (:data:`PERSONAL_RE`, checked
+    first). Everything else found by a search for ΤΗΝΟΥ (a ministry's own police
+    and fire stations' purchases, the Region's licences and its own contracts on
+    the island, circulars) is ``not_a_grant``. See PRIVACY.md Q7.
     """
     subject = fold(rec.get("subject"))
     if PERSONAL_RE.search(subject):
         return "personal"
     dtype = (rec.get("decisionType") or {}).get("uid")
-    if GRANT_RE.search(subject) or dtype in GRANT_TYPES:
+    if anchored or GRANT_RE.search(subject) or dtype in GRANT_TYPES or TINOS_BODY_RE.search(subject):
         return None
     return "not_a_grant"
 

@@ -158,6 +158,46 @@ class Whitelist(unittest.TestCase):
             with self.subTest(subject=subject[:40]):
                 self.assertEqual(whitelist_reason(rec(subject=subject, dtype="Β.1.1")), "personal")
 
+    def test_a_named_tinos_body_or_its_own_afm_keeps_a_record(self):
+        # the Region's money to Tinos: named without a grant word, or a payment order found by ΑΦΜ
+        for subject in ("Έγκριση πίστωσης 70.000,00 € σε βάρος του έργου «Αποπεράτωση Αθλητικού Γυμναστηρίου "
+                        "Δήμου Τήνου»", "ΠΡΟΓΡΑΜΜΑΤΙΚΗ ΣΥΜΒΑΣΗ μεταξύ του «ΔΗΜΟΥ ΤΗΝΟΥ» και της Περιφέρειας",
+                        "Έργα του Δημοτικού Λιμενικού Ταμείου Τήνου"):
+            with self.subTest(subject=subject[:40]):
+                self.assertIsNone(whitelist_reason(rec(subject=subject, dtype="Α.2", org="5011")))
+        payment = rec(subject="ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ", dtype="Β.2.2", org="5011")
+        self.assertEqual(whitelist_reason(payment), "not_a_grant")
+        self.assertIsNone(whitelist_reason(payment, anchored=True))
+        # the Tinos police station is not a Tinos body; people stay out whatever found them
+        self.assertEqual(whitelist_reason(rec(subject="Επισκευή οχήματος του Α.Τ. Τήνου", dtype="Β.1.3")), "not_a_grant")
+        for subject in ("Ορισμός επόπτη της σύμβασης του Δήμου Τήνου", "Μετακίνηση του Αντιπεριφερειάρχη στην Τήνο"):
+            with self.subTest(subject=subject[:40]):
+                self.assertEqual(whitelist_reason(rec(subject=subject, dtype="2.4.7.1"), anchored=True), "personal")
+        # designating positions, not people, is not personal
+        self.assertIsNone(whitelist_reason(rec(subject="Ορισμός Δευτερευόντων Διατακτών και Μεταβίβαση πιστώσεων",
+                                               dtype="Α.2")))
+
+    def test_one_named_person_is_personal_staff_in_general_is_not(self):
+        # found in the ministry's and the Region's stored decisions on 2026-09-26 (names replaced)
+        for subject in ("Δέσμευση πίστωσης 160,00€ για τα έξοδα διαμονής του Ονόματος Επωνύμου, υπαλλήλου του Τμήματος",
+                        "Έκδοση χρηματικού εντάλματος προπληρωμής στο όνομα του Ονόματος Επωνύμου",
+                        "ΔΕΣΜΕΥΣΗ ΠΙΣΤΩΣΗΣ ΓΙΑ ΤΗΝ ΜΕΤΑΚΙΝΗΣΗ ΤΟΥ ΕΠΑΡΧΟΥ ΤΗΝΟΥ ΕΠΩΝΥΜΟΥ ΟΝΟΜΑΤΟΣ ΣΕ ΡΟΔΟ",
+                        "Δαπάνη τηλεδιάσκεψης του Αναπληρωτή Υπουργού, κ. Ονόματος Επωνύμου",
+                        "Στοιχεία δικαιούχου, ΑΜΚΑ και e-mail x@ypes.gr",
+                        "Ανάθεση στην ατομική επιχείρηση «ΕΠΩΝΥΜΟΣ ΟΝΟΜΑ» της παροχής υπηρεσιών (πίστωση)",
+                        "ΤΡΟΠΟΠΟΙΗΣΗ ΣΥΜΒΑΣΗΣ ΑΝΑΘΕΣΗΣ ΜΕΤΑΦΟΡΑΣ ΜΑΘΗΤΩΝ ΔΗΜΟΥ ΤΗΝΟΥ ΜΕΤΑΞΥ ΤΗΣ ΠΝΑΙ ΚΑΙ ΤΟΥ ΕΠΩΝΥΜΟΥ",
+                        "Άσκηση αίτησης ακύρωσης των Επωνύμου κ.λπ. κατά της προσβαλλόμενης πράξης (πίστωση)",
+                        "Ανακατανομή αλιευτικών εργαλείων στην άδεια αλιείας σκάφους",
+                        "Χορήγηση της εγκεκριμένης επιχορήγησης του επενδυτικού σχεδίου της επιχείρησης"):
+            with self.subTest(subject=subject[:40]):
+                self.assertEqual(whitelist_reason(rec(subject=subject, dtype="Β.1.3"), anchored=True), "personal")
+        for subject in ("Επιχορήγηση Δήμων για την Ειδική Εκλογική Αποζημίωση στους υπαλλήλους των Δήμων",
+                        "Βελτίωση Επαρχιακής Οδού Κιόνια - Αγία Μαρίνα Δήμου Τήνου",
+                        "Χρηματοδότηση του αλιευτικού καταφυγίου Δήμου Τήνου",
+                        "επιχορήγηση στο ΚΕ.Δ.Α.Κ. για αντιμετώπιση λειτουργικών δαπανών"):
+            with self.subTest(subject=subject[:40]):
+                self.assertIsNone(whitelist_reason(rec(subject=subject, dtype="Α.2")))
+
     def test_kap_abbreviations_are_not_a_person(self):
         for subject in ("Κατανομή από τους Κ.Α.Π. του Δήμου", "Απόδοση εσόδων στους Δήμους της Χώρας (Κ.Α.Π.)"):
             with self.subTest(subject=subject):

@@ -1,5 +1,5 @@
 """``tinos`` command line: entities, doctor, backfill, fetch-doc, khmdhs-doctor,
-khmdhs-backfill, fulltext-doctor, fulltext-backfill, fulltext-status, status."""
+khmdhs-backfill, fulltext-doctor, fulltext-backfill, fulltext-purge, fulltext-status, status."""
 
 from __future__ import annotations
 
@@ -551,6 +551,8 @@ def fulltext_backfill(
         typer.echo(f"refusing: {unknown} not among the grantors in entities.yaml", err=True)
         raise typer.Exit(code=2)
     terms = term or ["ΤΗΝΟΥ"]
+    # A Tinos body's own ΑΦΜ as the term anchors every hit to it: kept unless about a person.
+    anchors = {e.afm for e in reg.in_scope if e.afm}
     d0, d1 = _parse_date(start), _parse_date(end)
     if d1 < d0:
         raise typer.BadParameter("--end is before --start")
@@ -603,7 +605,7 @@ def fulltext_backfill(
                         for page in pages:
                             keep, dropped = set(), Counter()
                             for rec in page.decisions:
-                                reason = whitelist_reason(rec)
+                                reason = whitelist_reason(rec, anchored=t in anchors)
                                 if reason is None:
                                     keep.add(rec["ada"])
                                 else:
@@ -639,6 +641,76 @@ def fulltext_backfill(
     typer.echo(f"done: hits={grand['hits']} kept={grand['kept']} dropped personal={grand['dropped_personal']} "
                f"not a grant={grand['dropped_not_a_grant']}  decisions new={grand['decision_new']} "
                f"changed={grand['decision_changed']} unchanged={grand['decision_unchanged']}")
+
+
+@app.command(name="fulltext-purge")
+def fulltext_purge(
+    apply: bool = typer.Option(False, "--apply", help="Delete and log. Without it, only list."),
+) -> None:
+    """Delete stored full-text records the whitelist now calls personal, with the pages holding them whole.
+
+    data/raw is append-only; this is its one exception, decided by the project owner on 2026-09-26
+    (PRIVACY.md Q7). A record kept whole under an earlier, looser whitelist and now judged to be
+    about a person is deleted, and so is every stored search page that holds it unredacted. Re-run
+    the years listed with ``fulltext-backfill`` first: a page is deleted only when a later capture
+    of the same page, holding the record redacted, is stored. One ingest-log line per deletion
+    (path, SHA-256, ADAs; never a subject).
+    """
+    import json
+    import re
+
+    from tinos.curated_grants import search_index
+    from tinos.sources.fulltext import whitelist_reason
+
+    st = _settings()
+    reg = load_registry(st.entities_file)
+    anchors = {e.afm for e in reg.in_scope if e.afm}
+    store = RawStore(st.raw_dir)
+    found, _ = search_index(st.raw_dir)
+    base = st.raw_dir / "diavgeia" / "fulltext"
+    personal: dict[str, list[Path]] = {}
+    for path in sorted((base / "decisions").glob("*/*.json")):
+        rec = json.loads(path.read_bytes())
+        if whitelist_reason(rec, anchored=bool(anchors & set(found.get(rec["ada"], [])))) == "personal":
+            personal.setdefault(rec["ada"], []).append(path)
+    page_re = re.compile(r"(\d{4}-\d{2}-\d{2}_\d{4}-\d{2}-\d{2}_p\d{3})_[0-9a-f]{12}\.json")
+    pages: dict[Path, list[str]] = {}
+    captures: Counter[tuple[str, str, str]] = Counter()
+    for page in sorted((base / "search").glob("*/*/*.json")):
+        m = page_re.fullmatch(page.name)
+        slot = (page.parent.parent.name, page.parent.name, m.group(1) if m else page.name)
+        captures[slot] += 1
+        whole = [r.get("ada") for r in json.loads(page.read_bytes()).get("decisions") or []
+                 if r.get("ada") in personal and not r.get("redacted")]
+        if whole:
+            pages[page] = whole
+    doomed = Counter((p.parent.parent.name, p.parent.name, page_re.fullmatch(p.name).group(1)) for p in pages)
+    orphans = sorted(slot for slot, n in doomed.items() if captures[slot] - n < 1)
+    typer.echo(f"records about a person: {len(personal)} ({sum(len(v) for v in personal.values())} files); "
+               f"pages holding them whole: {len(pages)}")
+    if orphans:
+        years = sorted({(i, t, w[:4]) for i, t, w in orphans})
+        typer.echo("no later capture yet for these pages; re-run first:", err=True)
+        for i, t, y in years:
+            typer.echo(f"  tinos fulltext-backfill --issuer {i} --term {t} --start {y}-01-01 --end {y}-12-31", err=True)
+        raise typer.Exit(code=2 if apply else 0)
+    if not apply:
+        typer.echo("dry run: nothing deleted (--apply to delete)")
+        return
+    log = IngestLog(st.ingest_log)
+    run_id = utc_now_iso()
+    for ada, paths in sorted(personal.items()):
+        for path in paths:
+            digest = store.purge_fulltext(path)
+            log.append({"source": "privacy-deletion", "run": run_id, "kind": "decision", "ada": ada,
+                        "path": str(path.relative_to(st.root)), "sha256": digest,
+                        "reason": "PRIVACY.md Q7: about a person; owner's decision 2026-09-26"})
+    for page, adas in sorted(pages.items()):
+        digest = store.purge_fulltext(page)
+        log.append({"source": "privacy-deletion", "run": run_id, "kind": "page", "adas": sorted(adas),
+                    "path": str(page.relative_to(st.root)), "sha256": digest,
+                    "reason": "PRIVACY.md Q7: holds records about a person unredacted; a later capture holds them redacted"})
+    typer.echo(f"deleted {sum(len(v) for v in personal.values())} decision files and {len(pages)} pages; logged")
 
 
 @app.command(name="fulltext-status")
