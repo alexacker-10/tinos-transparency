@@ -599,21 +599,41 @@ over published, non-suspect, non-payroll `payment` rows.
 
 ## F8. Money given to Tinos: the Interior Ministry's allocations match the municipality's books to the cent where both are complete.
 
-**Claim.** From 2015 to 2025 the Interior Ministry allocated at least **26.49M €** to Δήμος Τήνου
+**Claim.** From 2015 to 2025 the Interior Ministry allocated at least **28.83M €** to Δήμος Τήνου
 in decisions whose PDFs we hold and whose amounts are validated against the documents themselves
-(1.51M in 2015 rising to 4.05M in 2025; 16.36M of it the monthly general ΚΑΠ). Where a ministry
+(1.75M in 2015 rising to 4.05M in 2025; 17.58M of it the monthly general ΚΑΠ). Where a ministry
 allocation and a line of the municipality's year-end revenue statement describe the same money,
-they agree to the cent in 38 line-years and differ by exactly 0.15% in 16 more. Most remaining
-gaps are decisions the full-text index cannot find by ΤΗΝΟΥ, or timing; a few are allocations booked
-under a line not identified here (listed below). None is established as money allocated and not
-received.
+they agree to the cent in 47 line-years and differ by exactly 0.15% in 18 more. The ΚΑΠ investment
+share («ΣΑΤΑ») agrees to the cent in all eleven years; school repairs and fire protection agree in
+every year, to the cent or by exactly 0.15%. What remains is timing, allocations booked under a line
+not identified here, lines other funders also feed, and three allocations not found (listed below).
+None is established as money allocated and not received.
 
-**How the decisions were found and read** (release `0.1.0+curated5`, curated 2026-09-26T08:28Z).
+**How the decisions were found and read** (release `0.1.0+curated6`, curated 2026-09-26T09:06Z).
 - `tinos fulltext-backfill` (contract above): the four Interior Ministry uids, ΤΗΝΟΥ 2015-2025 and,
   for 2015 (annexes not indexed), ΑΥΤΟΤΕΛΕΙΣ. 1,156 hits, 558 decisions kept, 598 dropped by the
   privacy whitelist. 447 PDFs fetched with the owner's approval (275.2 MB, 471 files with the
-  subsidiaries' statements below, 0 failures); the other 111 kept decisions are about single other
-  municipalities (2015 subject pass) or are not money, and were not fetched.
+  subsidiaries' statements below, 0 failures).
+- **The index hides some national tables** (added 2026-09-26). It holds some decisions by subject
+  only, with no document text, so ΤΗΝΟΥ cannot match them however large Tinos's row. A second pass
+  searched the three ministry uids for 2016-2025 for ΑΥΤΟΤΕΛΕΙΣ, the word of every ΚΑΠ subject
+  («Κεντρικοί Αυτοτελείς Πόροι»): 4,367 hits, every page and year through the guard, 1,887 kept by the
+  whitelist (1,609 new). A stored page highlights a hit's document text when the text is indexed; a
+  kept decision that ΤΗΝΟΥ did not find, whose text no page highlights, whose subject is a table over
+  the municipalities and whose family has a revenue line, is one the index hid: 22 of 2016-2025. With
+  the owner's approval their PDFs were fetched with the 11 monthly instalments this finding had listed
+  as missing, the 13 national tables of 2015 that the 2015 subject pass had kept but never fetched (the
+  earlier statement that the unfetched decisions were "about single other municipalities or not money"
+  was wrong for them) and the two port-authority documents of F7: 48 files, 26.0 MB, 0 failures.
+  31 of them give Tinos an amount (2,371,522.80 € in all), 14 are tables without Tinos.
+  `grant_decision.found_by` and `text_indexed` record, per decision, which term found it and whether
+  its text was indexed.
+- **Whitelist corrected** (PRIVACY.md Q7). «ΑΥΤΟΤΕΛ» also matched «Αυτοτελούς Τμήματος», a ministry
+  department: the 2015 subject pass had kept six acts about named employees' travel and one acting
+  head's designation. The rule now needs «Αυτοτελείς/Αυτοτελών Πόροι», and staff travel («εκτός
+  έδρας»), heads of unit and «του κ. ...» are personal. The curated layer applies the whitelist again,
+  so those seven and four more that are not grants never enter it; `data/raw` is append-only and
+  keeps them, unpublished.
 - `tinos.extract.grants.read_decision` reads each PDF (`pdftotext -layout`) three ways. **National
   tables** keyed by the municipalities' ΤΠΔ codes (Δήμος Τήνου is 58216): a column counts only if it
   sums to the document's own total line, within half a cent per row (the ministry rounds each row;
@@ -622,14 +642,24 @@ received.
   0 for a breakdown column) and net. **Transfer letters** state one amount in words and in figures
   («τριάντα τεσσάρων χιλιάδων εκατόν πενήντα επτά ευρώ & τεσσάρων λεπτών (34.157,04€)»); the words
   must equal the figures. **Stated amounts**: a one-row table equal to the amount the letter states.
-- Result (double postings aside): 389 decisions give Tinos an amount, 10 have a validated table
-  without Tinos (Tinos was not a recipient: citizen-service centres, school meals of music schools,
-  welfare benefits of 2015), 46 are not read: 42 approvals, invitations and other acts that send no
-  money, and 4 money decisions (a 2016 Θησέας transfer, two 2017 «Βοήθεια στο Σπίτι» payments with
-  no Tinos payee, the Tempi transfer below). Of the 368 money amounts, **365 are validated** (325 by
-  column totals, 22 by words and figures, 18 by stated amounts). Three are not: two 2016 «Βοήθεια στο
-  Σπίτι» tables whose rows fall short of their totals (by 53,477.84 and 23,389.82), and the 2025
-  ΝΑ255 request 91ΤΔ46ΜΤΛ6-ΒΥΦ. Only validated amounts enter the views.
+- Result (double postings aside): of 2,156 kept decisions (424 found by ΤΗΝΟΥ), 493 have their PDF.
+  421 give Tinos an amount, 24 have a validated table without Tinos (Tinos was not a recipient:
+  citizen-service centres, school meals of music schools, welfare benefits of 2015 and 2017, the
+  small-island and «δικαιούμενοι δήμοι» allocations of 2020-2022, municipal police pay, compensatory
+  benefits), 46 are not read: 42 approvals, invitations and other acts that send no money, and 4
+  money decisions (a 2016 Θησέας transfer, two 2017 «Βοήθεια στο Σπίτι» payments with no Tinos payee,
+  the Tempi transfer below). The 1,663 without a PDF are ΑΥΤΟΤΕΛΕΙΣ hits about single other
+  municipalities, withholdings for associations, and ministry acts that mention the central funds.
+  Of the 398 money amounts, **395 are validated** (355 by column totals, 22 by words and figures, 18
+  by stated amounts). Three are not: two 2016 «Βοήθεια στο Σπίτι» tables whose rows fall short of
+  their totals (by 53,477.84 and 23,389.82), and the 2025 ΝΑ255 request 91ΤΔ46ΜΤΛ6-ΒΥΦ. Only validated
+  amounts enter the views.
+- **An error in the earlier version: 29,700.00 counted twice.** Ω40Λ465ΦΘΕ-ΧΝΙ, the order moving the
+  2015 fire-protection ΚΑΠ credits, was read as investment-programme money on top of the allocation
+  it executes, 6ΖΒΘ465ΦΘΕ-Σ2Σ (same day, same 29,700.00). The school-repairs pair of 2015
+  (7ΛΞ9465ΦΘΕ-9Ι1 and its order 615Ζ465ΦΘΕ-ΑΡ0, 17,300.00 each) would have repeated it. Such orders
+  are now a family of their own, `kap_transfer_order`, listed and never reconciled. On the same
+  decisions the earlier 26.49M was 26.46M.
 - Hazards met on the way, each now handled: `∆` (U+2206) printed for Δ (the 2019 ΣΑΤΑ table lost
   15 municipalities to it), a row number 81 between 62 and 63 (ΤΑΠ 2024), «50.0000,00» (August
   2023), blank cells and «- €» for zero, ΤΠΔ codes split over two lines («5840» / «0»), names
@@ -651,34 +681,45 @@ less booked; other cells in € allocated minus booked):
 
 | Line (codes) | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| ΚΑΠ general (0611) | ≈ | ≈ | −215,615 | +29,760 | −29,664 | = | −540,246 | −460,700 | = | = | +25 |
-| ΚΑΠ investment «ΣΑΤΑ» (1311, 0612) | −245,610 | = | −81,870 | = | = | −122,805 | −61,402 | −122,805 | = | = | = |
-| ΚΑΠ schools' running costs (0614, 4311, 0616) | +49 | = | +27 | +3,670 | −3,654 | = | −21,810 | = | −22,700 | +71,490 | = |
-| School repairs (1312, 0615) | −17,274 | ≈ | = | ≈ | ≈ | = | = | = | = | = | = |
-| Fire protection (1214, 0614) | ≈ | ≈ | ≈ | = | = | = | −29,700 | ≈ | = | = | = |
+| ΚΑΠ general (0611) | ≈ | ≈ | +548 | +29,760 | −29,664 | = | +162 | +144 | = | = | +25 |
+| ΚΑΠ investment «ΣΑΤΑ» (1311, 0612) | = | = | = | = | = | = | = | = | = | = | = |
+| ΚΑΠ schools' running costs (0614, 4311, 0616) | +49 | = | +27 | +3,670 | −3,654 | = | = | = | = | +71,490 | = |
+| School repairs (1312, 0615) | ≈ | ≈ | = | ≈ | ≈ | = | = | = | = | = | = |
+| Fire protection (1214, 0614) | ≈ | ≈ | ≈ | = | = | = | = | ≈ | = | = | = |
 | Advertising fee, cat. Δ (0715) | −17,464 | ≈ | −13 | ≈ | ≈ | ≈ | = | = | = | = | = |
 | «Βοήθεια στο Σπίτι» (0624) | | | | | | | | | = | = | ≈ |
-| ΚΑΠ other purposes (0619) | −63,929 | −270,171 | −98,952 | +99,018 | +138 | +184,732 | −69,170 | −225,485 | = | −186,471 | = |
+| ΚΑΠ other purposes (0619) | −63,929 | −270,171 | ≈ | +99,018 | +138 | +184,732 | +34,200 | = | = | −186,471 | = |
 
-- **Whole allocations missing from the search, not money missing.** Every negative general-ΚΑΠ gap
-  is monthly instalments that the index holds by subject only (no document text), so ΤΗΝΟΥ cannot
-  match them; a subject search lists them: 6724465ΧΘ7-Α9Ξ, 6Σ3Ζ465ΧΘ7-Κ3Ν (2017, Η΄ and Θ΄);
-  ΨΔΒΦ46ΜΤΛ6-35Ζ, 6ΨΣ246ΜΤΛ6-ΚΛΡ, 68ΠΤ46ΜΤΛ6-Ε2Φ, 63ΕΕ46ΜΤΛ6-ΓΦΔ, ΨΥΖΣ46ΜΤΛ6-723 (2021);
-  9ΧΗΦ46ΜΤΛ6-0Λ4, 6ΧΣΥ46ΜΤΛ6-ΤΗ4, 6Τ7Κ46ΜΤΛ6-Σ6Ψ, Ψ0ΘΞ46ΜΤΛ6-1ΒΧ (2022). Their PDFs are not fetched
-  (a later request). The ΣΑΤΑ gaps are whole quarters of 61,402.50 (81,870.00 in 2017), fire 2021
-  and the schools' ΚΑΠ 2021 and 2023 one decision each; the index gaps are the same kind.
+- **The index's gaps are closed.** Every negative general-ΚΑΠ, ΣΑΤΑ, fire and schools cell of the
+  earlier version of this table was a decision the index held by subject only; each is now read and
+  each closed its cell exactly. General ΚΑΠ: 6724465ΧΘ7-Α9Ξ, 6Σ3Ζ465ΧΘ7-Κ3Ν (2017, Η΄ and Θ΄, 108,081.58
+  each); ΨΔΒΦ46ΜΤΛ6-35Ζ, 6ΨΣ246ΜΤΛ6-ΚΛΡ, 68ΠΤ46ΜΤΛ6-Ε2Φ, 63ΕΕ46ΜΤΛ6-ΓΦΔ, ΨΥΖΣ46ΜΤΛ6-723 (2021,
+  108,081.58 each); 9ΧΗΦ46ΜΤΛ6-0Λ4, 6ΧΣΥ46ΜΤΛ6-ΤΗ4, 6Τ7Κ46ΜΤΛ6-Σ6Ψ, Ψ0ΘΞ46ΜΤΛ6-1ΒΧ (2022, 115,211.06
+  each). ΣΑΤΑ: the seven 2015 allocations (5 × 20,467.50 + 40,935.00 + 102,337.50 = 245,610.00, the
+  booked figure), 7Η9Σ465ΧΘ7-Π7Π (2017, 81,870.00), 628Γ46ΜΤΛ6-Τ5Κ (2020, 122,805.00), ΨΚΟΘ46ΜΤΛ6-Ζ6Ξ
+  (2021, 61,402.50), 6Υ7Ρ46ΜΤΛ6-ΒΗΝ and 6ΣΨ246ΜΤΛ6-8ΔΛ (2022, 61,402.50 each). Fire 2021 9Γ6Ξ46ΜΤΛ6-Χ2Ι
+  (29,700.00); schools 6ΨΡ746ΜΤΛ6-Ε9Ε (2021, 21,810.00) and 9ΕΠΜ46ΜΤΛ6-ΕΗ4 (2023, 22,700.00); school
+  repairs 2015 7ΛΞ9465ΦΘΕ-9Ι1 (17,300.00, booked 0.15% less). Desalination, part of 0619: 2017
+  69ΤΛ465ΧΘ7-9ΙΡ (99,250.00, the year now 0.15% short), 2021 6Γ9346ΜΤΛ6-2ΦΟ (103,370.00), 2022
+  ΨΕΖ946ΜΤΛ6-310 and ΨΣ8Π46ΜΤΛ6-Λ4Χ (100,215.00 + 125,270.00 = 225,485.00, exactly that year's gap).
+- **Residuals.** The general ΚΑΠ of 2021 was booked 162.12 short, 0.15% of one instalment of
+  108,081.58; 2017 (548.20), 2022 (144.40) and 2025 (24.99) are unexplained and under 0.05% of the line.
 - **Timing.** 2018 → 2019: the supplementary general ΚΑΠ of 28 December 2018 (29,762.12,
   7ΥΙ9465ΧΘ7-2ΚΨ) was booked in 2019. The 2019 figure is exact to the cent once that is known:
   1,391,762.69 = twelve instalments of 108,081.58 + 29,762.12 + the 2019 supplementary 65,119.29
   less 0.15%. The schools' ΚΑΠ shifts 3,670/3,654 between the same two years.
-- **The 0.15%.** In 16 line-years the municipality booked exactly 0.15% less than allocated
+- **The 0.15%.** In 18 line-years the municipality booked exactly 0.15% less than allocated
   (29,700.00 → 29,655.45; 1,172,467.43 → 1,170,708.76), mostly 2015-2017 and in single lines later.
   The ministry's tables show no such withholding for Tinos, so it is taken after the allocation;
   which charge it is, the documents read here do not say.
 - **Booked elsewhere.** The schools' ΚΑΠ in 2024 (118,730) appears in 4311 only for 47,240; school
   cleaners' pay (2020-2022) and the COVID and «Βοήθεια στο Σπίτι» 2016 allocations have no line of
   their own in those years' statements; 0619 («ΚΑΠ για λοιπούς σκοπούς») holds more than the
-  desalination, road-waste and stray-animal allocations in several years.
+  desalination, road-waste and stray-animal allocations in 2015, 2016 and 2024, and less in 2018,
+  2020 and 2021 (booked elsewhere or the next year).
+- **Not found.** The advertising fee of 2015 (17,463.76 booked), 2015's welfare line (4,695.53;
+  five national welfare tables of 2015 are read and none has a Tinos row), and whatever 0619 held
+  beyond the identified allocations in 2015, 2016 and 2024.
 - **Not comparable one to one.** The property levy ΤΑΠ is mostly paid through electricity bills;
   the ministry's allocation is 13-15% of line 0441 every year, by construction. Investment
   programmes (1314, 1315, 1322) and state grants (1211, 1215, 1219) also receive money from other

@@ -123,10 +123,17 @@ class Classification(unittest.TestCase):
                 ("4059η κατανομή χρηματοδότησης ΣΑΕ 055 έτους 2023, Δήμου Τήνου.", "pde_financing"),
                 ("Χρηματοδότηση του Δήμου Τήνου, Ν. Κυκλάδων για αντιμετώπιση προβλημάτων λειψυδρίας (ΣΑΕ 055).",
                  "pde_approval"),
-                ("Επιχορήγηση των Περιφερειών της χώρας για την Ειδική Εκλογική Αποζημίωση", "to_regions")):
+                ("Επιχορήγηση των Περιφερειών της χώρας για την Ειδική Εκλογική Αποζημίωση", "to_regions"),
+                # the order moving an allocation's credits, issued with it: the same money again
+                ("Εντολή μεταφοράς πιστώσεων από τους Κεντρικούς Αυτοτελείς Πόρους έτους 2015 των Δήμων, για "
+                 "επισκευή και συντήρηση σχολικών κτιρίων, (ΣΑΤΑ).", "kap_transfer_order"),
+                ("Εντολή μεταφοράς πιστώσεων Κεντρικών Αυτοτελών Πόρων 2015 (ΣΑΤΑ) στους Δήμους για κάλυψη δράσεων "
+                 "πυροπροστασίας", "kap_transfer_order"),
+                ("Εντολή μεταφοράς πιστώσεων για τη χρηματοδότηση έργων Προγράμματος «ΘΗΣΕΑΣ».", "pde_financing")):
             with self.subTest(subject=subject[:50]):
                 self.assertEqual(family_of(subject), family)
         self.assertIsNone(CATEGORY_OF_FAMILY["pde_approval"])  # an approval is not money sent
+        self.assertIsNone(CATEGORY_OF_FAMILY["kap_transfer_order"])
 
     def test_revenue_lines_are_matched_by_name_across_chart_changes(self):
         self.assertEqual(revenue_category("1311", "ΚΑΠ επενδυτικών δαπανών των δήμων"), "kap_investment")

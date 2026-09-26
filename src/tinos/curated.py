@@ -144,8 +144,9 @@ import pyarrow.parquet as pq
 from tinos import __version__
 from tinos.config import Settings, load_registry
 
-CURATED_SCHEMA_VERSION = 5  # 2: budget_line; 3: procurement, procurement_party; 4: budget_line.description;
-#                              5: grant_decision, grant_line, budget_line.grant_category
+CURATED_SCHEMA_VERSION = 6  # 2: budget_line; 3: procurement, procurement_party; 4: budget_line.description;
+#                              5: grant_decision, grant_line, budget_line.grant_category;
+#                              6: grant_decision.found_by, text_indexed
 PIPELINE_VERSION = f"{__version__}+curated{CURATED_SCHEMA_VERSION}"
 ATHENS = ZoneInfo("Europe/Athens")
 UTC = timezone.utc
@@ -832,6 +833,7 @@ SCHEMAS: dict[str, pa.Schema] = {
         pa.field("date", pa.date32()), pa.field("year", pa.int32()), pa.field("budget_year", pa.int32()),
         pa.field("decision_type", S()), pa.field("status", S()), pa.field("subject", S()), pa.field("family", S()),
         pa.field("category", S()), pa.field("protocol_number", S()), pa.field("submission_ts", S()),
+        pa.field("found_by", L(S())), pa.field("text_indexed", pa.bool_()),
         pa.field("read_status", S()), pa.field("n_amounts", pa.int32()),
         pa.field("n_validated", pa.int32()), pa.field("duplicate_of", S()), pa.field("pdf_sha256", S()),
         pa.field("source_ada", S()), pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),

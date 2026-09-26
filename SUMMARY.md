@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-26T08:34:09+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated5`, curated at 2026-09-26T08:33:05+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-26T09:13:12+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated6`, curated at 2026-09-26T09:06:43+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
@@ -57,9 +57,9 @@ Status: PUBLISHED 76,564 · REVOKED 191 · PENDING_REVOCATION 30.
 | 2014 | 2,798 | 759 | 1.56M | 1.38M | 0.02M | 0.12M | 0.04M | 104 | 0.01M | 75 | 1.75M | 0.00M | 589 | 0.92M |
 | 2015 | 4,002 | 1,367 | 4.24M | 3.37M | 0.26M | 0.32M | 0.30M | 422 | 0.01M | 58 | 4.69M |  | 618 | 2.42M |
 | 2016 | 4,785 | 2,077 | 4.97M | 2.96M | 0.90M | 0.82M | 0.29M | 608 | 0.02M | 77 | 0.07M |  | 655 | 3.19M |
-| 2017 | 6,593 | 2,296 | 6.06M | 3.95M | 1.31M | 0.61M | 0.35M | 717 | 0.01M | 978 | 2.23M | 3.39M | 711 | 3.88M |
+| 2017 | 6,593 | 2,295 | 5.94M | 3.95M | 1.19M | 0.61M | 0.35M | 717 | 0.01M | 978 | 2.23M | 3.39M | 711 | 3.88M |
 | 2018 | 7,151 | 2,153 | 5.38M | 3.64M | 1.04M | 0.35M | 0.35M | 713 | 0.02M | 1,195 | 5.73M | 1.74M | 704 | 3.42M |
-| 2019 | 6,780 | 2,053 | 4.73M | 2.89M | 1.12M | 0.32M | 0.39M | 654 | 0.01M | 1,202 | 7.79M | 4.60M | 669 | 3.08M |
+| 2019 | 6,780 | 2,052 | 4.67M | 2.83M | 1.12M | 0.32M | 0.39M | 654 | 0.01M | 1,202 | 7.79M | 4.60M | 669 | 3.08M |
 | 2020 | 7,246 | 1,928 | 3.80M | 1.87M | 1.11M | 0.53M | 0.29M | 892 |  | 1,232 | 16.32M | 5.03M | 716 | 3.13M |
 | 2021 | 6,634 | 2,043 | 4.41M | 2.36M | 1.34M | 0.40M | 0.33M | 773 | 0.01M | 1,240 | 20.20M | 5.31M | 392 | 1.00M |
 | 2022 | 5,783 | 1,743 | 4.66M | 2.88M | 1.34M | 0.38M | 0.21M | 747 | 0.00M | 1,004 | 16.51M | 5.71M | 190 | 0.77M |
@@ -96,8 +96,8 @@ Third-party payments are every Β.2.2 sponsor line with a counterparty, split by
 
 | Class | Lines | Acts | € |
 |---|---:|---:|---:|
-| supplier | 15,360 | 14,228 | 38,547,015.04 |
-| remittance | 6,210 | 5,494 | 13,253,511.76 |
+| supplier | 15,359 | 14,227 | 38,488,215.04 |
+| remittance | 6,209 | 5,493 | 13,138,187.76 |
 | internal_transfer | 566 | 480 | 4,655,141.62 |
 | other_public_body | 197 | 151 | 3,507,768.40 |
 | payroll | 8,918 | 8,404 | 2,177,766.94 |
@@ -134,7 +134,7 @@ Diavgeia alone suggests the municipality's suppliers fell from about 200 to unde
 
 Counterparty registry: 1,323 distinct ΑΦΜ, 289 flagged for review (non-standard ΑΦΜ format or materially different name spellings under one ΑΦΜ). Resolution is exact-ΑΦΜ only; name variants are collected, never merged.
 
-Top 15 counterparties by supplier-class euros received, all entities, all years (published, non-suspect). Natural persons, sole traders included, are not ranked: a masked row would still give one person's all-years total, and the ADA printed beside it names them at source. Together, 624 natural persons received 9,072,922.26 € (23.5% of supplier-class euros) in 5,637 payments (see PRIVACY.md).
+Top 15 counterparties by supplier-class euros received, all entities, all years (published, non-suspect). Natural persons, sole traders included, are not ranked: a masked row would still give one person's all-years total, and the ADA printed beside it names them at source. Together, 624 natural persons received 9,072,922.26 € (23.6% of supplier-class euros) in 5,637 payments (see PRIVACY.md).
 
 | ΑΦΜ | Name | Received € | Payments | First | Last | Entities | Largest payment |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -148,15 +148,15 @@ Top 15 counterparties by supplier-class euros received, all entities, all years 
 | 082025722 | ΑΦΟΙ ΝΙΚΟΛΑΟΥ ΣΤΕΡΓΙΩΤΗ ΟΕΕ | 533,668.78 | 75 | 2014-08-20 | 2026-09-14 | 5 | 6ΝΙΛΩΗ6-ΥΨ1 |
 | 091724924 | ΣΤΑΥΡΟΣ ΠΛΥΤΑΣ ΚΑΙ ΣΙΑ ΟΕ | 527,967.01 | 429 | 2014-07-29 | 2023-11-27 | 3 | 6Ι4ΚΩΗ6-84Υ |
 | 094387460 | ΑΝΔΡΙΑΝΗ ΠΑΓΑΝΕΛΗ ΕΜΠΟΡΙΚΕΣ ΟΙΚΟΔΟΜΙΚΕΣ ΚΑΤΑΣΚΕΥΑΣΤΙΚΕΣ ΧΩΜΑΤΟΥΡΓΙΚΕΣ ΛΑΤΟΜΙΚΕΣ ΕΠΙΧΕΙΡΗΣΕΙΣ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ | 421,607.80 | 123 | 2014-07-03 | 2022-08-29 | 5 | 7ΜΗΤΩΗ6-Δ7Χ |
-| 094019245 | Ο.Τ.Ε. Α.Ε. | 393,993.64 | 830 | 2014-07-22 | 2026-09-14 | 7 | Ψ07ΘΟΡ07-ΡΙ8 |
 | 998535328 | KAFSIS ΜΟΝΟΠΡΟΣΩΠΗ ΒΙΟΜΗΧΑΝΙΚΗ & ΕΝΕΡΓΕΙΑΚΗ Α.Ε | 377,649.55 | 75 | 2017-10-19 | 2026-09-16 | 2 | Ψ1ΑΙΩΗ6-2ΝΑ |
 | 800301880 | ΔΗΜΗΤΡΑ ΖΑΡΠΑ ΜΑΡΚΟΣ ΖΑΡΠΑΣ ΟΕ | 345,213.66 | 65 | 2014-07-01 | 2026-09-15 | 5 | Ω3ΨΧΩΗ6-ΕΞ4 |
+| 094019245 | Ο.Τ.Ε. Α.Ε. | 335,193.64 | 829 | 2014-07-22 | 2026-09-14 | 7 | 9Ψ5ΟΩΗ6-51Β |
 | 099793475 | ΕΙΔΙΚΟΣ ΛΟΓΑΡΙΑΣΜΟΣ ΑΞΙΟΠΟΙΗΣΗΣ ΚΟΝΔΥΛΙΩΝ ΤΟΥ ΕΜΠ | 325,141.76 | 5 | 2015-03-12 | 2023-12-12 | 1 | Ω4Ε7ΩΗ6-ΔΕΑ |
 | 099003039 | ΔΟΜΙΚΗ ΕΦΑΡΜΟΓΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ | 322,609.10 | 8 | 2014-12-23 | 2016-02-29 | 1 | 6ΓΜ2ΩΗ6-ΣΨ2 |
 
 ## Data quality flags
 
-Suspect payment lines (above 10,000,000 € = `threshold`, or checked against the decision's PDF and found wrong = `document_mismatch`, see `data/manual/amount_review.yaml`; kept in `payment`, excluded from every view and total): 13
+Suspect payment lines (above 10,000,000 € = `threshold`, or checked against the decision's PDF and found wrong = `document_mismatch`, see `data/manual/amount_review.yaml`; kept in `payment`, excluded from every view and total): 15
 
 | Entity | Date | ADA | Amount € | Reason | Counterparty | Subject |
 |---|---|---|---:|---:|---:|---:|
@@ -172,9 +172,11 @@ Suspect payment lines (above 10,000,000 € = `threshold`, or checked against th
 | 6296 | 2017-07-20 | 71ΠΔΩΗ6-ΘΑΠ | 166,712.00 | document_mismatch | ΒΙΔΑΛΗΣ ΜΠΕΤΟΝ ΑΝΩΝΥΜΗ ΒΙΟΜΗΧΑΝΙΚΗ ΚΑΙ Ε | Προμήθεια σκυροδέματος Δ.Ε. Πανόρμου |
 | 6296 | 2022-12-22 | 61ΘΚΩΗ6-4ΤΛ | 154,224.42 | duplicate_posting | ΣΜΙΛΗ ΑΝΩΝΥΜΗ ΤΕΧΝΙΚΗ ΕΤΑΙΡΙΑ | ΕΣΠΑ Εξωτερικά δίκτυα ύδρευσης Καλλονής,Υστερνίων και Πανόρμου Δήμου |
 | 6296 | 2015-11-27 | 6ΩΚΤΩΗ6-9ΛΦ | 151,960.00 | document_mismatch | φυσικό πρόσωπο | ΕΡΓΑΣΙΕΣ ΕΠΙΣΚΕΥΗΣ ΣΕ ΑΠΟΡΡΙΜΜΑΤΟΦΟΡΟ ΟΧΗΜΑ ΥΠΗΡΕΣΙΑΣ ΚΑΘΑΡΙΟΤΗΤΑΣ ΜΕ |
+| 50256 | 2017-06-29 | Ψ4ΡΕΟΡ07-ΩΣΝ | 115,324.00 | document_mismatch | ΙΚΑ | ΧΡΗΜΑΤΙΚΟ ΕΝΤΑΛΜΑ ΚΡΑΤΗΣΕΩΝ ΧΘ 49/2017 |
 | 6296 | 2015-11-26 | 76Λ6ΩΗ6-1ΝΓ | 84,680.00 | document_mismatch | φυσικό πρόσωπο | ΕΡΓΑΣΙΕΣ ΕΠΙΣΚΕΥΗΣ ΣΕ ΑΠΟΡΡΙΜΜΑΤΟΦΟΡΟ ΟΧΗΜΑ ΥΠΗΡΕΣΙΑΣ ΚΑΘΑΡΙΟΤΗΤΑΣ ΜΕ |
+| 50256 | 2019-12-12 | Ψ07ΘΟΡ07-ΡΙ8 | 58,800.00 | document_mismatch | ΟΡΓΑΝΙΣΜΟΣ ΤΗΛΕΠΙΚΟΙΝΩΝΙΩΝ ΤΗΣ ΕΛΛΑΔΟΣ Α | ΤΗΛΕΦΩΝΙΚΑ ΤΕΛΗ |
 
-Largest single supplier payment lines in the release. Large one-offs explain most year-to-year swings and should be read before any trend is. Each row is one published decision, checkable at source by its ADA, but a published amount is not always right: the municipality's own year-end statements exposed nine lines entered x100 (FINDINGS.md F7), and bodies whose statements are not parsed yet are unchecked. A natural person appears as «φυσικό πρόσωπο»:
+Largest single supplier payment lines in the release. Large one-offs explain most year-to-year swings and should be read before any trend is. Each row is one published decision, checkable at source by its ADA, but a published amount is not always right: the year-end statements exposed thirteen lines entered x100, nine of the municipality's and four of the port authority's (FINDINGS.md F7), and bodies whose statements are not parsed yet are unchecked. A natural person appears as «φυσικό πρόσωπο»:
 
 | Entity | Date | ADA | Amount € | Counterparty | ΚΑΕ | Subject |
 |---|---|---|---:|---:|---:|---:|
@@ -235,19 +237,19 @@ The year-end execution statement is the municipality's own account of what it pa
 
 ## Money given to Tinos by the Interior Ministry, 2015-2025
 
-Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (and, for 2015, whose annexes are not indexed, for «ΑΥΤΟΤΕΛΕΙΣ»): 558 decisions kept, 391 with an amount for Δήμος Τήνου read from their PDF, 10 whose validated table shows Tinos was not a recipient. 365 of 368 amounts are validated against the document itself: the table's column sums its own total line, or the letter states the amount, or spells it in words. Only validated amounts are counted below, each once (two decisions posted twice are counted once). Year = the year the allocation is for.
+Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (424 decisions), and for «ΑΥΤΟΤΕΛΕΙΣ», the word in the title of every allocation from the central funds (ΚΑΠ), because the search index holds some national tables by title only: 53 decisions with an amount for Tinos were found that way alone. Of 2,156 decisions kept, 423 give Δήμος Τήνου an amount read from their PDF and 24 have a validated table without Tinos; most of the rest concern single other municipalities and were not fetched. 395 of 398 amounts are validated against the document itself: the table's column sums its own total line, or the letter states the amount, or spells it in words. Only validated amounts are counted below, each once (two decisions posted twice are counted once; an order moving an allocation's funds is not counted again). Year = the year the allocation is for.
 
 | Year | Decisions | ΚΑΠ general € | ΚΑΠ investment € | Schools € | Other targeted € | State grants € | Investment programmes € | Fees collected centrally € | Total € |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 2015 | 20 | 1,172,467.43 |  | 67,933.02 | 244,824.82 |  | 29,700.00 |  | 1,514,925.27 |
+| 2015 | 27 | 1,172,467.43 | 245,610.00 | 85,233.02 | 244,824.82 |  |  |  | 1,748,135.27 |
 | 2016 | 34 | 1,296,978.96 | 245,610.00 | 88,560.00 | 262,129.94 | 228,743.11 | 9,808.64 | 34,280.00 | 2,166,110.65 |
-| 2017 | 24 | 1,080,815.80 | 163,740.00 | 87,640.00 | 128,950.00 |  | 119,313.47 | 29,320.00 | 1,609,779.27 |
+| 2017 | 28 | 1,296,978.96 | 245,610.00 | 87,640.00 | 228,200.00 |  | 119,313.47 | 29,320.00 | 2,007,062.43 |
 | 2018 | 27 | 1,325,237.94 | 245,610.00 | 109,190.00 | 227,440.00 |  |  | 40,460.00 | 1,947,937.94 |
 | 2019 | 33 | 1,362,098.25 | 245,610.00 | 117,725.00 | 219,855.00 | 18,660.00 | 205,756.11 | 39,570.00 | 2,209,274.36 |
-| 2020 | 39 | 1,382,134.96 | 122,805.00 | 148,472.80 | 418,716.94 | 507,722.07 | 294,830.16 | 36,590.00 | 2,911,271.93 |
-| 2021 | 30 | 964,836.17 | 184,207.50 | 234,071.30 | 145,270.00 |  | 147,848.01 | 18,290.00 | 1,694,522.98 |
-| 2022 | 33 | 1,085,989.47 | 122,805.00 | 214,835.00 | 34,800.00 | 303,520.53 | 169,437.57 | 42,070.00 | 1,973,457.57 |
-| 2023 | 48 | 1,627,130.78 | 245,610.00 | 210,788.00 | 373,181.11 | 162,998.37 | 175,290.27 | 50,785.04 | 2,845,783.57 |
+| 2020 | 40 | 1,382,134.96 | 245,610.00 | 148,472.80 | 418,716.94 | 507,722.07 | 294,830.16 | 36,590.00 | 3,034,076.93 |
+| 2021 | 39 | 1,505,244.07 | 245,610.00 | 255,881.30 | 278,340.00 |  | 147,848.01 | 18,290.00 | 2,451,213.38 |
+| 2022 | 41 | 1,546,833.71 | 245,610.00 | 214,835.00 | 260,285.00 | 303,520.53 | 169,437.57 | 42,070.00 | 2,782,591.81 |
+| 2023 | 49 | 1,627,130.78 | 245,610.00 | 233,488.00 | 373,181.11 | 162,998.37 | 175,290.27 | 50,785.04 | 2,868,483.57 |
 | 2024 | 39 | 2,371,590.44 | 245,610.00 | 239,570.20 | 402,956.23 | 246,261.93 | 3,087.60 | 57,129.88 | 3,566,206.28 |
 | 2025 | 37 | 2,692,510.41 | 245,610.00 | 184,098.00 | 560,979.57 | 258,054.70 | 52,622.76 | 57,129.88 | 4,051,005.32 |
 
@@ -255,22 +257,22 @@ Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (and, f
 
 | Revenue line | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| ΚΑΠ, general needs (0611) | ≈ 0.15% | ≈ 0.15% | -215,615 | +29,760 | -29,664 | = | -540,246 | -460,700 | = | = | +25 |
-| ΚΑΠ, investment «ΣΑΤΑ» (1311, 0612 from 2023) | -245,610 | = | -81,870 | = | = | -122,805 | -61,402 | -122,805 | = | = | = |
-| ΚΑΠ, schools' running costs (0614, 4311, 0616) | +49 | = | +27 | +3,670 | -3,654 | = | -21,810 | = | -22,700 | +71,490 | = |
+| ΚΑΠ, general needs (0611) | ≈ 0.15% | ≈ 0.15% | +548 | +29,760 | -29,664 | = | +162 | +144 | = | = | +25 |
+| ΚΑΠ, investment «ΣΑΤΑ» (1311, 0612 from 2023) | = | = | = | = | = | = | = | = | = | = | = |
+| ΚΑΠ, schools' running costs (0614, 4311, 0616) | +49 | = | +27 | +3,670 | -3,654 | = | = | = | = | +71,490 | = |
 | ΚΑΠ, school rents (0612 to 2021) | -1,917 | ≈ 0.15% | ≈ 0.15% |  |  | = | +2 |  |  |  |  |
-| School repairs (1312, 0615 from 2023) | -17,274 | ≈ 0.15% | = | ≈ 0.15% | ≈ 0.15% | = | = | = | = | = | = |
-| Fire protection (1214, 0614 from 2023) | ≈ 0.15% | ≈ 0.15% | ≈ 0.15% | = | = | = | -29,700 | ≈ 0.15% | = | = | = |
+| School repairs (1312, 0615 from 2023) | ≈ 0.15% | ≈ 0.15% | = | ≈ 0.15% | ≈ 0.15% | = | = | = | = | = | = |
+| Fire protection (1214, 0614 from 2023) | ≈ 0.15% | ≈ 0.15% | ≈ 0.15% | = | = | = | = | ≈ 0.15% | = | = | = |
 | «Βοήθεια στο Σπίτι» (0624) |  | +17,305 |  |  |  |  |  |  | = | = | ≈ 0.15% |
 | Advertising fee, category Δ (0715) | -17,464 | ≈ 0.15% | -13 | ≈ 0.15% | ≈ 0.15% | ≈ 0.15% | = | = | = | = | = |
-| ΚΑΠ, other purposes (0619) | -63,929 | -270,171 | -98,952 | +99,018 | +138 | +184,732 | -69,170 | -225,485 | = | -186,471 | = |
+| ΚΑΠ, other purposes (0619) | -63,929 | -270,171 | ≈ 0.15% | +99,018 | +138 | +184,732 | +34,200 | = | = | -186,471 | = |
 | School cleaners' pay (0621 from 2023) |  |  |  |  |  | +32,960 | +126,300 | +76,860 | +14,028 | +10,800 | -45,744 |
 | State grants (1211, 1215, 1219) | -248,305 | +228,743 |  | -98,722 | = | +214,906 | -214,098 | -157,660 | -25,880 | -109,709 | -21,003 |
-| Investment programmes (1314, 1315, 1322) | -7,517 | -36,485 | +59,343 | -206,488 | -13,094 | = | -202,967 | -460,985 | -19,874 | -68,195 | -615,907 |
+| Investment programmes (1314, 1315, 1322) | -37,217 | -36,485 | +59,343 | -206,488 | -13,094 | = | -202,967 | -460,985 | -19,874 | -68,195 | -615,907 |
 | Property levy ΤΑΠ, the ministry's share (0441) | -111,627 | -120,192 | -111,005 | -109,865 | -108,798 | -114,518 | -152,541 | -147,055 | -170,220 | -172,113 | -178,403 |
 | Welfare benefits (0621 in 2015) | -4,696 |  |  |  |  |  |  |  |  |  |  |
 
-Where the two sources meet line for line they agree to the cent, or differ by exactly 0.15%: school repairs and fire protection in every year whose decision was found, the advertising fee in 2016 and 2018-2025, «Βοήθεια στο Σπίτι» 2023-2025, the general ΚΑΠ in 2015-2016, 2020 and 2023-2024 (2025 within 25 €). The general ΚΑΠ gaps of 2017, 2021 and 2022 are monthly instalments that the search index holds by subject only, so a search for ΤΗΝΟΥ cannot find them (11 decisions, FINDINGS.md F8). 2018 and 2019 are one supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy (ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 by construction; the investment-programme and state-grant lines also receive money from other ministries and the EU. Allocations and booked revenue are two views of the same transfers: compare them, never add them.
+Where the two sources meet line for line they agree to the cent, or differ by exactly 0.15%: the ΚΑΠ investment share in every year, school repairs and fire protection in every year, the advertising fee in 2016 and 2018-2025, «Βοήθεια στο Σπίτι» 2023-2025, the general ΚΑΠ in 2015-2016, 2020 and 2023-2024 (2017, 2021, 2022 and 2025 within 550 €). 2018 and 2019 are one supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy (ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 by construction; the investment-programme and state-grant lines also receive money from other ministries and the EU. Allocations and booked revenue are two views of the same transfers: compare them, never add them.
 
 ## How much of what the subsidiaries paid Diavgeia shows
 
@@ -283,9 +285,9 @@ Where the two sources meet line for line they agree to the cent, or differ by ex
 | 100032995 | ΜΟΥΣΕΙΟ ΚΩΣΤΑ ΤΣΟΚΛΗ | 2021 | 41,196.22 | 18,019.90 | 44% |
 | 100032995 | ΜΟΥΣΕΙΟ ΚΩΣΤΑ ΤΣΟΚΛΗ | 2023 | 27,055.90 | 12,771.13 | 47% |
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2016 | 781,953.36 | 714,047.27 | 91% |
-| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2017 | 704,435.52 | 735,956.65 | 104% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2017 | 704,435.52 | 620,632.65 | 88% |
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2018 | 809,191.15 | 733,370.57 | 91% |
-| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2019 | 1,052,585.55 | 1,058,776.26 | 101% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2019 | 1,052,585.55 | 999,976.26 | 95% |
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2020 | 993,651.29 | 970,015.66 | 98% |
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2021 | 837,314.93 | 818,295.92 | 98% |
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2022 | 920,472.12 | 203,521.20 | 22% |
@@ -301,7 +303,7 @@ Where the two sources meet line for line they agree to the cent, or differ by ex
 | 55049 | ΠΝΕΥΜΑΤΙΚΟ ΕΚΠΟΛΙΤΙΣΤΙΚΟ ΚΕΝΤΡΟ ΠΑΝΟΡΜΟΥ «ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ» | 2020 | 37,585.10 | 37,583.78 | 100% |
 | 55049 | ΠΝΕΥΜΑΤΙΚΟ ΕΚΠΟΛΙΤΙΣΤΙΚΟ ΚΕΝΤΡΟ ΠΑΝΟΡΜΟΥ «ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ» | 2023 | 83,978.07 | 15,942.08 | 19% |
 
-Only the December statements that parse to the cent are used, one per body and year where one was found. Every payment line with an amount counts, with or without a ΚΑΕ, so a share above 100% can also be a payment of the previous year's bills; the ΚΑΕ-by-ΚΑΕ check is `v_kae_reconciliation` (FINDINGS.md F7, where two port-authority lines stand out as probable x100 entries).
+Only the December statements that parse to the cent are used, one per body and year where one was found. Every payment line with an amount counts, with or without a ΚΑΕ, so a share above 100% can also be a payment of the previous year's bills; the ΚΑΕ-by-ΚΑΕ check is `v_kae_reconciliation` (FINDINGS.md F7: it exposed two port-authority lines entered x100, since verified against their documents and excluded).
 
 ## Method
 

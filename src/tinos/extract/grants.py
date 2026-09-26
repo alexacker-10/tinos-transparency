@@ -31,6 +31,10 @@ FAMILIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.compile(p)) 
     # of Municipalities for them (in kind).
     ("to_regions", r"ΕΠΙΧΟΡΗΓΗΣΗ ΤΩΝ ΠΕΡΙΦΕΡΕΙΩΝ|ΣΤΙΣ ΠΕΡΙΦΕΡΕΙΕΣ"),
     ("in_kind", r"ΚΕΝΤΡΙΚΗΣ ΕΝΩΣΗΣ ΔΗΜΩΝ"),
+    # The order moving an allocation's ΚΑΠ credits, issued with the allocation itself (2015: school
+    # repairs 615Ζ465ΦΘΕ-ΑΡ0 with 7ΛΞ9465ΦΘΕ-9Ι1, fire protection Ω40Λ465ΦΘΕ-ΧΝΙ with 6ΖΒΘ465ΦΘΕ-Σ2Σ,
+    # same day, same amounts): the same money again, listed, never reconciled.
+    ("kap_transfer_order", r"ΕΝΤΟΛΗ ΜΕΤΑΦΟΡΑΣ ΠΙΣΤΩΣΕΩΝ.*ΑΥΤΟΤΕΛ(?:ΕΙΣ|ΩΝ) ΠΟΡ"),
     # Approvals of financing (and their amendments), paid out later by transfer letters.
     ("pde_approval", r"^ΧΡΗΜΑΤΟΔΟΤΗΣΗ ΤΟΥ ΔΗΜΟΥ|ΑΠΟΦΑΣΗΣ? ΧΡΗΜΑΤΟΔΟΤΗΣΗΣ|ΑΠΟΦΑΣΗΣ ΕΠΙΧΟΡΗΓΗΣΗΣ|ΑΠΟΡΡΙΜΜΑΤΟΦΟΡ"),
     # Public-investment cash: ΣΑΕ/ΣΑΝΑ allocations and transfer orders, whatever the programme.
@@ -96,6 +100,7 @@ CATEGORY_OF_FAMILY: dict[str, str | None] = {
     "beer_tax": None,
     "shore_rents": None,
     "pde_approval": None,
+    "kap_transfer_order": None,
     "programme": None,
     "to_regions": None,
     "in_kind": None,

@@ -39,18 +39,23 @@ since 2019). Treat any payment total from Diavgeia alone, from 2019 on, as a flo
 The Interior Ministry sends the municipality most of its outside money: a monthly share of the
 central funds for municipalities (ΚΑΠ), a quarterly investment share, money for schools, fire
 protection, desalination and other set purposes, and occasional extra grants. We find these
-decisions by searching Diavgeia's full text for «ΤΗΝΟΥ», read the amount for Tinos from each
-decision's PDF, and count it only if the document confirms it: its table must add up to its own
-total, or the letter must state the amount, or spell it out in words to the same figure.
+decisions by searching Diavgeia's full text for «ΤΗΝΟΥ», and, because the search index holds some
+national tables by their title only, also for a word every such title carries («ΑΥΤΟΤΕΛΕΙΣ»). We read
+the amount for Tinos from each decision's PDF, and count it only if the document confirms it: its
+table must add up to its own total, or the letter must state the amount, or spell it out in words to
+the same figure.
 
-- **What we found.** At least 26.5 million euros from the ministry in 2015-2025, from 1.5 million
+- **What we found.** At least 28.8 million euros from the ministry in 2015-2025, from 1.7 million
   in 2015 to 4.1 million in 2025. Where the municipality's own year-end report has a line for the
-  same money, the two agree to the cent in most years. In some years the municipality booked
-  exactly 0.15% less than the ministry allocated; we do not know which charge that is.
-- **What we miss.** The search cannot find a decision whose text was never indexed. That happens:
-  before November 2015 only titles are searchable, and eleven monthly instalments of 2017, 2021 and
-  2022 are searchable by title only, so our totals for those years are too low. We list them; we
-  have not fetched them yet. «At least» means exactly that.
+  same money, the two agree to the cent in most years; the investment share agrees to the cent in
+  every year. In some years the municipality booked exactly 0.15% less than the ministry allocated;
+  we do not know which charge that is.
+- **What we miss.** A decision whose text was never indexed can only be found by its title.
+  Searching titles found 31 such decisions with money for Tinos that had not been read before
+  (2.37 million euros, eleven monthly instalments of 2017, 2021 and 2022 among them); they are now
+  counted. An allocation whose title uses neither word would still be missed. Three amounts the municipality booked have no decision yet (the 2015
+  advertising fee, a 2015 welfare amount, part of the «other purposes» line). «At least» means
+  exactly that.
 - **One ministry among several.** Money from other ministries, the Region of South Aegean and EU
   programmes reaches the same revenue lines, so for investment money and extra grants our figure is
   the Interior Ministry's share, not the whole. The property levy (ΤΑΠ) is mostly collected through

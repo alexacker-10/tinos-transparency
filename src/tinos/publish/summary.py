@@ -347,16 +347,23 @@ def write_summary(settings: Settings) -> Path:
                   FROM v_grant_year WHERE year BETWEEN 2015 AND 2025 GROUP BY 1 ORDER BY 1""")
     if grants:
         counts = dict(q("SELECT read_status, count(*) FROM grant_decision GROUP BY 1"))
+        named, hidden = q("""SELECT count(*) FILTER (WHERE list_contains(found_by, 'ΤΗΝΟΥ')),
+                                    count(*) FILTER (WHERE read_status = 'read' AND NOT text_indexed
+                                                     AND NOT list_contains(found_by, 'ΤΗΝΟΥ'))
+                             FROM grant_decision""")[0]
         n_lines = q("""SELECT count(*), count(*) FILTER (WHERE validation IS NOT NULL) FROM grant_line
                        WHERE category IS NOT NULL AND status = 'PUBLISHED' AND duplicate_of IS NULL""")[0]
         w("## Money given to Tinos by the Interior Ministry, 2015-2025")
         w("")
-        w(f"Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (and, for 2015, whose annexes are not "
-          f"indexed, for «ΑΥΤΟΤΕΛΕΙΣ»): {sum(counts.values()):,} decisions kept, {counts.get('read', 0):,} with an "
-          f"amount for Δήμος Τήνου read from their PDF, {counts.get('absent', 0):,} whose validated table shows Tinos "
-          f"was not a recipient. {n_lines[1]:,} of {n_lines[0]:,} amounts are validated against the document itself: "
-          "the table's column sums its own total line, or the letter states the amount, or spells it in words. "
-          "Only validated amounts are counted below, each once (two decisions posted twice are counted once). "
+        w(f"Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» ({named:,} decisions), and for "
+          "«ΑΥΤΟΤΕΛΕΙΣ», the word in the title of every allocation from the central funds (ΚΑΠ), because the search "
+          f"index holds some national tables by title only: {hidden:,} decisions with an amount for Tinos were found "
+          f"that way alone. Of {sum(counts.values()):,} decisions kept, {counts.get('read', 0):,} give Δήμος Τήνου an "
+          f"amount read from their PDF and {counts.get('absent', 0):,} have a validated table without Tinos; most of "
+          f"the rest concern single other municipalities and were not fetched. {n_lines[1]:,} of {n_lines[0]:,} "
+          "amounts are validated against the document itself: the table's column sums its own total line, or the "
+          "letter states the amount, or spells it in words. Only validated amounts are counted below, each once (two "
+          "decisions posted twice are counted once; an order moving an allocation's funds is not counted again). "
           "Year = the year the allocation is for.")
         w("")
         w(_table(["Year", "Decisions", "ΚΑΠ general €", "ΚΑΠ investment €", "Schools €", "Other targeted €",
@@ -403,11 +410,10 @@ def write_summary(settings: Settings) -> Path:
                  [[labels.get(cat, cat)] + [cells[cat].get(y, "") for y in years]
                   for cat in labels if cat in cells], 1))
         w("")
-        w("Where the two sources meet line for line they agree to the cent, or differ by exactly 0.15%: school "
-          "repairs and fire protection in every year whose decision was found, the advertising fee in 2016 and "
-          "2018-2025, «Βοήθεια στο Σπίτι» 2023-2025, the general ΚΑΠ in 2015-2016, 2020 and 2023-2024 (2025 within "
-          "25 €). The general ΚΑΠ gaps of 2017, 2021 and 2022 are monthly instalments that the search index holds by "
-          "subject only, so a search for ΤΗΝΟΥ cannot find them (11 decisions, FINDINGS.md F8). 2018 and 2019 are one "
+        w("Where the two sources meet line for line they agree to the cent, or differ by exactly 0.15%: the ΚΑΠ "
+          "investment share in every year, school repairs and fire protection in every year, the advertising fee in "
+          "2016 and 2018-2025, «Βοήθεια στο Σπίτι» 2023-2025, the general ΚΑΠ in 2015-2016, 2020 and 2023-2024 (2017, "
+          "2021, 2022 and 2025 within 550 €). 2018 and 2019 are one "
           "supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy "
           "(ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 "
           "by construction; the investment-programme and state-grant lines also receive money from other ministries "

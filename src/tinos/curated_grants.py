@@ -9,6 +9,11 @@ grant_decision  one row per decision kept by ``tinos fulltext-backfill`` (the
                 earlier, looser version of it (2015: six staff-travel acts
                 naming employees) never reaches the curated layer; data/raw
                 is append-only.
+                ``found_by`` lists the search terms that found it (ΤΗΝΟΥ, or
+                ΑΥΤΟΤΕΛΕΙΣ, the subject of every ΚΑΠ decision); ``text_indexed``
+                is true when a stored page highlights its document text. A
+                decision found only by subject, whose text was never indexed,
+                is one a search for ΤΗΝΟΥ could not have found.
 grant_line      one row per amount for a Tinos body read from a stored PDF
                 (``tinos.extract.grants.read_decision``), with how it was
                 validated against the document.
@@ -54,9 +59,25 @@ def iter_grant_decisions(raw_dir: Path) -> list[tuple[Path, str, dict[str, Any]]
     return out
 
 
+def search_index(raw_dir: Path) -> tuple[dict[str, list[str]], set[str]]:
+    """From the stored search pages: ADA -> the terms whose pages list it kept, and the ADAs whose
+    document text some page highlights (the text was indexed, so a ΤΗΝΟΥ search could see it)."""
+    base = raw_dir / "diavgeia" / "fulltext" / "search"
+    found: dict[str, set[str]] = {}
+    indexed: set[str] = set()
+    for page in sorted(base.glob("*/*/*.json")) if base.is_dir() else []:
+        body = json.loads(page.read_bytes())
+        for rec in body.get("decisions") or []:
+            if not rec.get("redacted"):
+                found.setdefault(rec["ada"], set()).add(page.parent.name)
+        indexed.update(a for a, h in (body.get("highlighting") or {}).items() if (h or {}).get("documentText"))
+    return {a: sorted(t) for a, t in found.items()}, indexed
+
+
 def grant_rows(raw_dir: Path, stamp: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """(grant_decision rows, grant_line rows). Reads each stored PDF with ``pdftotext -layout``."""
     decisions, lines = [], []
+    found_by, indexed = search_index(raw_dir)
     for path, sha, rec in iter_grant_decisions(raw_dir):
         if whitelist_reason(rec) is not None:  # kept by an earlier whitelist; not carried (PRIVACY.md Q7)
             continue
@@ -80,6 +101,7 @@ def grant_rows(raw_dir: Path, stamp: dict[str, Any]) -> tuple[list[dict[str, Any
             "status": rec.get("status"), "subject": subject, "family": family, "category": category,
             "protocol_number": (rec.get("protocolNumber") or "").strip() or None,
             "submission_ts": _iso(rec.get("submissionTimestamp")),
+            "found_by": found_by.get(rec["ada"], []), "text_indexed": rec["ada"] in indexed,
             "read_status": status, "n_amounts": len(amounts),
             "n_validated": sum(1 for a in amounts if a.validation and a.amount is not None),
             "pdf_sha256": pdf_sha, "source_ada": rec["ada"], "source_path": str(path), "source_sha256": sha, **stamp,
