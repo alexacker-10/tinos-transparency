@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-26T14:19:18+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated7`, curated at 2026-09-26T14:15:34+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-26T17:19:36+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated8`, curated at 2026-09-26T17:17:01+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
@@ -60,7 +60,7 @@ Status: PUBLISHED 76,564 · REVOKED 191 · PENDING_REVOCATION 30.
 | 2017 | 6,593 | 2,295 | 5.94M | 3.95M | 1.19M | 0.61M | 0.35M | 717 | 0.01M | 978 | 2.23M | 3.39M | 711 | 3.88M |
 | 2018 | 7,151 | 2,153 | 5.38M | 3.64M | 1.04M | 0.35M | 0.35M | 713 | 0.02M | 1,195 | 5.73M | 1.74M | 704 | 3.42M |
 | 2019 | 6,780 | 2,052 | 4.67M | 2.83M | 1.12M | 0.32M | 0.39M | 654 | 0.01M | 1,202 | 7.79M | 4.60M | 669 | 3.08M |
-| 2020 | 7,246 | 1,928 | 3.80M | 1.87M | 1.11M | 0.53M | 0.29M | 892 |  | 1,232 | 16.32M | 5.03M | 716 | 3.13M |
+| 2020 | 7,246 | 1,927 | 3.78M | 1.87M | 1.11M | 0.51M | 0.29M | 892 |  | 1,232 | 16.32M | 5.03M | 716 | 3.13M |
 | 2021 | 6,634 | 2,043 | 4.41M | 2.36M | 1.34M | 0.40M | 0.33M | 773 | 0.01M | 1,240 | 20.20M | 5.31M | 392 | 1.00M |
 | 2022 | 5,783 | 1,743 | 4.66M | 2.88M | 1.34M | 0.38M | 0.21M | 747 | 0.00M | 1,004 | 16.51M | 5.71M | 190 | 0.77M |
 | 2023 | 5,653 | 1,490 | 4.42M | 2.73M | 1.35M | 0.39M | 0.17M | 777 |  | 907 | 21.29M | 10.83M | 146 | 0.55M |
@@ -98,7 +98,7 @@ Third-party payments are every Β.2.2 sponsor line with a counterparty, split by
 |---|---:|---:|---:|
 | supplier | 15,359 | 14,227 | 38,488,215.04 |
 | remittance | 6,209 | 5,493 | 13,138,187.76 |
-| internal_transfer | 566 | 480 | 4,655,141.62 |
+| internal_transfer | 565 | 479 | 4,631,346.37 |
 | other_public_body | 197 | 151 | 3,507,768.40 |
 | payroll | 8,918 | 8,404 | 2,177,766.94 |
 | debt_service | 914 | 878 | 1,431,791.52 |
@@ -106,7 +106,7 @@ Third-party payments are every Β.2.2 sponsor line with a counterparty, split by
 
 Classes are assigned by deterministic rules (see the `curated.py` docstring): payroll → internal transfer (payee ΑΦΜ belongs to an entity in `entities.yaml`) → remittance (ΚΑΕ 82 or a withholdings subject) → tax (ΚΑΕ 63, tax-authority payee, ΕΝΦΙΑ/ΦΠΑ subject) → debt service (ΚΑΕ 65, bank or Ταμείο Παρακαταθηκών payee) → other public body (name marks a state, regional, municipal, insurance or regulatory body) → supplier, then a second pass reclassifies supplier lines of any ΑΦΜ whose euros are at least 80% non-supplier across all years (`payee_class_rule = afm_propagation`). Utilities such as ΔΕΗ and ΕΛΤΑ stay suppliers; grants to clubs and churches (ΚΑΕ 67) are not yet separated and remain in the supplier column.
 
-Largest internal transfers (not procurement): ΔΗΜΟΣ ΤΗΝΟΥ 1,960,291.09 € in 431 payments; ΔΗΜΟΤΙΚΟ ΝΟΜΙΚΟ ΠΡΟΣΩΠΟ ΔΗΜΟΥ ΤΗΝΟΥ 1,110,650.47 € in 24 payments; ΚΟΙΝΩΦΕΛΗΣ ΕΠΙΧΕΙΡΗΣΗ ΥΠΗΡΕΣΙΩΝ ΔΗΜΟΥ ΤΗΝΟΥ 473,020.29 € in 11 payments; ΚΟΙΝΩΦΕΛΗΣ ΕΠΙΧΕΙΡΗΣΗ ΥΠΗΡΕΣΙΩΝ ΔΗΜΟΥ ΤΗΝΟΥ - "Κ.ΕΠ.Υ.ΔΗ.Τ." 283,990.00 € in 8 payments; ΜΟΥΣΕΙΟ ΚΩΣΤΑ ΤΣΟΚΛΗ 202,564.25 € in 14 payments; ΕΝΙΑΙΑ ΣΧΟΛΙΚΗ ΕΠΙΤΡΟΠΗ Α'ΘΜΙΑΣ ΕΚΠΑΙΔΕΥΣΗΣ ΔΗΜΟΥ ΤΗΝΟΥ 199,177.00 € in 12 payments.
+Largest internal transfers (not procurement): ΔΗΜΟΣ ΤΗΝΟΥ 1,936,495.84 € in 430 payments; ΔΗΜΟΤΙΚΟ ΝΟΜΙΚΟ ΠΡΟΣΩΠΟ ΔΗΜΟΥ ΤΗΝΟΥ 1,110,650.47 € in 24 payments; ΚΟΙΝΩΦΕΛΗΣ ΕΠΙΧΕΙΡΗΣΗ ΥΠΗΡΕΣΙΩΝ ΔΗΜΟΥ ΤΗΝΟΥ 473,020.29 € in 11 payments; ΚΟΙΝΩΦΕΛΗΣ ΕΠΙΧΕΙΡΗΣΗ ΥΠΗΡΕΣΙΩΝ ΔΗΜΟΥ ΤΗΝΟΥ - "Κ.ΕΠ.Υ.ΔΗ.Τ." 283,990.00 € in 8 payments; ΜΟΥΣΕΙΟ ΚΩΣΤΑ ΤΣΟΚΛΗ 202,564.25 € in 14 payments; ΕΝΙΑΙΑ ΣΧΟΛΙΚΗ ΕΠΙΤΡΟΠΗ Α'ΘΜΙΑΣ ΕΚΠΑΙΔΕΥΣΗΣ ΔΗΜΟΥ ΤΗΝΟΥ 199,177.00 € in 12 payments.
 
 ## Supplier concentration, Δήμος Τήνου
 
@@ -156,7 +156,7 @@ Top 15 counterparties by supplier-class euros received, all entities, all years 
 
 ## Data quality flags
 
-Suspect payment lines (above 10,000,000 € = `threshold`, or checked against the decision's PDF and found wrong = `document_mismatch`, see `data/manual/amount_review.yaml`; kept in `payment`, excluded from every view and total): 15
+Suspect payment lines (above 10,000,000 € = `threshold`, or checked against the decision's PDF and found wrong = `document_mismatch`, see `data/manual/amount_review.yaml`; kept in `payment`, excluded from every view and total): 16
 
 | Entity | Date | ADA | Amount € | Reason | Counterparty | Subject |
 |---|---|---|---:|---:|---:|---:|
@@ -175,6 +175,7 @@ Suspect payment lines (above 10,000,000 € = `threshold`, or checked against th
 | 50256 | 2017-06-29 | Ψ4ΡΕΟΡ07-ΩΣΝ | 115,324.00 | document_mismatch | ΙΚΑ | ΧΡΗΜΑΤΙΚΟ ΕΝΤΑΛΜΑ ΚΡΑΤΗΣΕΩΝ ΧΘ 49/2017 |
 | 6296 | 2015-11-26 | 76Λ6ΩΗ6-1ΝΓ | 84,680.00 | document_mismatch | φυσικό πρόσωπο | ΕΡΓΑΣΙΕΣ ΕΠΙΣΚΕΥΗΣ ΣΕ ΑΠΟΡΡΙΜΜΑΤΟΦΟΡΟ ΟΧΗΜΑ ΥΠΗΡΕΣΙΑΣ ΚΑΘΑΡΙΟΤΗΤΑΣ ΜΕ |
 | 50256 | 2019-12-12 | Ψ07ΘΟΡ07-ΡΙ8 | 58,800.00 | document_mismatch | ΟΡΓΑΝΙΣΜΟΣ ΤΗΛΕΠΙΚΟΙΝΩΝΙΩΝ ΤΗΣ ΕΛΛΑΔΟΣ Α | ΤΗΛΕΦΩΝΙΚΑ ΤΕΛΗ |
+| 50256 | 2020-02-24 | ΩΔΔΧΟΡ07-5ΓΜ | 23,795.25 | document_mismatch | ΔΗΜΟΣ ΤΗΝΟΥ | ΕΞΟΦΛΗΣΗ 1ΟΥ ΛΟΓ/ΜΟΥ ΤΟΥ ΕΡΓΟΥ" ΕΡΓΑΣΙΕΣ ΕΠΙΣΚΕΥΗΣ ΒΕΛΤΙΩΣΗΣ ΚΑΙ ΣΥΜΜΟ |
 
 Largest single supplier payment lines in the release. Large one-offs explain most year-to-year swings and should be read before any trend is. Each row is one published decision, checkable at source by its ADA, but a published amount is not always right: the year-end statements exposed thirteen lines entered x100, nine of the municipality's and four of the port authority's (FINDINGS.md F7), and bodies whose statements are not parsed yet are unchecked. A natural person appears as «φυσικό πρόσωπο»:
 
@@ -239,29 +240,29 @@ The year-end execution statement is the municipality's own account of what it pa
 
 ### By the Interior Ministry
 
-Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (424 decisions), and for «ΑΥΤΟΤΕΛΕΙΣ», the word in the title of every allocation from the central funds (ΚΑΠ), because the search index holds some national tables by title only: 54 decisions with an amount for Tinos were found that way alone. Of 2,150 decisions kept, 424 give Δήμος Τήνου an amount read from their PDF and 24 have a validated table without Tinos; most of the rest concern single other municipalities and were not fetched. 396 of 399 amounts are validated against the document itself: the table's column sums its own total line, or the letter states the amount, or spells it in words. Only validated amounts are counted below, each once (two decisions posted twice are counted once; an order moving an allocation's funds is not counted again). Year = the year the allocation is for.
+Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (459 decisions), and for «ΑΥΤΟΤΕΛΕΙΣ», the word in the title of every allocation from the central funds (ΚΑΠ), because the search index holds some national tables by title only: 62 decisions with an amount for Tinos were found that way alone. Of 2,568 decisions kept, 460 give Δήμος Τήνου an amount read from their PDF and 25 have a validated table without Tinos; most of the rest concern single other municipalities and were not fetched. 431 of 434 amounts are validated against the document itself: the table's column sums its own total line, or the letter states the amount, or spells it in words. Only validated amounts are counted below, each once (two decisions posted twice are counted once; an order moving an allocation's funds is not counted again). Year = the year the allocation is for.
 
 | Year | Decisions | ΚΑΠ general € | ΚΑΠ investment € | Schools € | Other targeted € | State grants € | Investment programmes € | Fees collected centrally € | Total € |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 2015 | 28 | 1,172,467.43 | 245,610.00 | 85,233.02 | 473,567.93 |  |  |  | 1,976,878.38 |
-| 2016 | 34 | 1,296,978.96 | 245,610.00 | 88,560.00 | 490,873.05 |  | 9,808.64 | 34,280.00 | 2,166,110.65 |
+| 2015 | 29 | 1,172,467.43 | 245,610.00 | 85,233.02 | 309,173.11 | 215,124.82 |  |  | 2,027,608.38 |
+| 2016 | 37 | 1,296,978.96 | 245,610.00 | 88,560.00 | 515,661.21 |  | 46,348.64 | 34,280.00 | 2,227,438.81 |
 | 2017 | 28 | 1,296,978.96 | 245,610.00 | 87,640.00 | 228,200.00 |  | 119,313.47 | 29,320.00 | 2,007,062.43 |
 | 2018 | 27 | 1,325,237.94 | 245,610.00 | 109,190.00 | 227,440.00 |  |  | 40,460.00 | 1,947,937.94 |
 | 2019 | 33 | 1,362,098.25 | 245,610.00 | 117,725.00 | 219,855.00 | 18,660.00 | 205,756.11 | 39,570.00 | 2,209,274.36 |
-| 2020 | 40 | 1,382,134.96 | 245,610.00 | 148,472.80 | 418,716.94 | 507,722.07 | 294,830.16 | 36,590.00 | 3,034,076.93 |
-| 2021 | 39 | 1,505,244.07 | 245,610.00 | 255,881.30 | 278,340.00 |  | 147,848.01 | 18,290.00 | 2,451,213.38 |
-| 2022 | 41 | 1,546,833.71 | 245,610.00 | 214,835.00 | 260,285.00 | 303,520.53 | 169,437.57 | 42,070.00 | 2,782,591.81 |
-| 2023 | 49 | 1,627,130.78 | 245,610.00 | 233,488.00 | 373,181.11 | 162,998.37 | 175,290.27 | 50,785.04 | 2,868,483.57 |
-| 2024 | 39 | 2,371,590.44 | 245,610.00 | 239,570.20 | 402,956.23 | 246,261.93 | 3,087.60 | 57,129.88 | 3,566,206.28 |
-| 2025 | 37 | 2,692,510.41 | 245,610.00 | 184,098.00 | 560,979.57 | 258,054.70 | 52,622.76 | 57,129.88 | 4,051,005.32 |
+| 2020 | 39 | 1,382,134.96 | 245,610.00 | 115,512.80 | 233,985.00 | 292,816.56 | 294,830.16 | 36,590.00 | 2,601,479.48 |
+| 2021 | 40 | 1,505,244.07 | 245,610.00 | 129,581.30 | 244,140.00 | 204,098.25 | 147,848.01 | 18,290.00 | 2,494,811.63 |
+| 2022 | 41 | 1,546,833.71 | 245,610.00 | 137,975.00 | 260,285.00 | 380,380.53 | 169,437.57 | 42,070.00 | 2,782,591.81 |
+| 2023 | 49 | 1,627,130.78 | 245,610.00 | 230,260.00 | 373,181.11 | 162,998.37 | 175,290.27 | 50,785.04 | 2,865,255.57 |
+| 2024 | 41 | 2,371,590.44 | 245,610.00 | 239,570.08 | 517,987.82 | 318,001.74 | 3,087.60 | 57,129.88 | 3,752,977.56 |
+| 2025 | 38 | 2,692,510.41 | 245,610.00 | 233,442.12 | 560,979.57 | 258,054.70 | 52,622.76 | 57,129.88 | 4,100,349.44 |
 
 ### By the Region of South Aegean
 
-Found by full-text search of the Region's decisions for «ΤΗΝΟΥ» and the municipality's ΑΦΜ, and of its development fund's (Περιφερειακό Ταμείο Ανάπτυξης) for the Tinos bodies' ΑΦΜ: 420 decisions kept, 138 with their PDF stored. Most credits of the Region's investment programme go to the fund, which pays the bills: its 27 payments to the municipality are what is counted here, once (the credits behind them are listed). A few credits go to the municipality directly (9), and from 2021 the Region's own payment orders pay under programme agreements, net of their withholdings as the municipality books them. Its other payment orders to the municipality pay its own water bills there: a sale by the municipality, shown, not counted. Its programme agreements with Tinos bodies (33 decisions) and ΕΣΠΑ inclusions of their projects (28) are entitlements and budgets, listed, not counted. Every amount below is validated in words and figures in its document (FINDINGS.md F9).
+Found by full-text search of the Region's decisions for «ΤΗΝΟΥ» and the municipality's ΑΦΜ, and of its development fund's (Περιφερειακό Ταμείο Ανάπτυξης) for the Tinos bodies' ΑΦΜ: 444 decisions kept, 145 with their PDF stored. Most credits of the Region's investment programme go to the fund, which pays the bills: its 27 payments to the municipality are what is counted here, once (the credits behind them are listed). A few credits go to the municipality directly (9), and from 2021 the Region's own payment orders pay under programme agreements, net of their withholdings as the municipality books them. Its other payment orders to the municipality pay its own water bills there: a sale by the municipality, shown, not counted. Its programme agreements with Tinos bodies (34 decisions) and ΕΣΠΑ inclusions of their projects (29) are entitlements and budgets, listed, not counted. Every amount below is validated in words and figures in its document (FINDINGS.md F9).
 
 | Year | Decisions | Credits paid to the municipality € | Through the fund, projects € | Programme agreements € | Total € | Water bills paid to the municipality € (not counted) |
 |---|---:|---:|---:|---:|---:|---:|
-| 2015 | 7 | 172,968.63 | 8,755.24 |  | 181,723.87 |  |
+| 2015 | 8 | 172,968.63 | 8,755.24 | 49,867.41 | 231,591.28 |  |
 | 2016 | 2 |  |  | 78,780.00 | 78,780.00 |  |
 | 2017 | 2 |  |  | 45,904.93 | 45,904.93 |  |
 | 2018 | 5 | 53,683.58 | 152,804.88 |  | 206,488.46 |  |
@@ -274,7 +275,7 @@ Found by full-text search of the Region's decisions for «ΤΗΝΟΥ» and the m
 
 ### By the Evangelistria foundation
 
-The foundation (Πανελλήνιο Ιερό Ίδρυμα Ευαγγελιστρίας) owes the municipality a statutory grant, 10% of its gross receipts, paid in instalments in the following year or later. Found by full-text search of its decisions (106 kept, 54 PDFs read; 55 pay its statutory grants to other bodies and 20 are water bills it pays the municipality, a sale: listed, not counted). The municipality books the grant as prior years' revenue, line 2119, which also holds other prior-year revenue (rents, interest); the monthly statements date every payment below to a jump of 2119 of the same amount (FINDINGS.md F10). Amounts in figures only are counted and marked: the words column is the part the decision also spells out.
+The foundation (Πανελλήνιο Ιερό Ίδρυμα Ευαγγελιστρίας) owes the municipality a statutory grant, 10% of its gross receipts, paid in instalments in the following year or later. Found by full-text search of its decisions (114 kept, 55 PDFs read; 59 pay its statutory grants to other bodies and 23 are water bills it pays the municipality, a sale: listed, not counted). The municipality books the grant as prior years' revenue, line 2119, which also holds other prior-year revenue (rents, interest); the monthly statements date every payment below to a jump of 2119 of the same amount (FINDINGS.md F10). Amounts in figures only are counted and marked: the words column is the part the decision also spells out.
 
 | Year | Decisions | Statutory grant paid € | Of which spelled in words € | Line 2119, all prior-year revenue € |
 |---|---:|---:|---:|---:|
@@ -292,14 +293,14 @@ The foundation (Πανελλήνιο Ιερό Ίδρυμα Ευαγγελιστ�
 
 ### By other public bodies
 
-Searched from 2026-09-26 with the same full-text search, each with privacy rules of its own (PRIVACY.md Q7): the Culture Ministry, 15 decisions kept, 5 with their PDF; the Decentralised Administration of the Aegean, 37 decisions kept, 5 with their PDF; the Education Ministry, 19 decisions kept, 10 with their PDF. Amounts are read from the PDFs and validated in words and figures, or by rows that add up to the stated total. Recipient: the Tinos body the decision names (54500 the school committees, 55049 the Panormos cultural centre, 100032995 the Tsoklis museum) or the municipality (6296). The 2015 election grants are line 1211 of 2015 to the cent, the municipality's school books line 1219 of December 2024 and December 2025, the Panormos grant of 2018 its line 1219 (FINDINGS.md F10).
+Searched from 2026-09-26 with the same full-text search, each with privacy rules of its own (PRIVACY.md Q7): the Culture Ministry, 15 decisions kept, 5 with their PDF; the Decentralised Administration of the Aegean, 37 decisions kept, 32 with their PDF; the Digital Governance Ministry, 3 decisions kept, 1 with their PDF; the Economy, Development and National Economy ministries, 41 decisions kept, 13 with their PDF; the Education Ministry, 20 decisions kept, 10 with their PDF; the tourism organisation ΕΟΤ, 2 decisions kept, 2 with their PDF; the Green Fund (Πράσινο Ταμείο), 30 decisions kept, 17 with their PDF; the Infrastructure Ministry, 14 decisions kept, 5 with their PDF; the Regional Union of Municipalities of the South Aegean (ΠΕΔ), 24 decisions kept, 24 with their PDF; the Shipping and Island Policy Ministry, 65 decisions kept, 44 with their PDF. Amounts are read from the PDFs and validated in words and figures, or by rows that add up to the stated total, and counted once, at the document that moves the money: a transfer to the project account, not the approval it pays; a payment order, not the grant it pays (FINDINGS.md F12). Recipient: the Tinos body the decision names (54500 the school committees, 55049 the Panormos cultural centre, 100032995 the Tsoklis museum, 50256 the port fund) or the municipality (6296). The 2015 election grants are line 1211 of 2015 to the cent, the municipality's school books line 1219 of December 2024 and December 2025, the Panormos grant of 2018 its line 1219 (FINDINGS.md F10).
 
 | Grantor | Year | Recipient | Kind | Decisions | Amount € |
 |---|---|---|---|---:|---:|
-| the Culture Ministry | 2018 | 55049 | culture grant | 1 | 10,000.00 |
-| the Culture Ministry | 2021 | 55049 | culture grant | 2 | 25,000.00 |
-| the Culture Ministry | 2022 | 100032995 | culture grant | 1 | 3,000.00 |
 | the Decentralised Administration of the Aegean | 2015 | 6296 | election costs | 4 | 16,043.00 |
+| the Digital Governance Ministry | 2022 | 6296 | rrf payment | 1 | 25,256.77 |
+| the Economy, Development and National Economy ministries | 2023 | 6296 | pde financing | 1 | 160,082.90 |
+| the Economy, Development and National Economy ministries | 2024 | 6296 | pde financing | 4 | 704,949.22 |
 | the Education Ministry | 2018 | 54500 | school books | 1 | 462.45 |
 | the Education Ministry | 2019 | 54500 | pde financing | 1 | 8,947.91 |
 | the Education Ministry | 2020 | 54500 | school books | 2 | 755.50 |
@@ -308,6 +309,24 @@ Searched from 2026-09-26 with the same full-text search, each with privacy rules
 | the Education Ministry | 2023 | 54500 | school books | 1 | 236.40 |
 | the Education Ministry | 2024 | 6296 | school books | 1 | 990.15 |
 | the Education Ministry | 2025 | 6296 | school books | 1 | 728.20 |
+| the tourism organisation ΕΟΤ | 2015 | 6296 | eot payment | 1 | 18,000.00 |
+| the Green Fund | 2018 | 6296 | green fund payment | 2 | 82,634.25 |
+| the Green Fund | 2019 | 6296 | green fund payment | 1 | 117,365.75 |
+| the Green Fund | 2020 | 6296 | green fund payment | 1 | 24,800.00 |
+| the Green Fund | 2023 | 6296 | green fund payment | 2 | 59,024.00 |
+| the Infrastructure Ministry | 2022 | 6296 | pde authorisation | 3 | 389,015.72 |
+| the Regional Union of Municipalities of the South Aegean | 2021 | 6296 | ped payment | 2 | 10,000.00 |
+| the Regional Union of Municipalities of the South Aegean | 2022 | 6296 | ped grant | 4 | 26,430.00 |
+| the Regional Union of Municipalities of the South Aegean | 2023 | 6296 | ped grant | 2 | 18,680.00 |
+| the Regional Union of Municipalities of the South Aegean | 2024 | 6296 | ped payment | 2 | 18,600.00 |
+| the Regional Union of Municipalities of the South Aegean | 2025 | 6296 | ped payment | 1 | 8,680.00 |
+| the Shipping and Island Policy Ministry | 2018 | 50256 | pde authorisation | 1 | 120,000.00 |
+| the Shipping and Island Policy Ministry | 2018 | 6296 | pde authorisation | 1 | 11,300.00 |
+| the Shipping and Island Policy Ministry | 2019 | 6296 | pde authorisation | 1 | 11,300.00 |
+| the Shipping and Island Policy Ministry | 2021 | 6296 | pde authorisation | 1 | 34,352.10 |
+| the Shipping and Island Policy Ministry | 2023 | 6296 | pde authorisation | 1 | 4,986.46 |
+| the Shipping and Island Policy Ministry | 2024 | 6296 | pde authorisation | 5 | 136,315.72 |
+| the Shipping and Island Policy Ministry | 2025 | 6296 | shipping payment | 3 | 339,450.00 |
 
 ### Against the municipality's own books
 
@@ -321,17 +340,18 @@ Each cell is allocated minus booked for that revenue line in the year-end statem
 | ΚΑΠ, school rents (0612 to 2021) | -1,917 | ≈ 0.15% | ≈ 0.15% |  |  | = | +2 |  |  |  |  |
 | School repairs (1312, 0615 from 2023) | ≈ 0.15% | ≈ 0.15% | = | ≈ 0.15% | ≈ 0.15% | = | = | = | = | = | = |
 | Fire protection (1214, 0614 from 2023) | ≈ 0.15% | ≈ 0.15% | ≈ 0.15% | = | = | = | = | ≈ 0.15% | = | = | = |
-| «Βοήθεια στο Σπίτι» (0624) |  | +17,305 |  |  |  |  |  |  | = | = | ≈ 0.15% |
+| «Βοήθεια στο Σπίτι» (0624) |  |  |  |  |  |  |  |  | = | = | ≈ 0.15% |
 | Advertising fee, category Δ (0715) | -17,464 | ≈ 0.15% | -13 | ≈ 0.15% | ≈ 0.15% | ≈ 0.15% | = | = | = | = | = |
-| ΚΑΠ, other purposes, and the state's debts, art. 27 ν.3756/2009 (0619) | +164,814 | -41,427 | ≈ 0.15% | +99,018 | +138 | +184,732 | +34,200 | = | = | -186,471 | = |
-| School cleaners' pay (0621 from 2023) |  |  |  |  |  | +32,960 | +126,300 | +76,860 | +14,028 | +10,800 | -45,744 |
-| State grants (1211, 1215, 1219): with election grants and school books | -232,262 |  |  | -98,722 | = | +214,906 | -214,098 | -157,660 | -25,880 | -108,719 | -20,275 |
-| Investment programmes (1314, 1315, 1319, 1322): the ministry and the Region | -37,217 | -36,485 | +59,343 | = | = | = | -194,938 | -460,985 | -19,874 | -68,195 | -615,907 |
-| Programme agreements (1213, 1326): the Region's payments found | -49,816 | = | -23,084 |  |  | -155,354 | = | = | -1,620 | -41,418 | -35,554 |
+| ΚΑΠ, other purposes, and the state's debts, art. 27 ν.3756/2009 (0619) | ≈ 0.15% | +666 | ≈ 0.15% | +99,018 | +138 | = | = | = | = | -71,440 | = |
+| School cleaners' pay (0621 from 2023) |  |  |  |  |  |  |  |  | +10,800 | +10,800 | +3,600 |
+| State grants (1211, 1215, 1219): with election grants, school books, the Regional Union | +863 |  |  | -98,722 | = | = | = | -54,370 | -7,200 | -18,379 | -11,595 |
+| Investment programmes (1216, 1314, 1315, 1319, 1322, 1329): the ministries, the Region, the Green Fund | -37,217 | +55 | = | +11,300 | -11,300 | -5,689 | -192,976 | -77,068 | -22,828 | -9,999 | -1,003,159 |
+| Programme agreements (1213, 1326): the Region's payments found (the rest is the port fund's own) | +52 | = | -23,084 |  |  | -155,354 | = | = | -1,620 | -41,418 | -35,554 |
+| Recovery Fund (1324) |  |  |  |  |  |  |  | +25,257 |  |  |  |
 | Property levy ΤΑΠ, the ministry's share (0441) | -111,627 | -120,192 | -111,005 | -109,865 | -108,798 | -114,518 | -152,541 | -147,055 | -170,220 | -172,113 | -178,403 |
 | Welfare benefits (0621 in 2015) | -4,696 |  |  |  |  |  |  |  |  |  |  |
 
-Where the two sources meet line for line they agree to the cent, or differ by exactly 0.15%: the ΚΑΠ investment share in every year, school repairs and fire protection in every year, the advertising fee in 2016 and 2018-2025, «Βοήθεια στο Σπίτι» 2023-2025, the general ΚΑΠ in 2015-2016, 2020 and 2023-2024 (2017, 2021, 2022 and 2025 within 550 €). 2018 and 2019 are one supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy (ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 by construction; the investment-programme and state-grant lines also receive money from other ministries and the EU. With the Region's payments the investment programmes match in 2018 and 2019 as well, and every Region payment found under a programme agreement is booked to the cent (2016, 2021, 2022; 2017 and 2023 in part: the rest of those lines is money we have not found). The monthly statements place 0619's extra receipts of 2015, 2016 and 2024 (the state's debts, art. 27 ν.3756/2009, and a quarter of the schools' ΚΑΠ) and show 2015's desalination money booked in 1219 (FINDINGS.md F8). Allocations and booked revenue are two views of the same transfers: compare them, never add them.
+Where the two sources meet line for line they agree to the cent, or differ by exactly 0.15%: the ΚΑΠ investment share in every year, school repairs and fire protection in every year, the advertising fee in 2016 and 2018-2025, «Βοήθεια στο Σπίτι» 2023-2025, the general ΚΑΠ in 2015-2016, 2020 and 2023-2024 (2017, 2021, 2022 and 2025 within 550 €). 2018 and 2019 are one supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy (ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 by construction. The state-grant and investment-programme lines take money from the other grantors above: with the Regional Union's grants every 1219 receipt of 2021-2025 is identified, and with the Green Fund, the Aegean secretariat and the Economy Ministry's public-investment transfers the investment programmes close in 2017-2019 and, but for timing, 2024; 2025's transfers are not in the index (FINDINGS.md F12). Every Region payment found under a programme agreement is booked to the cent; the rest of those lines in 2020, 2024 and 2025 is the municipality's own port fund paying it (F9). The monthly statements place 0619's extra receipts of 2015, 2016 and 2024 (home help, the state's debts, art. 27 ν.3756/2009, and a quarter of the schools' ΚΑΠ) and show 2015's desalination money booked in 1219 (FINDINGS.md F8). Allocations and booked revenue are two views of the same transfers: compare them, never add them.
 
 ## How much of what the subsidiaries paid Diavgeia shows
 
@@ -347,7 +367,7 @@ Where the two sources meet line for line they agree to the cent, or differ by ex
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2017 | 704,435.52 | 620,632.65 | 88% |
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2018 | 809,191.15 | 733,370.57 | 91% |
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2019 | 1,052,585.55 | 999,976.26 | 95% |
-| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2020 | 993,651.29 | 970,015.66 | 98% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2020 | 993,651.29 | 946,220.41 | 95% |
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2021 | 837,314.93 | 818,295.92 | 98% |
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2022 | 920,472.12 | 203,521.20 | 22% |
 | 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2023 | 682,967.26 | 143,602.06 | 21% |

@@ -214,6 +214,26 @@ add were read in memory from an echo-verified scan of all 7,399 of the foundatio
 ministry for «3756», F8), the scan of every kept subject (2,748; 52 with a first-name word) found places,
 saints, programmes, a museum, the city of Sofia and a wreath («στεφάνου»), no person.
 
+**The grantors the municipality names, and a project code, 2026-09-26 (evening).** Eight more grantors were
+registered from the municipality's own acceptances (FINDINGS.md F12). Each was probed in memory first: its yearly
+counts, its real subjects under each keep rule, a first-name scan of what would be kept. All keep only acts
+naming a Tinos body and hits of a Tinos ΑΦΜ (`tinos_body`), except the Green Fund, whose grant words return
+nothing about people. Their subjects added rules about people, checked first for every issuer: staff travel in
+other words («υπηρεσιακή μετακίνηση», «μετακινούμενων υπαλλήλων»), a book's author, «Δρ.» before a name, and a
+private individual («ιδιώτη»); and the list and abbreviated forms of the municipality's name («Δήμων Τήνου, Άνδρου», «Δ. Τήνου») count as naming
+a Tinos body. Under the widened rules 13 Interior Ministry staff-travel commitments of 2020-2024, kept whole by
+the earlier ΑΥΤΟΤΕΛΕΙΣ pass, are about people: after their years were searched again, `tinos fulltext-purge
+--apply` deleted them and the 4 search pages holding them whole, on the owner's word (17 lines in the ingest log).
+ΕΕΤΑΑ was probed and not registered: half of its hits concern people (the home-help programme's invoices).
+A public-investment project of a Tinos body can now anchor a search like the body's ΑΦΜ (entities.yaml
+`anchor_codes`): its code appears only in acts about that project, the rule about people still comes first (it
+dropped 3 of the code's 18 hits, designations of account holders). The scan of every kept subject after the
+backfills (3,378; 58 with a first-name word) found places (Παύλου Μελά, Νικολάου Σκουφά, Αγίου Δημητρίου, Αγία
+Μαρίνα, Ξάνθη), the programme and the park named «Αντώνης Τρίτσης», the Tsoklis museum, the city of Sofia, a
+wreath and a partnership named after its partner: no person. Stored documents can still name people the tables
+never carry: the Green Fund paid the Panormos plan's study to its contractors, sole traders among them, and the
+Economy Ministry's transfers name the municipality's account holder; the readers keep no payee but a Tinos body.
+
 ## Principles we are working from, pending decisions
 
 - Public office holders acting in office: name them.

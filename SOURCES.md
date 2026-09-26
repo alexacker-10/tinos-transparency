@@ -86,13 +86,21 @@ writing it here. Ranked by what they would add.
   7,400 ΤΗΝΟΥ hits, 106 kept), the Decentralised Administration of the Aegean (50203), the Education
   Ministry (100010887, 100015990, 100054501, 100081880) and the Culture Ministry (17, 100015966,
   100081912), each with keep rules of its own (F10, PRIVACY.md Q7). Citizen Protection was probed and not
-  registered: nothing it publishes about Tinos is money for a Tinos body. Next candidates, from the
-  Decentralised Administration's reviews of the municipality's acceptances of money: the Green Fund,
-  the Ministry of Economy's public-investment programme, the tourism organisation ΕΟΤ.
+  registered: nothing it publishes about Tinos is money for a Tinos body. Then (2026-09-26, evening) the
+  grantors the municipality's own acceptances name (F12): the Regional Union of Municipalities (53992),
+  the Green Fund (99201054), the Shipping Ministry (100015969), the public-investment ministries (15,
+  100016002, 100025890, 100054495, 100081597), Infrastructure (100025905, 100016011), Digital Governance
+  (100054486), ΕΟΤ (99221315) and the Tourism Ministry (100025893), ΤΗΝΟΥ and the municipality's ΑΦΜ,
+  2014-2026; the waste-processing project's code (2018ΣΕ36700029) as an anchor like an ΑΦΜ; the title
+  words of the lifeguard, COVID, home-help and Θησέας tables; and every grantor extended to 2026-09-26.
+  ΕΕΤΑΑ was probed and not registered. 213 PDFs fetched with the owner's approval (86.7 MB, 0 failures;
+  the estimate was 56 MB: the 2026 national tables are larger than the stored average) and 2 more that a
+  search surfaced, under the approved cap.
 - **Monthly budget statements** (Diavgeia Β.3, «ΔΗΜΟΣΙΕΥΣΗ ΣΤΟΙΧΕΙΩΝ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛΟΓΙΣΜΟΥ») —
   **ingested 2026-09-26**: every monthly statement of the municipality, February 2015 to November 2025,
-  validated to the cent like the year-end ones (`v_budget_month`, F11). The 2026 statements use the new
-  chart of accounts and are stored, not yet parsed.
+  validated to the cent like the year-end ones (`v_budget_month`, F11). The eight 2026 statements
+  (January-August) use the new chart of accounts and are read since 2026-09-26, their codes mapped to the
+  old lines (F13).
 - **Local-government indicators, Interior Ministry** — `https://deiktesota.gov.gr/reports/1008/view/`,
   Power BI, no export, reuse with attribution. 2024 row for Tinos (reported): financial
   independence 28.33%, direct awards 98.54% of contracts (consistent with ΚΗΜΔΗΣ: 358 of 364

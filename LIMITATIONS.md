@@ -45,7 +45,7 @@ the amount for Tinos from each decision's PDF, and count it only if the document
 table must add up to its own total, or the letter must state the amount, or spell it out in words to
 the same figure.
 
-- **What we found.** At least 28.8 million euros from the ministry in 2015-2025, from 1.7 million
+- **What we found.** At least 29.0 million euros from the ministry in 2015-2025, from 2.0 million
   in 2015 to 4.1 million in 2025. Where the municipality's own year-end report has a line for the
   same money, the two agree to the cent in most years; the investment share agrees to the cent in
   every year. In some years the municipality booked exactly 0.15% less than the ministry allocated;
@@ -53,17 +53,22 @@ the same figure.
 - **What we miss.** A decision whose text was never indexed can only be found by its title.
   Searching titles found 31 such decisions with money for Tinos that had not been read before
   (2.37 million euros, eleven monthly instalments of 2017, 2021 and 2022 among them); they are now
-  counted. An allocation whose title uses neither word would still be missed. Three amounts the municipality booked have no decision yet (the 2015
-  advertising fee, a 2015 welfare amount, part of the «other purposes» line). «At least» means
-  exactly that.
+  counted. An allocation whose title uses neither word would still be missed; searching the words of
+  particular titles (lifeguards, COVID, home help, the Θησέας programme) found five more. One amount the
+  municipality booked has no decision yet (the 2015 advertising fee); a 2015 welfare amount is the Labour
+  Ministry's, named in the municipality's own acceptance. «At least» means exactly that.
+- **A grant is not always money received.** Two 2020 grants for the municipality's overdue bills (507,722
+  euros) were ceilings: the Deposits and Loans Fund would pay the creditors directly as the municipality
+  asked, and the municipality never drew on them. They are listed, not counted.
 - **The Region of South Aegean.** We also searched the Region's decisions and those of its development
   fund (Περιφερειακό Ταμείο Ανάπτυξης), which pays most of the Region's investment money on its behalf.
-  At least 0.85 million euros in 2015-2025, counted once, at the payment that reached the municipality:
+  At least 0.90 million euros in 2015-2025, counted once, at the payment that reached the municipality:
   mostly the fund's payments under programme agreements and for projects, and the landfill study's
   credits. Every payment we found is in the municipality's books to the cent, in the year it was paid.
-  What we do not find: the 2015 snow-clearing money (the Region's commitment is published, its payment is
-  not), and parts of the programme-agreement lines in 2017, 2020 and 2023-2025, which may come from other
-  partners. The sewage study of 2017 was the Region's own; our first count wrongly included its 39,709.88
+  The 2015 snow-clearing money is counted at the Region's commitment, the last step it published. Most of
+  the programme-agreement lines we could not explain before are the municipality's own port fund paying it
+  under their agreements (2020, 2024, 2025): money between Tinos bodies, explained but not counted. Two
+  small amounts (2017, 2023) remain unexplained. The sewage study of 2017 was the Region's own; our first count wrongly included its 39,709.88
   euros. The Region's water bills paid to the municipality are sales, shown, not counted. Before mid-2021
   the Region published no payment orders to the municipality at all (we checked all 22,529 of its
   payment decisions of 2015-2021); the fund's payments cover those years.
@@ -78,9 +83,20 @@ the same figure.
 - **Other ministries and bodies.** The Decentralised Administration's election grants of 2015 (16,043
   euros, matching the municipality's books to the cent), the Culture Ministry's grants to the Panormos
   cultural centre and the Tsoklis museum (38,000 euros), and the Education Ministry's money for school books
-  and equipment (12,679 euros). Grants from bodies we have not searched yet (the Green Fund, the Ministry
-  of Economy's investment programme, the tourism organisation ΕΟΤ, which paid 17,460 euros in 2015) sit in
-  the same revenue lines; several of those lines are still partly unexplained.
+  and equipment (12,679 euros).
+- **The grantors the municipality names itself.** The municipality records every grant in a decision
+  accepting it, and most of those decisions name who pays. Searching those grantors added 2.2 million
+  euros in 2015-2025: the Economy Ministry's public-investment money for the waste-processing transition
+  (0.87 million), the Shipping Ministry's Aegean secretariat for desalination and water works (0.54 million,
+  and 0.12 million to the port fund), the Infrastructure Ministry's road repairs of 2022 (0.39 million),
+  the Green Fund (0.28 million), the Regional Union of Municipalities (82,390 euros), the Recovery Fund
+  (25,257 euros) and the tourism organisation (18,000 euros). Each is counted once, at the document that
+  moves the money: a transfer, not the approval it pays; a payment order, not the grant it pays; a grant
+  only when no payment of it was published. Where the grantor pays into an account the municipality then
+  draws on, the municipality books the money when it draws, so a transfer and its receipt can be months
+  apart. Not found: the Economy Ministry's 2025 transfers and the Infrastructure Ministry's 2025 road works
+  (together about a million euros of 2025's investment receipts), a 2022 grant for lodging ambulance staff
+  (7,200 euros), and 5,689 euros of February 2020.
 - **One ministry among several.** Money from other ministries, the Region of South Aegean and EU
   programmes reaches the same revenue lines, so for investment money and extra grants our figure is
   the share of the bodies we searched, not the whole. The property levy (ΤΑΠ) is mostly collected through
@@ -108,7 +124,12 @@ money arrived, which is how the foundation's payments were matched. Four months 
 the municipality never published them (October and November 2016, January and February 2017); the
 statements of December 2014 and January 2015 show one month's figures rather than the year so far, and
 are not used. From January 2026 the municipality uses a new chart of accounts, with new line codes; its
-2026 statements are stored but not yet read.
+eight 2026 statements (January-August) are read and each new code is matched to the old line with the same
+purpose. Most 2026 grants appear in them to the cent or 0.15% less; the monthly general ΚΑΠ arrives about
+5,440 euros a month short of the allocation, for a reason the documents do not show. When a statement stops
+printing a line, the money was moved to another line; the monthly view treats the dropped line as zero so the
+move is not counted twice. One statement posted by the Panormos cultural centre is in fact the Tsoklis
+museum's, and is not used.
 
 ## Direct awards vanished from Diavgeia in 2021, not from reality
 
