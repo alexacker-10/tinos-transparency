@@ -569,20 +569,27 @@ statements print `∆` and `µ` for Δ and μ, now normalised), the Tsoklis muse
 Panormos cultural centre 2016-2020 and 2023, 53404 2015 and 2022, the Gyrlas foundation 2017 and 2025
 (its subjects abbreviate the budget «Π/Υ», which hid them from the statement filter)
 (`v_payment_coverage` and `v_kae_reconciliation` cover them unchanged, being keyed by entity). The
-port authority's payment decisions carry 90-104% of what it paid in 2016-2021, then 21-22% in 2022,
+port authority's payment decisions carry 88-98% of what it paid in 2016-2021, then 20-22% in 2022,
 2023 and 2025 (83% in 2024): the municipality's pattern of F6, three years later. The smaller bodies'
-payment lines mostly carry no ΚΑΕ, so only their totals compare. Two port-authority lines explain
-their ΚΑΕ's excess over the statement exactly, the x100 signature above; **candidates, PDFs not yet
-fetched**: Ψ4ΡΕΟΡ07-ΩΣΝ (2017-06-29, withholdings to ΙΚΑ, 00.8231, 115,324.00; excess 114,170.76 =
-115,324.00 − 1,153.24, against a median line of 286.89) and Ψ07ΘΟΡ07-ΡΙ8 (2019-12-12, telephone
-bill, 00.6222, 58,800.00; excess 58,212.00 = 58,800.00 − 588.00; the whole year's 6222 was 3,186.00).
-ΨΜ32ΟΡ07-09Τ (2020, 115,996.48 to the municipality under 6731, which the statement does not use)
-looks like a coding difference, not an amount error.
+payment lines mostly carry no ΚΑΕ, so only their totals compare. Two port-authority lines explained
+their ΚΑΕ's excess over the statement exactly, the x100 signature above, and their PDFs, fetched on
+2026-09-26 with the owner's approval, confirm both; flagged since then:
+
+| ADA | Date | ΚΑΕ | Metadata | Document | What |
+|---|---|---|---:|---:|---|
+| Ψ4ΡΕΟΡ07-ΩΣΝ | 2017-06-29 | 00.8231 | 115,324.00 | 1,153.24 | withholdings order 49 to ΙΚΑ; excess 114,170.76 = 115,324.00 − 1,153.24 |
+| Ψ07ΘΟΡ07-ΡΙ8 | 2019-12-12 | 00.6222 | 58,800.00 | 588.00 | OTE bill for 23/9-22/11/2019; excess 58,212.00; the year's 6222 was 3,186.00 |
+
+Each document gives its amount in figures and in words. With them flagged the port authority's
+2016-2021 coverage is 88-98% (it read 104% in 2017 and 100% in 2019 before). ΨΜ32ΟΡ07-09Τ (2020,
+115,996.48 to the municipality under 6731, which the statement does not use) looks like a coding
+difference, not an amount error.
 
 Before the statements were parsed, the port authority's two largest supplier lines stood out, round sums 24-37 times its 99th-percentile line (19,326) that made
 its only two spike years, and their PDFs (`data/raw/diavgeia/docs/50256/`) confirm both as
 x100: 61ΟΛΟΡ07-ΕΡ4 (2019, 30.7333.0004) 708,102.00 for 7,081.02, and ΩΤΣΜΟΡ07-ΥΛ7 (2016,
-20.6117.0010) 466,638.00 for 4,666.38. Flagged; together 1.16M overstated.
+20.6117.0010) 466,638.00 for 4,666.38. Flagged; together 1.16M overstated, and 1.33M with the two
+above. Thirteen lines entered x100 in all, nine municipal and four of the port authority.
 
 Corpus-wide, 37 groups of payment lines share entity, date, ΚΑΕ, amount and payee under two
 or more ADAs (amount ≥ 1,000; 0.49M counted more than once if all are duplicates). Some are

@@ -224,9 +224,10 @@ def write_summary(settings: Settings) -> Path:
                FROM v_supplier_payment p JOIN act a ON a.ada = p.source_ada ORDER BY p.amount DESC LIMIT 8""")
     w("Largest single supplier payment lines in the release. Large one-offs explain most year-to-year "
       "swings and should be read before any trend is. Each row is one published decision, checkable at "
-      "source by its ADA, but a published amount is not always right: the municipality's own year-end "
-      "statements exposed nine lines entered x100 (FINDINGS.md F7), and bodies whose statements are not "
-      "parsed yet are unchecked. A natural person appears as «φυσικό πρόσωπο»:")
+      "source by its ADA, but a published amount is not always right: the year-end statements exposed "
+      "thirteen lines entered x100, nine of the municipality's and four of the port authority's (FINDINGS.md "
+      "F7), and bodies whose statements are not parsed yet are unchecked. A natural person appears as "
+      "«φυσικό πρόσωπο»:")
     w("")
     w(_table(["Entity", "Date", "ADA", "Amount €", "Counterparty", "ΚΑΕ", "Subject"],
              [[e, d, ada, _eur(amt), n, k, sub] for e, d, ada, amt, n, k, sub in big], 3))
@@ -431,7 +432,8 @@ def write_summary(settings: Settings) -> Path:
         w("Only the December statements that parse to the cent are used, one per body and year where one was "
           "found. Every payment line with an amount counts, with or without a ΚΑΕ, so a share above 100% can also "
           "be a payment of the previous year's bills; the ΚΑΕ-by-ΚΑΕ check is `v_kae_reconciliation` "
-          "(FINDINGS.md F7, where two port-authority lines stand out as probable x100 entries).")
+          "(FINDINGS.md F7: it exposed two port-authority lines entered x100, since verified against their "
+          "documents and excluded).")
         w("")
 
     # ---- method

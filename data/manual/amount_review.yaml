@@ -163,6 +163,39 @@ mismatch:
       five times; the metadata amount is it x100. It had made 2016 the body's second-largest
       year (1.18M).
 
+  - ada: Ψ4ΡΕΟΡ07-ΩΣΝ
+    entity: "50256"
+    line_no: 0
+    kae: "00.8231"
+    metadata_amount: 115324.00
+    document_amount: 1153.24
+    document: data/raw/diavgeia/docs/50256/Ψ4ΡΕΟΡ07-ΩΣΝ.pdf
+    document_sha256: d14e871ba231ef26c4421ad0bf0bd800d8203d95d22ee4420eca37d3a61ca785
+    checked_on: 2026-09-26
+    note: >
+      Port authority, withholdings payment order 49 of 28/6/2017 to ΙΚΑ (three items of
+      7/6/2017: 375,84 + 383,26 + 394,14). The document gives 1.153,24 in figures and in words
+      («ΧΙΛΙΑ ΕΚΑΤΟΝ ΠΕΝΗΝΤΑ ΤΡΙΑ ΕΥΡΩ και ΕΙΚΟΣΙ ΤΕΣΣΕΡΑ ΛΕΠΤΑ»); the metadata amount is it
+      x100. It was the whole of ΚΑΕ 8231's excess over the 2017 statement (114,170.76 =
+      115,324.00 - 1,153.24), found by v_kae_reconciliation.
+
+  - ada: Ψ07ΘΟΡ07-ΡΙ8
+    entity: "50256"
+    line_no: 0
+    kae: "00.6222"
+    metadata_amount: 58800.00
+    document_amount: 588.00
+    document_net: 474.23
+    document_vat: 113.77
+    document: data/raw/diavgeia/docs/50256/Ψ07ΘΟΡ07-ΡΙ8.pdf
+    document_sha256: 906fcfe7172cb329bc1b32c13739404233478ecdc428bc2f70b7f04e08fe1883
+    checked_on: 2026-09-26
+    note: >
+      Port authority, payment order 318 of 12/12/2019, OTE telephone charges for 23/9-22/11/2019.
+      The document gives 588,00 in figures and in words («ΠΕΝΤΑΚΟΣΙΑ ΟΓΔΟΝΤΑ ΟΚΤΩ ΕΥΡΩ»); the
+      metadata amount is it x100. It was the whole of ΚΑΕ 6222's excess over the 2019 statement
+      (58,212.00 = 58,800.00 - 588.00), whose whole-year 6222 was 3,186.00.
+
 duplicate:
   - ada: 61ΘΚΩΗ6-4ΤΛ
     entity: "6296"

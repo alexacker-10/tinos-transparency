@@ -67,8 +67,8 @@ the Tsoklis museum, the Panormos cultural centre, the Gyrlas foundation and the 
 entity (a few years each). The port fund's payment decisions on Diavgeia show nearly everything it
 paid until 2021 and about a fifth since 2022, the same drop the municipality shows from 2019. The
 smaller bodies rarely record which budget line a payment belongs to, so only their yearly totals can
-be compared. Two port-fund payments look like amounts typed in cents (100 times too large); they
-are listed in FINDINGS.md F7 and not yet checked against their documents.
+be compared. Comparing them exposed two more port-fund payments typed in cents (100 times too
+large); their documents confirm it, and they are left out of totals (FINDINGS.md F7).
 
 ## Direct awards vanished from Diavgeia in 2021, not from reality
 
@@ -94,8 +94,8 @@ after 2020 will see almost nothing and conclude wrongly.
   source. We keep it, flag it, and leave it out of every total.
 - A 2012 record of 13.8 million euros filed as a "commitment" is in fact the
   whole annual budget summary filed under the wrong type.
-- Amounts are sometimes typed wrong at the source. Eleven verified cases, nine
-  for the municipality and two for the port authority, all entered in cents (the
+- Amounts are sometimes typed wrong at the source. Thirteen verified cases, nine
+  for the municipality and four for the port authority, all entered in cents (the
   amount x100), and one payment posted twice. The largest was a 2015 payment recorded as 6.5 million euros, more than
   everything the municipality paid that year; its document says 64,934.93. Two
   monthly withholdings statements (2023, 2024) had made "payments to third
