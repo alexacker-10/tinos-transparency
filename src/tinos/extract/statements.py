@@ -16,8 +16,14 @@ Input is the text ``pdftotext -layout`` makes of the stored PDF. Layouts seen:
   ΚΑΕ (``00-6031``; the reserve 9111 has no service); a row's amounts may
   continue on its description line;
   one «ΓΕΝΙΚΟ ΣΥΝΟΛΟ:» per side.
-- The 2014 year-end statement has a third layout, with subtotal rows and the
-  figures of December alone rather than the year. It is refused, not guessed.
+- ``apologistika`` (February to June 2015): «ΑΠΟΛΟΓΙΣΤΙΚΑ ΣΤΟΙΧΕΙΑ», «Περίοδος:
+  <μήνας> <έτος>», cumulative like ``standard``, but with rows at every level
+  of the chart (0, 01, 011, 0111, sub-accounts 0111.0001) and spending listed
+  per service, so a ΚΑΕ repeats: its 4-digit rows are summed per ΚΑΕ, and they
+  must add up to each side's «ΓΕΝΙΚΟ ΣΥΝΟΛΟ».
+- The 2014 year-end and January 2015 statements have a fourth layout, with
+  subtotal rows and the figures of the month alone (December's, not the
+  year's). They are refused, not guessed.
 
 Validation is mandatory: every amount column must sum to the document's own
 total line, to the cent, on both sides, or :class:`StatementError` is raised.
@@ -91,6 +97,8 @@ def parse_statement(text: str) -> Statement:
     text = text.translate(_SYMBOLS)
     if "Στοιχεία Εκτέλεσης Προϋπολογισμού" in text and _STD_PERIOD.search(text):
         st = _parse_standard(text)
+    elif "ΑΠΟΛΟΓΙΣΤΙΚΑ ΣΤΟΙΧΕΙΑ" in text and _STD_PERIOD.search(text):
+        st = _parse_apologistika(text)
     elif _NEW_SECTION.search(text):
         st = _parse_2025(text)
     else:
@@ -134,6 +142,37 @@ def _parse_standard(text: str) -> Statement:
                               " ".join(r.group(2).split())))
     end = date(year, month, calendar.monthrange(year, month)[1])
     return Statement("standard", end, tuple(lines), totals)
+
+
+_APOL_TOTAL = re.compile(rf"ΓΕΝΙΚΟ ΣΥΝΟΛΟ\s+({_AMT})\s+({_AMT})\s+({_AMT})")
+
+
+def _parse_apologistika(text: str) -> Statement:
+    m = _STD_PERIOD.search(text)
+    month = MONTHS.get(m.group(1))
+    if month is None:
+        raise StatementError(f"unknown month {m.group(1)!r}")
+    year = int(m.group(2))
+    sums: dict[tuple[str, str], list[int]] = {}
+    names: dict[tuple[str, str], str] = {}
+    totals: dict[str, tuple[int, int, int]] = {}
+    for raw in text.splitlines():
+        if t := _APOL_TOTAL.search(raw):
+            side = "revenue" if "revenue" not in totals else "spending"
+            if side in totals and "spending" in totals:
+                raise StatementError("more than two «ΓΕΝΙΚΟ ΣΥΝΟΛΟ» lines")
+            totals[side] = (cents(t.group(1)), cents(t.group(2)), cents(t.group(3)))
+            continue
+        if r := _STD_ROW.match(raw):  # 4-digit rows only: «0111.0001» and the group rows «011» do not match
+            kae = r.group(1)
+            key = ("revenue" if kae[0] in "012345" else "spending", kae)
+            acc = sums.setdefault(key, [0, 0, 0])
+            for i in range(3):
+                acc[i] += cents(r.group(3 + i))
+            names.setdefault(key, " ".join(r.group(2).split()))
+    lines = [Line(side, None, kae, b, a, c, names[(side, kae)]) for (side, kae), (b, a, c) in sums.items()]
+    end = date(year, month, calendar.monthrange(year, month)[1])
+    return Statement("apologistika", end, tuple(lines), totals)
 
 
 def _parse_2025(text: str) -> Statement:
