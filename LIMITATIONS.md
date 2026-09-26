@@ -56,20 +56,37 @@ the same figure.
   counted. An allocation whose title uses neither word would still be missed. Three amounts the municipality booked have no decision yet (the 2015
   advertising fee, a 2015 welfare amount, part of the «other purposes» line). «At least» means
   exactly that.
-- **The Region of South Aegean.** We also searched the Region's decisions. At least 0.30 million
-  euros in 2015-2025, mostly its investment money for the municipal gym and for the landfill and
-  sewage studies; with it, the investment-programme line matches the municipality's books to the cent
-  in 2019. The Region's payments to the municipality that we can see are mostly its own water bills
-  (about 300 euros in five years), which we show but do not count: they are sales, not grants. Its
-  payments before 2021 cannot be told apart from its payments to contractors on the island, and most
-  of the money the municipality booked under programme agreements (0.75 million) has no Region
-  decision we could find; such agreements can also be with other public bodies.
+- **The Region of South Aegean.** We also searched the Region's decisions and those of its development
+  fund (Περιφερειακό Ταμείο Ανάπτυξης), which pays most of the Region's investment money on its behalf.
+  At least 0.85 million euros in 2015-2025, counted once, at the payment that reached the municipality:
+  mostly the fund's payments under programme agreements and for projects, and the landfill study's
+  credits. Every payment we found is in the municipality's books to the cent, in the year it was paid.
+  What we do not find: the 2015 snow-clearing money (the Region's commitment is published, its payment is
+  not), and parts of the programme-agreement lines in 2017, 2020 and 2023-2025, which may come from other
+  partners. The sewage study of 2017 was the Region's own; our first count wrongly included its 39,709.88
+  euros. The Region's water bills paid to the municipality are sales, shown, not counted. Before mid-2021
+  the Region published no payment orders to the municipality at all (we checked all 22,529 of its
+  payment decisions of 2015-2021); the fund's payments cover those years.
+- **The Evangelistria foundation.** It owes the municipality 10% of its gross receipts every year. We
+  found 2.50 million euros of it in 2015-2025, in 25 decisions, and every one of them appears in the
+  municipality's monthly figures as a receipt of the same amount, in the same month or soon after. Two
+  more receipts of about 100,000 euros (October 2015, December 2018) look like payments of the same grant
+  whose decisions we cannot find; they are not counted. Eight older decisions state the amount in figures
+  only, without words to check them against; they are counted and marked. The foundation's decisions
+  mostly concern named people (scholarships, welfare): we keep only those about the municipality and its
+  grants to public bodies, and nothing about a person.
+- **Other ministries and bodies.** The Decentralised Administration's election grants of 2015 (16,043
+  euros, matching the municipality's books to the cent), the Culture Ministry's grants to the Panormos
+  cultural centre and the Tsoklis museum (38,000 euros), and the Education Ministry's money for school books
+  and equipment (12,679 euros). Grants from bodies we have not searched yet (the Green Fund, the Ministry
+  of Economy's investment programme, the tourism organisation ΕΟΤ, which paid 17,460 euros in 2015) sit in
+  the same revenue lines; several of those lines are still partly unexplained.
 - **One ministry among several.** Money from other ministries, the Region of South Aegean and EU
   programmes reaches the same revenue lines, so for investment money and extra grants our figure is
-  the share of the two bodies we searched, not the whole. The property levy (ΤΑΠ) is mostly collected through
+  the share of the bodies we searched, not the whole. The property levy (ΤΑΠ) is mostly collected through
   electricity bills, so the ministry's allocation is only a small part of what the municipality
   receives from it.
-- **Two decisions were published twice** (2018, 2022). We count each once.
+- **Three decisions were published twice** (2018, 2022, 2025). We count each once.
 - **Allocated is not the same as received.** An allocation decided in late December is sometimes
   booked the next year (29,762.12 euros decided on 28 December 2018 appear in 2019).
 
@@ -82,6 +99,16 @@ paid until 2021 and about a fifth since 2022, the same drop the municipality sho
 smaller bodies rarely record which budget line a payment belongs to, so only their yearly totals can
 be compared. Comparing them exposed two more port-fund payments typed in cents (100 times too
 large); their documents confirm it, and they are left out of totals (FINDINGS.md F7).
+
+## The municipality's monthly figures
+
+We now read the municipality's monthly budget statements too, not only the year-end ones: every month
+from February 2015 to November 2025, each checked against its own totals to the cent. They show when
+money arrived, which is how the foundation's payments were matched. Four months are missing because
+the municipality never published them (October and November 2016, January and February 2017); the
+statements of December 2014 and January 2015 show one month's figures rather than the year so far, and
+are not used. From January 2026 the municipality uses a new chart of accounts, with new line codes; its
+2026 statements are stored but not yet read.
 
 ## Direct awards vanished from Diavgeia in 2021, not from reality
 

@@ -78,9 +78,21 @@ writing it here. Ranked by what they would add.
   privacy rule PRIVACY.md Q7). The 2024 re-check here (64 ministry acts naming Tinos;
   ΡΟ0946ΜΤΛ6-ΣΚ8 gives ΤΗΝΟΥ 236,601.93) holds: the backfill found the same 64 and read the same
   figure from the PDF. The index holds some national tables by title only; a second pass for the
-  title word ΑΥΤΟΤΕΛΕΙΣ (2016-2025, 4,367 hits) found 22 of them with money for Tinos (F8). The Region
-  of South Aegean (5011) followed on 2026-09-26: ΤΗΝΟΥ 2015-2025 (7,409 hits) and the municipality's ΑΦΜ
-  (35), 393 decisions kept, 68 PDFs read (F9).
+  title word ΑΥΤΟΤΕΛΕΙΣ (2016-2025, 4,367 hits) found 22 of them with money for Tinos (F8), and a pass for
+  «3756» (the law under which the state pays off its own debts to municipalities) found the 2015 tranche
+  the others missed. The Region of South Aegean (5011) followed on 2026-09-26: ΤΗΝΟΥ 2015-2025 (7,409 hits)
+  and the municipality's ΑΦΜ (35), 393 decisions kept; then its development fund (14763, the Tinos
+  bodies' ΑΦΜ, 27 kept, every PDF read) (F9). Then, the same day, the Evangelistria foundation (99206908,
+  7,400 ΤΗΝΟΥ hits, 106 kept), the Decentralised Administration of the Aegean (50203), the Education
+  Ministry (100010887, 100015990, 100054501, 100081880) and the Culture Ministry (17, 100015966,
+  100081912), each with keep rules of its own (F10, PRIVACY.md Q7). Citizen Protection was probed and not
+  registered: nothing it publishes about Tinos is money for a Tinos body. Next candidates, from the
+  Decentralised Administration's reviews of the municipality's acceptances of money: the Green Fund,
+  the Ministry of Economy's public-investment programme, the tourism organisation ΕΟΤ.
+- **Monthly budget statements** (Diavgeia Β.3, «ΔΗΜΟΣΙΕΥΣΗ ΣΤΟΙΧΕΙΩΝ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛΟΓΙΣΜΟΥ») —
+  **ingested 2026-09-26**: every monthly statement of the municipality, February 2015 to November 2025,
+  validated to the cent like the year-end ones (`v_budget_month`, F11). The 2026 statements use the new
+  chart of accounts and are stored, not yet parsed.
 - **Local-government indicators, Interior Ministry** — `https://deiktesota.gov.gr/reports/1008/view/`,
   Power BI, no export, reuse with attribution. 2024 row for Tinos (reported): financial
   independence 28.33%, direct awards 98.54% of contracts (consistent with ΚΗΜΔΗΣ: 358 of 364

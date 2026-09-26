@@ -218,6 +218,37 @@ only (PRIVACY Q7).
   557, 845, 708, 625 (7,409; 2026 to September 518). The municipality's ΑΦΜ (800302968) as the term:
   35 in 2015-2025, the other Tinos bodies' ΑΦΜ none but the slaughterhouse's (1). An ΑΦΜ search is
   *anchored*: every hit is about that body (whitelist, PRIVACY.md Q7).
+- **No payment orders to the municipality before mid-2021, checked in the structured metadata** (2026-09-26,
+  in memory only). `/opendata/search` honours `type=` and echoes it (`decisionTypeUid:"Β.2.2"`), and a Region
+  payment decision's metadata names its payee's ΑΦΜ (`sponsor[].sponsorAFMName.afm`). Of all 22,529 Β.2.1 and
+  Β.2.2 decisions of the Region issued January 2015 to May 2021, every window echo-verified, one carries a Tinos
+  body's ΑΦΜ: the 2015 snow-clearing commitment 612Π7ΛΞ-1Ο4 (49,867.41, a Β.2.1). The same scan of June-December
+  2021 (3,270 decisions) finds exactly the four payment orders the ΑΦΜ search found. No search term can find the
+  Region's earlier payment orders to the municipality: Diavgeia holds none. Its money went through credits.
+- **The Region's development fund** (Περιφερειακό Ταμείο Ανάπτυξης Νοτίου Αιγαίου, uid 14763, ΑΦΜ 090355852)
+  is the paying agent of its investment programme: a credit «θα μεταβιβαστεί στο Π.Τ.Α.» and the fund pays the
+  bill, to the municipality for a project the municipality carries out. Its payment decisions name the payee's
+  ΑΦΜ. The municipality's ΑΦΜ as the term finds 27 of them (2015-2023); a scan of all 5,217 of the fund's Β.2.1
+  and Β.2.2 decisions of 2015-2025 finds the same 27. Registered as a grantor, counted as the Region (F9).
+- `fq=decisionTypeUid:"Β.2.2"` narrows a full-text search to one decision type (ΤΗΝΟΥ at 5011, 2020: 666 →
+  142); `fq=decisionType:"Β.2.2"` returns HTTP 200 and 0 hits, so a wrong fq field is not always refused
+  (`organizationUidz` is HTTP 400). The ingester sends neither.
+- **Other issuers naming ΤΗΝΟΥ, by year 2015-2025** (probe 2026-09-26, counts only), and the Tinos bodies' ΑΦΜ
+  found there 2015-2025:
+  - Αποκεντρωμένη Διοίκηση Αιγαίου (50203): 268, 541, 320, 302, 220, 195, 299, 216, 188, 213, 225; the
+    municipality's ΑΦΜ 4. The municipality's supervisor: legality reviews and ratifications of its decisions.
+  - Ιερό Ίδρυμα Ευαγγελιστρίας (99206908): 642, 720, 752, 811, 694, 468, 469, 613, 692, 739, 800 (its
+    letterhead names Tinos); the municipality's ΑΦΜ 30, the community enterprise's 1.
+  - The Education Ministry: 100010887 (the merged Culture-Education ministry, 2015: 21), 100015990 (2015-2019:
+    3, 141, 119, 148, 124), 100054501 (2019-2023: 97, 147, 103, 107, 53), 100081880 (2023-2025: 80, 193, 222);
+    uid 8 only before 2015. The school committees' ΑΦΜ 7, the municipality's 4.
+  - The Culture Ministry: 17 (2015: 2), 100015966 (2015-2023: 3, 177, 130, 141, 123, 78, 145, 133, 65),
+    100081912 (2023-2025: 75, 191, 316). The Panormos cultural centre's ΑΦΜ 3, the Tsoklis museum's 1.
+  - Citizen Protection: 19 (2015: 5), 100042756 (2018-2019: 14, 69), 100054489 (2019-2025: 40, 102, 59, 81,
+    179, 177, 180), and Climate Crisis and Civil Protection 100068650 (2021-2025: 12, 41, 37, 24, 42). The
+    police station's purchases and staff acts; under the ministries' whitelist 8 would be kept, none money for a
+    Tinos body (a 2015 state of emergency, a volunteer group's registration, the police's own expenses), and no
+    Tinos ΑΦΜ appears. Not registered.
 
 **Guard** (`tinos.sources.fulltext`): every page must echo the page and page size requested and
 hold `actualSize` records, each issued or co-issued by the organisation inside the window; the
@@ -233,6 +264,13 @@ in January-June against 1 for the letterhead word. Inequality is what proves `q`
   and all from January 2016. Earlier acts match by subject alone, so the 2015 ΚΑΠ allocations,
   whose subjects never name Tinos, are found with the term ΑΥΤΟΤΕΛΕΙΣ (uid 30: 17 hits, 15 kept;
   100010874: 161 hits, 118 kept, most about single municipalities).
+- **A national table can hide from both terms.** The state's 2015 payment of its debts to the
+  municipalities (article 27 of law 3756/2009, 7ΞΝ4465ΦΘΕ-Α63, 4 December 2015) names neither Tinos
+  in indexed text nor ΑΥΤΟΤΕΛΕΙΣ in its title; the term «3756» finds it (four Interior Ministry uids,
+  2015-2025: 77 hits, 8 kept, every year through the guard). Digits are valid terms. Where a statement
+  line has more than the tables found, search for a word of the law or programme it names.
+- **Searched again with a new keep rule, 2026-09-26:** the foundation (99206908), ΤΗΝΟΥ 2015-2025,
+  7,400 hits (the same yearly counts), 85 kept, 57 decisions new, no retries.
 
 ## Budget reconciliation, FY2024 (Δήμος Τήνου)
 
@@ -302,6 +340,12 @@ Parser validated: 247 rows, expenditure sum == document's own ΣΥΝΟΛΟ ΕΞ�
 
 **`issueDate` != reporting period.** May and June 2025 were both published 2025-07-07.
 Always parse `Περίοδος:` from the PDF.
+
+**Every month read, 2026-09-26** (F11). Layouts: `standard` (July 2015-2024), `apologistika` (February-June
+2015: rows at every level of the chart and spending per service; the 4-digit rows are summed per ΚΑΕ and must
+equal each side's «ΓΕΝΙΚΟ ΣΥΝΟΛΟ»), `2025`. Refused: December 2014 and January 2015 (a layout with the month's
+own figures, not the year to date) and January-August 2026 (the new chart of accounts, codes such as
+«010.1310101»). The municipality published no statement for October-November 2016 or January-February 2017.
 
 ## Municipality web presence
 - `dimostinou.gr` — WordPress, **wp-json fully open**.
@@ -609,12 +653,13 @@ over published, non-suspect, non-payroll `payment` rows.
 
 ## F8. Money given to Tinos: the Interior Ministry's allocations match the municipality's books to the cent where both are complete.
 
-**Claim.** From 2015 to 2025 the Interior Ministry allocated at least **28.83M €** to Δήμος Τήνου
+**Claim.** From 2015 to 2025 the Interior Ministry allocated at least **29.06M €** to Δήμος Τήνου
 in decisions whose PDFs we hold and whose amounts are validated against the documents themselves
-(1.75M in 2015 rising to 4.05M in 2025; 17.58M of it the monthly general ΚΑΠ). Where a ministry
+(1.98M in 2015 rising to 4.05M in 2025; 17.58M of it the monthly general ΚΑΠ; was 28.83M before the
+2015 tranche of the state's debts to the municipalities, 228,743.11, was found on 2026-09-26). Where a ministry
 allocation and a line of the municipality's year-end revenue statement describe the same money,
-they agree to the cent in 48 line-years (with the Region's credits of F9) and differ by exactly 0.15% in
-18 more. The ΚΑΠ investment
+they agree to the cent in 52 line-years (with the Region's payments of F9; 48 before them) and differ by
+exactly 0.15% in 18 more. The ΚΑΠ investment
 share («ΣΑΤΑ») agrees to the cent in all eleven years; school repairs and fire protection agree in
 every year, to the cent or by exactly 0.15%. What remains is timing, allocations booked under a line
 not identified here, lines other funders also feed, and three allocations not found (listed below).
@@ -699,7 +744,7 @@ less booked; other cells in € allocated minus booked):
 | Fire protection (1214, 0614) | ≈ | ≈ | ≈ | = | = | = | = | ≈ | = | = | = |
 | Advertising fee, cat. Δ (0715) | −17,464 | ≈ | −13 | ≈ | ≈ | ≈ | = | = | = | = | = |
 | «Βοήθεια στο Σπίτι» (0624) | | | | | | | | | = | = | ≈ |
-| ΚΑΠ other purposes (0619) | −63,929 | −270,171 | ≈ | +99,018 | +138 | +184,732 | +34,200 | = | = | −186,471 | = |
+| ΚΑΠ other purposes, the state's debts (0619) | +164,814 | −41,427 | ≈ | +99,018 | +138 | +184,732 | +34,200 | = | = | −186,471 | = |
 
 - **The index's gaps are closed.** Every negative general-ΚΑΠ, ΣΑΤΑ, fire and schools cell of the
   earlier version of this table was a decision the index held by subject only; each is now read and
@@ -725,23 +770,41 @@ less booked; other cells in € allocated minus booked):
   which charge it is, the documents read here do not say.
 - **Booked elsewhere.** The schools' ΚΑΠ in 2024 (118,730) appears in 4311 only for 47,240; school
   cleaners' pay (2020-2022) and the COVID and «Βοήθεια στο Σπίτι» 2016 allocations have no line of
-  their own in those years' statements; 0619 («ΚΑΠ για λοιπούς σκοπούς») holds more than the
-  desalination, road-waste and stray-animal allocations in 2015, 2016 and 2024, and less in 2018,
-  2020 and 2021 (booked elsewhere or the next year).
+  their own in those years' statements; 0619 («ΚΑΠ για λοιπούς σκοπούς») holds less than its
+  allocations in 2018, 2020 and 2021 (booked elsewhere or the next year; 2015, 2016 and 2024 below). **2018 is one instalment booked under another
+  line** (found 2026-09-26): the two desalination instalments of 98,870.00 each were booked 98,721.69 in
+  0619 and 98,721.69 in 1219 («Λοιπές επιχορηγήσεις»), together 197,443.38 = 197,740.00 less exactly
+  0.15%; with the 1219 half moved back, both lines of 2018 close. 2020: 0619 holds exactly the two
+  desalination instalments (92,020.00 + 112,265.00 = 204,285.00); the COVID and stray-animal
+  allocations (184,731.94) are not in it.
+- **0619 in 2015, 2016 and 2024, from the monthly statements** (F11, 2026-09-26). The state paid off its
+  own debts to the municipalities (article 27 of law 3756/2009) in two tranches of 228,743.11 for Tinos,
+  7ΞΝ4465ΦΘΕ-Α63 (4 December 2015; found by a search for «3756»: the index holds the table by title
+  only) and 7ΡΒ7465ΦΘΕ-19Θ (30 November 2016), booked in 0619 (the 2015 statements name the sub-account,
+  «0619.0001 Επιχορήγηση άρθρου 27 του Ν.3756/2009»): December 2015's 0619 receipt is 228,399.99, the
+  tranche less exactly 0.15%, and October-December 2016's is 335,801.07, the tranche and the desalination
+  instalment of 21 December (107,562.41) each less 0.15%. 2015's desalination instalments were booked in
+  1219 instead: 1219 of 2015, 232,262.14, is the two instalments (215,124.82) less 0.15% and the tourism
+  organisation ΕΟΤ's 17,460.00 for a conference (sub-account 1219.0006), to one cent. 2024: three
+  quarters of the schools' ΚΑΠ (3 × 23,830.00, the +71,490 of the schools' row) were booked in 0619 as
+  3 × 23,794.26, the rest of their year in 4311. Left unidentified: 50,653.90 of September 2015,
+  42,093.28 of May-August 2016, and 115,304.49 of November-December 2024 in 0619.
 - **Not found.** The advertising fee of 2015 (17,463.76 booked), 2015's welfare line (4,695.53;
-  five national welfare tables of 2015 are read and none has a Tinos row), and whatever 0619 held
-  beyond the identified allocations in 2015, 2016 and 2024.
+  five national welfare tables of 2015 are read and none has a Tinos row), and the 0619 remainders above.
+- **The 2015 state grants.** Line 1211 of 2015 (16,043.00) is the Decentralised Administration's four
+  election grants to the cent (F10).
 - **Not comparable one to one.** The property levy ΤΑΠ is mostly paid through electricity bills;
   the ministry's allocation is 13-15% of line 0441 every year, by construction. Investment
   programmes (1314, 1315, 1322) and state grants (1211, 1215, 1219) also receive money from other
   ministries, the Region and the EU; there the ministry's share is a floor (1322 matched exactly in
-  2020: 294,830.16). With the Region's credits (F9) the investment programmes match to the cent in
-  2019 too (205,756.11 + 13,094.40 = 218,850.51), 2018 is short by exactly the Region's 50,000.00
-  of 28 December 2017, booked in 2018, and 2017's surplus of 149,052.68 is that 50,000.00, the
-  Region's sewage-study credit of 39,709.88 (not found in the 2017-2018 statements), and 59,342.80 of
-  the ministry's Θησέας transfer that the municipality booked in 1216 («national part of the ΠΔΕ»):
-  59,970.67 in 1314 + 59,342.80 in 1216 = 119,313.47, the transfer to the cent. Line 1216 is not
-  added to the category: in 2023-2025 it holds 0.17-0.78M a year of other funders' money.
+  2020: 294,830.16). With the Region's payments (F9) the investment programmes match to the cent in
+  2018 (206,488.46) and 2019 (205,756.11 + 13,094.40 = 218,850.51), and the Region's 2015 money is line
+  1319 (added to the category) to one cent. 2017's surplus of 59,342.80 is the part of the ministry's
+  Θησέας transfer the municipality booked in 1216 («national part of the ΠΔΕ»): 59,970.67 in 1314 +
+  59,342.80 in 1216 = 119,313.47, the transfer to the cent. (The first version of this note also held
+  the Region's 50,000.00 of 28 December 2017 and its sewage-study credit of 39,709.88: both went to the
+  Region's fund, F9.) Line 1216 is not added to the category: in 2023-2025 it holds 0.17-0.78M a year of
+  other funders' money.
 
 **Queries.** `SELECT * FROM v_grant_reconciliation WHERE year BETWEEN 2015 AND 2025 ORDER BY
 category, year`; allocations: `SELECT budget_year, family, sum(amount) FROM v_grant_line GROUP BY
@@ -750,66 +813,161 @@ category, year`; allocations: `SELECT budget_year, family, sum(amount) FROM v_gr
 **Consequence.** Revenue lines 0611, 1311/0612, 1312/0615, 1214/0614, 0715 and 0624 can now be
 traced to the ministry's decisions euro for euro. The Region of South Aegean, the next grantor, is F9.
 
-## F9. Money given to Tinos by the Region of South Aegean: 0.30M in 2015-2025, and its investment credits close the 2018-2019 gaps to the cent.
+## F9. Money given to Tinos by the Region of South Aegean: 0.85M in 2015-2025, most of it through its development fund, and every programme-agreement payment found is booked to the cent.
 
-**Claim.** From 2015 to 2025 the Region of South Aegean (5011) gave Δήμος Τήνου at least **298,396.89 €**
-in decisions validated in words and figures: 276,076.89 in credits of its investment programme for
-projects the municipality carried out (the completion of the municipal gym, the landfill and sewage
-studies) and 22,320.00 paid under programme agreements. Its credits are the missing piece of F8's
-«investment programmes» line: 2019 matches to the cent and 2018 differs by one timed credit. Most of
-the Region's other payment orders to the municipality pay its own water bills (305.80 in 2021-2025), a
-sale, not a grant. The Region's hand in the programme-agreement lines (1213, 1326; 0.75M booked in
-2015-2025) is mostly not visible: 22,320.00 found.
+**Claim.** From 2015 to 2025 the Region of South Aegean gave Δήμος Τήνου at least **851,567.25 €** (38
+decisions, every amount validated in words and figures): 594,583.65 paid by its development fund
+(Περιφερειακό Ταμείο Ανάπτυξης Νοτίου Αιγαίου, uid 14763), the paying agent of the Region's investment
+programme, of which 419,929.13 under programme agreements and 174,654.52 for projects; 234,681.12 in
+credits transferred to the municipality directly (the landfill study); and 22,302.48 by the Region's own
+payment orders under programme agreements (from 2021, net of their withholdings). Set against the
+municipality's books, every payment found is booked to the cent in the year it was paid: 1319 in 2015
+(181,723.86, one cent less than the 181,723.87 paid), 1213 in 2016 (78,780.00), 1326 in 2017 (45,904.93),
+1322 in 2018 (206,488.46: the fund's 152,804.88 and the landfill credits' 53,683.58), the investment
+programmes in 2019 (with F8), 1213 in 2021 (13,002.48: the order's 13,020.00 less its own 17.52 of
+withholdings), 1213 and 1326 in 2022 (12,400.00 and 126,345.32) and 1326 in 2023 (144,098.88). The
+Region's other payment orders to the municipality pay its own water bills (305.80 in 2021-2025): a sale,
+shown, not counted.
 
-**How the decisions were found and read** (release `0.1.0+curated7`, 2026-09-26).
-- `tinos fulltext-backfill --issuer 5011`, ΤΗΝΟΥ 2015-2025 (7,409 hits) and the municipality's and the
-  slaughterhouse's ΑΦΜ (36 hits), guard as for the ministry (one year refused for unstable paging,
-  retried; contract above). The ministry's whitelist keeps grant words; the Region's money to the
-  municipality mostly has none, so two keep rules were added: a subject naming a Tinos body, and any
-  hit of a search for a Tinos body's own ΑΦΜ (its payment orders are titled only «ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ»).
-  The Region's hits name people far more often (licences, fishermen, bus operators, litigants, staff);
-  the rules about people were widened first and every stored subject re-checked (PRIVACY.md Q7).
-  393 Region decisions kept; 68 PDFs fetched with the owner's approval (17 MB, 0 failures).
-- Families of their own (`tinos.extract.grants.REGION_FAMILIES`): credits («Έγκριση/Διάθεση πίστωσης»,
-  counted) and their «Κατανομή ποσού» companions (the same tranche, listed); payment orders; programme
-  agreements, ΕΣΠΑ inclusions, licences and fines (listed). A credit for a project of the Region's own
-  on the island (`region_own_credit`, 43) is not money to Tinos: a credit counts only when its subject
-  names a Tinos body or the municipality's ΑΦΜ found it.
-- `read_region`: a credit's amount is the one its subject states, validated when the text gives the
-  same amount in words and figures and names the municipality as recipient («θα μεταβιβαστεί στο Δήμο
-  Τήνου ... Α.Φ.Μ. 800302968») or as the project's owner (10 of 10 validated). A payment order is read
-  from its own lines: amount between hash marks, amount in words, payee ΑΦΜ, and purpose («Για:»),
-  which sorts water bills from agreement payments (18 of 18 validated).
+**Corrected from the first version of this finding** (release `0.1.0+curated7`, 298,396.89 €). The
+Region's credits were counted as its payments; most are transfers to its fund, which pays the bill. The
+sewage study of Τήνος and Εξωμβούργο (2017, 39,709.88) was the Region's own, paid by its fund to the
+consultant: never the municipality's money. The 17.52 not explained in 2021 is the payment order's own
+withholdings. The credits behind the fund's payments are now listed (`region_credit_via_fund`, 7
+decisions, 214,364.40), not counted, and the fund's payments counted once.
 
-| Year | Investment credits € | Agreement payments € | Counted € | Water bills € (not counted) |
-|---|---:|---:|---:|---:|
-| 2015 | 8,755.24 | | 8,755.24 | |
-| 2017 | 89,709.88 | | 89,709.88 | |
-| 2018 | 156,488.46 | | 156,488.46 | |
-| 2019 | 13,094.40 | | 13,094.40 | |
-| 2021 | 8,028.91 | 13,020.00 | 21,048.91 | 47.72 |
-| 2022 | | | | 31.00 |
-| 2023 | | | | 115.46 |
-| 2024 | | 9,300.00 | 9,300.00 | 67.41 |
-| 2025 | | | | 44.21 |
+**How found and read** (release `0.1.0+curated8`, 2026-09-26).
+- `tinos fulltext-backfill`, the Region (5011) for ΤΗΝΟΥ and the Tinos bodies' ΑΦΜ, and its fund (14763)
+  for the Tinos bodies' ΑΦΜ: 420 decisions kept (393 and 27), 138 PDFs read. The fund's decisions keep only
+  acts naming a Tinos body or found by its ΑΦΜ (PRIVACY.md Q7).
+- `read_region`: a credit's recipient is where the credit «θα μεταβιβαστεί»: to Δήμο Τήνου (counted,
+  `region_credit`), to the fund (listed), or elsewhere (the Region's own project on the island, listed). The
+  fund's payment decisions (`read_fund`: approval in words and figures, or the order's total equal to the
+  voucher's) name the payee's ΑΦΜ; those to the municipality are counted: under a programme agreement when
+  the sub-project, the subject or a stored Region agreement says so, else for a project. A payment order is
+  read from its own lines, net of the withholdings it states («ΕΝΤΕΛΛΟΜΕΝΟ ΠΟΣΟ»).
 
-Investment credits: the municipal gym (2011ΕΠ76700012, ΣΑΕΠ 767): 8,755.24 (2015), 50,000.00 (28
-December 2017), 70,000.00, 10,082.03, 22,722.85 (2018), 13,094.40 (2019, the sports hall's floor);
-the landfill study (2014ΜΠ06700015, ΣΑΜΠ 067), paid to the municipality as the study's manager:
-18,000.00, 35,683.58 (2018), 8,028.91 (2021); the sewage study of Τήνος and Εξωμβούργο (2014ΜΠ06700018):
-39,709.88 (2017). Agreement payments: 13,020.00 (6ΚΗ17ΛΞ-ΓΔ5, 2021, an electronic application) and
-9,300.00 (9ΩΕΧ7ΛΞ-ΡΓ7, December 2024).
+| Year | Fund, programme agreements € | Fund, projects € | Credits to the municipality € | Region's orders (net) € | Counted € | Booked as |
+|---|---:|---:|---:|---:|---:|---|
+| 2015 | | 8,755.24 | 172,968.63 | | 181,723.87 | 1319: 181,723.86 |
+| 2016 | 78,780.00 | | | | 78,780.00 | 1213: = |
+| 2017 | 45,904.93 | | | | 45,904.93 | 1326: = |
+| 2018 | | 152,804.88 | 53,683.58 | | 206,488.46 | 1322: = |
+| 2019 | | 13,094.40 | | | 13,094.40 | investment programmes: = (F8) |
+| 2021 | | | 8,028.91 | 13,002.48 | 21,031.39 | 1213: = (13,002.48) |
+| 2022 | 138,745.32 | | | | 138,745.32 | 1213 + 1326: = |
+| 2023 | 156,498.88 | | | | 156,498.88 | 1326: =; 1213: 12,400.00 of 14,020.00 |
+| 2024 | | | | 9,300.00 | 9,300.00 | 1213: 9,300.00 of 50,718.27 |
 
-- **Against the books.** 2018's credits plus the 50,000.00 of 28 December 2017 are line 1322 of 2018 to
-  the cent (206,488.46); 2019's 13,094.40 closes that year's investment programmes exactly (F8). The
-  2021 agreement payment was booked in 1213/1326 as 13,002.48 (17.52 less, not explained). The sewage
-  study's 39,709.88 is not visible in the 2017-2018 revenue lines.
-- **Not found.** Payment orders before 2021: the Region's documents name the municipality's ΑΦΜ in
-  indexed text only from 2021, and ΤΗΝΟΥ cannot tell a payment order to the municipality from one to a
-  contractor on the island. Of 0.75M booked in the programme-agreement lines in 2015-2025, 22,320.00 is
-  found; agreements can also be with other public bodies. 33 programme-agreement acts and 28 ΕΣΠΑ
-  inclusions (one more posted twice) with Tinos bodies are stored and listed, not counted (entitlements
-  and budgets).
+- **Programme agreements.** 33 acts with Tinos bodies are stored and read (agreements, amendments, the
+  Region's committee decisions; the sums they state run from the electronic application's 13,020.00 of
+  2020 and the snow clearing's 49,867.41 of 2015 to budgets of 250,000 and 450,000) and listed, not
+  counted: entitlements and budgets, not money sent. What they promise arrives through the fund, whose
+  payments are the ones in the table; a fund payment is matched to its agreement by sub-project title.
+- **Open.** 1213 of 2015, 49,815.74: the snow-clearing commitment (612Π7ΛΞ-1Ο4, 49,867.41) less 51.67,
+  with no payment decision in Diavgeia. 1213 of 2017 (23,084.00), 1326 of 2020 (155,354.30), 1213 of 2023
+  (1,620.00), 2024 (41,418.27) and 2025 (35,553.93): no Region or fund payment found; programme agreements
+  can be with other public bodies.
+- **Not in Diavgeia.** Payment orders of the Region to the municipality before mid-2021: an echo-verified
+  scan of all 22,529 of its payment decisions of 2015-2021 found none naming the municipality's ΑΦΜ before
+  then (contract section). The fund's payments cover the years before.
 
-**Queries.** `SELECT * FROM v_grant_line WHERE grantor = 'region'`; `SELECT family, count(*) FROM
-grant_decision WHERE grantor = 'region' GROUP BY 1`.
+**Queries.** `SELECT * FROM v_grant_line WHERE grantor = 'region'`; `SELECT * FROM v_grant_reconciliation
+WHERE category IN ('programme_agreements', 'investment_programmes')`.
+
+## F10. Other public bodies: the Evangelistria foundation's statutory grant, 2.50M in 2015-2025, is line 2119 month by month; the 2015 election grants are line 1211.
+
+**Claim.** From 2015 to 2025 the Evangelistria foundation (Πανελλήνιο Ιερό Ίδρυμα Ευαγγελιστρίας, 99206908)
+paid Δήμος Τήνου **2,497,913.91 €** of the statutory grant it owes it, 10% of its gross receipts, in 25
+decisions read from their PDFs (1,594,676.80 of it spelled out in words; the rest stated in figures only,
+counted and marked). The municipality books it as prior years' revenue, line 2119: the statements of 2014-2015
+name the sub-account («2119.0002 Εισφορά (10% επί των ακαθαρίστων) Π.Ι.Ι.Ε.ΤΗΝΟΥ παρελθόντων ετών»), and
+the monthly statements date every one of the 25 payments to a jump of 2119 of the same amount: in the
+decision's month (18, and one in the October-December 2016 span that two missing statements leave), one or
+two months later (4), or in two instalments where the decision says it will be paid in instalments (2). Also counted: the Decentralised Administration's four election grants of 2015,
+16,043.00 €, which are line 1211 of 2015 to the cent (F8 had left it open); the Culture Ministry's grants
+to the Panormos cultural centre (35,000.00 € in 2018-2021; 2018's 10,000.00 is the centre's own line 1219)
+and the Tsoklis museum (3,000.00 € in 2022); and the Education Ministry's money for foreign-language books
+and a 2019 transfer for school equipment (10,961.02 € to the school committees; 1,718.35 € to the
+municipality in 2024-2025, line 1219 of December 2024 and December 2025 to the cent).
+
+**How found** (release `0.1.0+curated8`, 2026-09-26).
+- `tinos fulltext-backfill`, ΤΗΝΟΥ and the Tinos bodies' ΑΦΜ, 2015-2025, each issuer with keep rules of its
+  own (PRIVACY.md Q7): the foundation (7,400 ΤΗΝΟΥ hits: every act carries the word in its letterhead; kept
+  are acts naming a Tinos body, its statutory grants, and hits of the municipality's ΑΦΜ), the
+  Decentralised Administration (50203; subjects with a grant word), the Education Ministry (four uids) and
+  the Culture Ministry (three uids; acts naming a Tinos body). Each issuer's real subjects were read in
+  memory before anything was stored, and every kept subject was scanned for first names afterwards: places,
+  saints, programmes, a museum, the city of Sofia and a wreath («στεφάνου»), no person.
+- The foundation's statutory grants were first missed. Titles such as «Έναντι τακτικής επιχορήγησης έτους
+  2017» or «Τακτική επιχορήγηση Δήμου - Ι.ΤΗ.Π. - Ι.Μητρόπολη Σύρου» name no Tinos body, and the whitelist
+  kept only acts that do. Line 2119's monthly receipts showed payments without a decision (December 2020 and
+  2021); an echo-verified scan of the foundation's 7,399 decisions of 2015-2025, in memory, found them. The
+  rule `statutory_grant` was added for this issuer only (its grants to public and church bodies; the rules
+  about people still come first; a first-name scan of the 62 titles it adds found none), and the foundation
+  was searched again (all eleven years passed the guard; 57 decisions added). 29 PDFs were fetched: two pay
+  the municipality (60,000.00 in December 2020, 100,652.92 in December 2021), 27 pay other bodies (the Tinian
+  Culture Foundation, the foundation's elderly-care unit, the Panormos school of fine arts, a pension fund).
+- `read_foundation`: each numbered item of the decision, the recipient it names (the municipality, or the
+  school committee: 600.00 € in 2019 and 2022, not counted as the statutory grant), the amount after «ποσού»,
+  and its words when it spells them. Five PDFs print Greek in a shifted font (Τ as Η, Σ as Ζ, Ρ as Π, «Δήμο
+  Σήνου»); the digits are intact and the number words are read back through the shift, so they check the
+  figures too. `read_other`: the other grantors' single amount in words and figures («απόδοση επιχορήγησης
+  ύψους πέντε χιλιάδων τετρακοσίων εξήντα ευρώ (5460,00 €) στο Δήμο ΤΗΝΟΥ»), or rows for a Tinos body's ΑΦΜ
+  that add up to the stated total (school books: the column of the total, since a per-school subtotal sits
+  beside its parts).
+
+| Year | Decisions | Statutory grant paid € | In words € | 2119, all prior-year revenue € | When 2119 received it |
+|---|---:|---:|---:|---:|---|
+| 2015 | 1 | 121,085.57 | | 302,569.00 | December |
+| 2016 | 2 | 223,917.68 | | 267,734.28 | July + September (instalments); October-December |
+| 2017 | 3 | 247,580.94 | | 274,636.10 | July + August (instalments), October, December |
+| 2018 | 2 | 150,000.00 | | 274,369.81 | July, October |
+| 2019 | 2 | 146,474.85 | 146,474.85 | 164,551.99 | September, November |
+| 2020 | 2 | 120,000.00 | 60,000.00 | 131,757.47 | August (60,000.00 exactly), December |
+| 2021 | 3 | 265,652.92 | 165,000.00 | 295,029.77 | July, October, December |
+| 2022 | 3 | 316,449.76 | 316,449.76 | 330,025.71 | July, August, November (3,451.70 short) |
+| 2023 | 2 | 277,289.17 | 277,289.17 | 305,427.61 | July, December |
+| 2024 | 3 | 305,137.16 | 305,137.16 | 331,840.57 | August, October, December |
+| 2025 | 2 | 324,325.86 | 324,325.86 | 403,736.18 | October, December |
+
+- **Not found.** Two jumps of 2119 have no foundation decision: October 2015 (122,146.62) and December 2018
+  (105,741.53). Each is where a settlement of the previous year's grant would fall (2014's receipts were
+  settled in December 2015 with 121,085.57 «ως ολική εξόφληση», so something came before it; 2017's receipts
+  had 150,000.00 by October 2018, against 247,580.94 and 206,474.85 in the years either side). Neither the
+  full-text store nor the structured scan holds a decision for them; they are not counted.
+- **Water bills.** The foundation pays the municipality for the water of its buildings (20 decisions): a
+  sale, listed, not counted, as the Region's.
+- **The Culture Ministry's 2021 grant to the Panormos centre** (ΨΑΤ94653Π4-3ΟΜ): its title in Diavgeia says
+  6,500 €, its document grants 20,000.00 €, in words and figures («είκοσι χιλιάδων Ευρώ (20.000,00 €)»). The
+  document is the act; 20,000.00 is counted. The centre's 2021 statement is not in the store to settle it.
+- **Duplicates.** The Education Ministry posted its 2025 school-book decision twice (protocol 13931, two ADAs
+  2.5 minutes apart, identical documents, retyped titles): counted once (`duplicate_of`).
+- **Listed, not counted.** The Decentralised Administration's legality reviews of the municipality's own
+  decisions (27: among them its acceptance of other bodies' money, leads to grantors not yet searched: the
+  Green Fund, the Ministry of Economy's public-investment programme), its share-out of the dissolved Cyclades
+  port fund (2016: 174.45 € to the port fund «Τήνου-Άνδρου»), the Culture Ministry's commitment behind its
+  2018 grant, the Education Ministry's sports-facility programme notices and a 2024 commitment.
+
+**Queries.** `SELECT * FROM v_grant_line WHERE grantor NOT IN ('interior', 'region')`; `SELECT * FROM
+v_budget_month WHERE entity = '6296' AND side = 'revenue' AND kae = '2119'`.
+
+## F11. The monthly statements: every month from February 2015 to November 2025, and when each grant arrived.
+
+**Claim.** The municipality's monthly budget statements are now read for every month from February 2015
+to November 2025 (126 monthly statements besides the 11 year-end ones), each validated to the cent against
+its own totals on both sides. Their cumulative figures give what each revenue line collected in each month
+(`v_budget_month`), which dates the grants found by F8-F10: the Evangelistria foundation's 25 payments are 25
+jumps of line 2119 of the same amount (F10), the 2016 state-debt tranche and a desalination allocation are
+December 2016's 0619 receipt to the cent after 0.15% (F8), and the Education Ministry's school books of 2024
+and 2025 are December's 1219 receipts to the cent (F10).
+
+**How** (release `0.1.0+curated8`). All 125 monthly statements of the municipality stored in Diavgeia as
+Β.3 were fetched with the owner's approval (2026-09-26); `tinos build` parses 151 statements of all bodies
+and refuses 10 (layouts above). The view subtracts each month's cumulative figure from the previous
+statement's: `months` > 1 marks a change that spans a missing statement (October-December 2016: 3).
+
+**Limits.** The 2026 statements use the new chart of accounts and are not parsed. A month's figure is net of
+corrections booked in it (November 2022: 2119 rose 113,248.25, the foundation paid 116,699.95).
+
+**Query.** `SELECT * FROM v_budget_month WHERE entity = '6296' AND side = 'revenue' AND kae = '2119'`.
