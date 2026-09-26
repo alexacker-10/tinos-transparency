@@ -269,6 +269,9 @@ PERSONAL_RE = re.compile("|".join([
     r"ΚΡΑΤΟΥΜΕΝ", r"ΑΛΛΟΔΑΠ", r"ΔΩΡΕΑ",                          # detainees, donors
     r"ΕΝΑΡΜΟΝΙΣ",                                               # day-care vouchers: private structures and owners
     r"ΕΚΤΟΣ ΕΔΡΑΣ", r"ΠΡΟΙΣΤΑΜΕΝ",                              # staff travel; heads of unit
+    # staff travel in other words («Δέσμευση πίστωσης για υπηρεσιακές μετακινήσεις», «... μετακινούμενων υπαλλήλων»,
+    # the development and tourism ministries, 2026-09-26)
+    r"ΥΠΗΡΕΣΙΑΚ\w* ΜΕΤΑΚΙΝΗΣ", r"ΜΕΤΑΚΙΝΟΥΜΕΝ\w* (?:ΤΩΝ )?(?:ΥΠΑΛΛΗΛ|ΣΤΕΛΕΧ)",
     # one employee or official by name, not staff in general («υπαλλήλων» stays): expenses, travel,
     # payments «στο όνομα του», the Region's local official (Έπαρχος; «Επαρχιακή Οδός» is a road)
     _word(r"ΥΠΑΛΛΗΛ(?:ΟΣ|ΟΥ|Ο)"), r"ΣΤΟ ΟΝΟΜΑ Τ(?:ΟΥ|ΗΣ)", r"ΜΕΤΑΚΙΝΗΣΗΣ? Τ(?:ΟΥ|ΗΣ) ",
@@ -277,6 +280,9 @@ PERSONAL_RE = re.compile("|".join([
     r"ΜΕΤΑΚΙΝΗΣ(?:Η|ΗΣ|ΕΩΝ) (?!ΜΑΘΗΤ|ΤΩΝ ΜΑΘΗΤ|ΑΤΟΜΩΝ|ΑΜΕΑ|ΥΛΙΚ|ΟΧΗΜ|ΑΠΟΡΡΙΜ|ΕΠΙΒΑΤ)",
     _word(r"ΕΠΑΡΧ(?:ΟΣ|ΟΥ|Ο|ΟΙ|ΩΝ)"),
     _word(r"ΑΜΚΑ"), r"Α\.Δ\.Τ\.", r"@", r"ΔΙΚΗΓΟΡ",                  # identity numbers, e-mail, lawyers
+    # a book's author, a private individual (the Regional Union of Municipalities funds books «του Δρ. ‹name›» and
+    # «από τον ... συγγραφέα»; the Infrastructure Ministry pays «αποζημίωση ιδιώτη – μέλους Επιτροπής», 2026-09-26)
+    _word(r"ΣΥΓΓΡΑΦΕ(?:Α|ΑΣ|ΩΝ|ΙΣ)"), r"(?<![^\W\d_])ΔΡ\. ?[Α-Ω]", _word(r"ΙΔΙΩΤ(?:Η|ΗΣ|ΩΝ|ΕΣ)"),
     r"ΕΠΕΝΔΥΤΙΚ\w* ΣΧΕΔΙ",                                     # a business's investment plan (a sole trader)
     r"(?:^|(?<=[\s,(]))(?:Κ|ΚΚ|Κ\.Κ)\. [Α-Ω]{3,}",              # «..., κ. Ιωάννη ...» (not «ΚΕ.Δ.Α.Κ. για»)
     # who is named in a contract or a case: award contracts (sole traders among the contractors),
@@ -320,6 +326,9 @@ GRANT_TYPES = frozenset({"Β.1.1"})
 TINOS_BODY_RE = re.compile("|".join([
     r"ΔΗΜΟ[ΣΥ]? ΤΗΝΟΥ", r"ΛΙΜΕΝΙΚ\w* ΤΑΜΕΙ\w* ΤΗΝΟΥ", r"ΚΩΣΤΑ ΤΣΟΚΛΗ", r"ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ",
     r"ΑΓΙΑΣ ΤΡΙΑΔΟΣ ΓΥΡΛΑΣ", r"ΣΦΑΓΕΙΟΥ ΕΛΑΙΟΤΡΙΒΕΙΟΥ",
+    # the municipality in a list or abbreviated: «Αίτημα Δήμων Τήνου, Άνδρου, Πάρου», «με τους Δήμους Τήνου, Πάρου»,
+    # «Αίτημα Δ. Τήνου, Άνδρου» (the Regional Union of Municipalities, 2026-09-26)
+    r"ΔΗΜ(?:ΩΝ|ΟΥΣ) ΤΗΝΟΥ", r"(?<![^\W\d_])(?<!\.)Δ\. ?ΤΗΝΟΥ",
 ]))
 
 

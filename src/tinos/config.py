@@ -147,10 +147,18 @@ class Registry:
     version: int
     entities: list[Entity] = field(default_factory=list)
     grantors: list[Grantor] = field(default_factory=list)
+    # Public-investment project codes («ενάριθμος») of a Tinos body's project: {code: uid} (entities.yaml
+    # ``anchor_codes``). Like a Tinos body's ΑΦΜ, a search for one anchors every hit to that body (PRIVACY.md Q7).
+    anchor_codes: dict[str, str] = field(default_factory=dict)
 
     @property
     def in_scope(self) -> list[Entity]:
         return [e for e in self.entities if e.in_scope]
+
+    @property
+    def anchors(self) -> frozenset[str]:
+        """The search terms whose every hit is about a Tinos body: its ΑΦΜ, or one of its projects' codes."""
+        return frozenset({e.afm for e in self.in_scope if e.afm} | set(self.anchor_codes))
 
     @property
     def out_of_scope(self) -> list[Entity]:
@@ -194,6 +202,7 @@ def load_registry(path: Path) -> Registry:
 
     reg.entities += [mk(r, True) for r in doc.get("in_scope", [])]
     reg.entities += [mk(r, False) for r in doc.get("out_of_scope", [])]
+    reg.anchor_codes = {str(r["code"]): str(r["uid"]) for r in doc.get("anchor_codes", []) or []}
     for raw in doc.get("grantors", []) or []:
         years = raw.get("active_years")
         keep = tuple(raw["keep"]) if raw.get("keep") else Grantor.keep

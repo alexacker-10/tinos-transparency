@@ -18,17 +18,27 @@ entity       the registry in ``entities.yaml``.
 budget_line  one row per ΚΑΕ line of every stored budget execution statement
              (Β.3 PDF in ``data/raw/diavgeia/docs``), parsed by
              ``tinos.extract.statements`` and kept only if every column sums
-             to the document's own totals to the cent. The municipality's own
+             to the document's own totals to the cent, and refused when its
+             letterhead names another Tinos body. The municipality's own
              account of what was paid: the denominator for Diavgeia payments.
 procurement, procurement_party
              ΚΗΜΔΗΣ records (requests, notices, awards, contracts, payments)
              and the contractors and payees they name; see
              ``tinos.curated_khmdhs`` (PRIVACY.md Q6: no officials' names or
              emails, no addresses; natural persons masked as here).
+acceptance   one row per act of a Tinos body accepting other bodies' money
+             (``tinos.extract.acceptances``, from the title alone): the grantor
+             it names, the amount it states, and whether it is the acceptance,
+             a proposal or the budget amendment that follows. No subject: a title
+             can name a private donor.
 grant_decision, grant_line
              other bodies' decisions giving money to Tinos, found by
              full-text search, and the amounts their PDFs give Δήμος Τήνου,
              each with how it was validated; see ``tinos.curated_grants``.
+             ``paid_by``: the document through which a decision's money is
+             counted instead (a transfer or payment order paying it, a later
+             decision replacing it); its lines keep their amounts, not their
+             category.
              ``budget_line.grant_category`` sorts revenue lines into the same
              categories (``tinos.extract.grants.revenue_category``).
 
@@ -144,9 +154,11 @@ import pyarrow.parquet as pq
 from tinos import __version__
 from tinos.config import Settings, load_registry
 
-CURATED_SCHEMA_VERSION = 7  # 2: budget_line; 3: procurement, procurement_party; 4: budget_line.description;
+CURATED_SCHEMA_VERSION = 8  # 2: budget_line; 3: procurement, procurement_party; 4: budget_line.description;
 #                              5: grant_decision, grant_line, budget_line.grant_category;
-#                              6: grant_decision.found_by, text_indexed; 7: grantor on both grant tables
+#                              6: grant_decision.found_by, text_indexed; 7: grantor on both grant tables;
+#                              8: acceptance; grant_line family per amount; budget_line of the 2026 chart;
+#                                 grant_decision.paid_by
 PIPELINE_VERSION = f"{__version__}+curated{CURATED_SCHEMA_VERSION}"
 ATHENS = ZoneInfo("Europe/Athens")
 UTC = timezone.utc
@@ -694,15 +706,29 @@ def pdftotext_version() -> str | None:
     return first[0] if first else "pdftotext"
 
 
+def statement_body(text: str) -> str | None:
+    """The body a statement's letterhead names: the first line under «ΕΛΛΗΝΙΚΗ ΔΗΜΟΚΡΑΤΙΑ»."""
+    lines = [l.strip() for l in text.splitlines()]
+    for i, line in enumerate(lines):
+        if strip_accents(line).upper().startswith("ΕΛΛΗΝΙΚΗ ΔΗΜΟΚΡΑΤΙΑ"):
+            return next((l for l in lines[i + 1:] if l), None)
+    return None
+
+
 def budget_rows(raw_dir: Path, statements: dict[str, tuple[str, date | None]],
-                stamp: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, str]]:
+                stamp: dict[str, Any], names: dict[str, str] | None = None) -> tuple[list[dict[str, Any]], dict[str, str]]:
     """One row per ΚΑΕ line of every stored execution statement that parses exactly.
 
     ``statements`` maps ADA -> (entity, act date) for published Β.3 execution
     statements. Only the first capture of each PDF is read; other documents are
     ignored. Returns the rows and {ADA: reason} for statements refused by the
-    parser (unsupported layout, or columns that do not sum to the document).
+    parser (unsupported layout, or columns that do not sum to the document), or
+    posted by one Tinos body with another's letterhead (``names``: uid -> name;
+    ΨΣΓΟΟΞΥΒ-ΤΣΘ, posted by the Panormos centre, is the Tsoklis museum's
+    statement of December 2021).
     """
+    def tokens(name: str) -> set[str]:
+        return {w for w in re.findall(r"[^\W\d_]+", strip_accents(name).upper()) if len(w) > 2}
     from tinos.extract.grants import revenue_category
     from tinos.extract.statements import StatementError, parse_statement
 
@@ -721,6 +747,13 @@ def budget_rows(raw_dir: Path, statements: dict[str, tuple[str, date | None]],
             st = parse_statement(text)
         except StatementError as exc:
             refused[ada] = str(exc)
+            continue
+        body = tokens(statement_body(text) or "")
+        own = tokens((names or {}).get(entity, ""))
+        other = None if own and own <= body else next(
+            (uid for uid, n in (names or {}).items() if uid != entity and tokens(n) and tokens(n) <= body), None)
+        if other:
+            refused[ada] = f"the statement of {other}, posted by {entity}"
             continue
         year_end = (st.period_end.month, st.period_end.day) == (12, 31)
         for ln in st.lines:
@@ -836,7 +869,8 @@ SCHEMAS: dict[str, pa.Schema] = {
         pa.field("category", S()), pa.field("protocol_number", S()), pa.field("submission_ts", S()),
         pa.field("found_by", L(S())), pa.field("text_indexed", pa.bool_()),
         pa.field("read_status", S()), pa.field("n_amounts", pa.int32()),
-        pa.field("n_validated", pa.int32()), pa.field("duplicate_of", S()), pa.field("pdf_sha256", S()),
+        pa.field("n_validated", pa.int32()), pa.field("duplicate_of", S()), pa.field("paid_by", S()),
+        pa.field("pdf_sha256", S()),
         pa.field("source_ada", S()), pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),
     ]),
     "grant_line": pa.schema([
@@ -847,6 +881,12 @@ SCHEMAS: dict[str, pa.Schema] = {
         pa.field("family", S()), pa.field("category", S()), pa.field("amount", pa.float64()),
         pa.field("net_paid", pa.float64()), pa.field("method", S()), pa.field("validation", S()), pa.field("detail", S()),
         pa.field("duplicate_of", S()),
+        pa.field("source_ada", S()), pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),
+    ]),
+    "acceptance": pa.schema([
+        pa.field("ada", S()), pa.field("entity", S()), pa.field("date", pa.date32()), pa.field("year", pa.int32()),
+        pa.field("type", S()), pa.field("status", S()), pa.field("grantor", S()), pa.field("kind", S()),
+        pa.field("amount_stated", pa.float64()),
         pa.field("source_ada", S()), pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),
     ]),
     "procurement_party": pa.schema([
@@ -864,7 +904,7 @@ SORT_KEYS = {
     "counterparty": ("afm",), "entity": ("uid",),
     "budget_line": ("entity", "period_end", "side", "service", "kae"),
     "procurement": ("entity", "endpoint", "ref"), "procurement_party": ("entity", "endpoint", "ref", "role", "afm"),
-    "grant_decision": ("date", "ada"), "grant_line": ("date", "grant_line_id"),
+    "grant_decision": ("date", "ada"), "grant_line": ("date", "grant_line_id"), "acceptance": ("entity", "date", "ada"),
 }
 
 
@@ -897,10 +937,19 @@ def build_curated(settings: Settings) -> BuildResult:
     review = load_amount_review(review_path)
     duplicates = load_duplicate_postings(review_path)
     statements: dict[str, tuple[str, date | None]] = {}
+    acceptances: list[dict] = []
+    from tinos.extract.acceptances import classify as classify_acceptance
 
     for a in iter_raw_acts(settings.raw_dir):
         source_hashes.append(a.sha256)
         acts.append(act_row(a, stamp))
+        if (acc := classify_acceptance(a.doc.get("subject"))) is not None:
+            day = athens_date(a.doc.get("issueDate"))
+            acceptances.append({
+                "ada": a.ada, "entity": str(a.doc.get("organizationId")), "date": day, "year": day.year if day else None,
+                "type": a.doc.get("decisionTypeId"), "status": a.doc.get("status"), "grantor": acc["grantor"],
+                "kind": acc["kind"], "amount_stated": acc["amount_stated"] / 100 if acc["amount_stated"] is not None else None,
+                "source_ada": a.ada, "source_path": str(a.path), "source_sha256": a.sha256, **stamp})
         t, status = a.doc.get("decisionTypeId"), a.doc.get("status")
         if status == "PUBLISHED" and is_execution_statement(t, a.doc.get("subject")):
             statements[a.ada] = (str(a.doc.get("organizationId")), athens_date(a.doc.get("issueDate")))
@@ -925,7 +974,8 @@ def build_curated(settings: Settings) -> BuildResult:
     propagated = propagate_payee_class(payments)
     pdftotext = pdftotext_version()
     if pdftotext:
-        budget, refused = budget_rows(settings.raw_dir, statements, stamp)
+        names = {e.uid: e.name for e in load_registry(settings.entities_file).in_scope}
+        budget, refused = budget_rows(settings.raw_dir, statements, stamp, names)
     else:
         budget, refused = [], {}
         print("warning: pdftotext not installed; budget_line is empty", file=sys.stderr)
@@ -933,7 +983,7 @@ def build_curated(settings: Settings) -> BuildResult:
     procurement, parties = procurement_rows(settings.raw_dir, stamp)
     from tinos.curated_grants import grant_rows
     registry = load_registry(settings.entities_file)
-    anchors = frozenset(e.afm for e in registry.in_scope if e.afm)
+    anchors = registry.anchors
     grant_decisions, grant_lines = (grant_rows(settings.raw_dir, stamp, anchors, registry)
                                     if pdftotext else ([], []))
     tables = {
@@ -948,6 +998,7 @@ def build_curated(settings: Settings) -> BuildResult:
         "procurement_party": to_table("procurement_party", parties),
         "grant_decision": to_table("grant_decision", grant_decisions),
         "grant_line": to_table("grant_line", grant_lines),
+        "acceptance": to_table("acceptance", acceptances),
     }
     out = settings.curated_dir
     out.mkdir(parents=True, exist_ok=True)

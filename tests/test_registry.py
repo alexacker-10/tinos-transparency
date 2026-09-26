@@ -36,6 +36,12 @@ class Registry(unittest.TestCase):
         self.assertEqual(reg.grantor_group("100081912"), "interior")
         self.assertEqual(reg.keep_rules("100081912"), ("grant_words", "investment_acts", "tinos_body"))
 
+    def test_a_project_code_anchors_like_an_afm(self):
+        reg = registry(YAML + 'anchor_codes:\n  - {code: "2018ΣΕ36700029", uid: "6296"}\n')
+        self.assertEqual(reg.anchors, frozenset({"800302968", "2018ΣΕ36700029"}))
+        self.assertEqual(reg.anchor_codes, {"2018ΣΕ36700029": "6296"})
+        self.assertEqual(registry().anchors, frozenset({"800302968"}))
+
     def test_an_unknown_keep_rule_is_refused(self):
         with self.assertRaises(ValueError):
             registry(YAML.replace("keep: [grant_words]", "keep: [grant_word]"))

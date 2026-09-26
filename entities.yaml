@@ -107,6 +107,13 @@ out_of_scope:
 # decision's subject) as well. Uid 12 (the 2009-2011 ministry) is not searched.
 # `group` is the grantor as the curated layer reports it (a ministry under all its uids, the Region with its
 # development fund); `keep` narrows what the privacy whitelist keeps from that issuer (PRIVACY.md Q7).
+# Public-investment project codes of a Tinos body's projects. A search for one anchors every hit to that body, as its
+# ΑΦΜ does (PRIVACY.md Q7): the Economy Ministry's transfers for the waste-processing project name neither the
+# municipality's ΑΦΜ nor Tinos in every act (FINDINGS F12).
+anchor_codes:
+  - code: "2018ΣΕ36700029"
+    uid: "6296"
+    note: Επεξεργασία νέων ΑΣΑ Δήμου Τήνου - Μεταβατική περίοδος (ΣΑΕ 367, the Economy Ministry's special programme for the South Aegean)
 grantors:
   - uid: "30"
     name: ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ
@@ -231,3 +238,115 @@ grantors:
     group: culture
     active_years: [2023, 2026]
     keep: [tinos_body]
+  # Found from the municipality's own acts (2026-09-26): 178 of its decisions of 2015-2026 concern other bodies' money
+  # and most name the grantor. Each was probed in memory first (yearly ΤΗΝΟΥ counts, its real subjects under each
+  # keep rule, a first-name scan of what would be kept) and searched for ΤΗΝΟΥ and the municipality's ΑΦΜ.
+  - uid: "53992"
+    name: ΠΕΡΙΦΕΡΕΙΑΚΗ ΕΝΩΣΗ ΔΗΜΩΝ  (ΠΕΔ) ΝΟΤΙΟΥ ΑΙΓΑΙΟΥ
+    latin_name: pednotiouaigaiou
+    group: ped
+    active_years: [2016, 2026]
+    keep: [tinos_body]
+    note: >
+      The Regional Union of Municipalities of the South Aegean: its board grants member municipalities' requests
+      («Αίτημα Δήμου Τήνου για χρηματοδότηση ...») and pays them by payment orders (from 2021). The municipality's
+      acceptances of 2021-2025 match every 1219 receipt of those years with no decision. About 630 ΤΗΝΟΥ hits
+      2014-2026, a quarter about people (its board members, staff, books' authors); only acts naming a Tinos body
+      (in lists too: «Δήμων Τήνου, Άνδρου», «Δ. Τήνου») and hits of the municipality's ΑΦΜ are kept.
+  - uid: "99201054"
+    name: ΠΡΑΣΙΝΟ ΤΑΜΕΙΟ
+    latin_name: prasinotameio
+    group: green_fund
+    active_years: [2014, 2026]
+    note: >
+      The Green Fund (Environment Ministry): pays the municipality's projects under its «Περιβαλλοντικό Ισοζύγιο»
+      programmes by account («Έγκριση δαπάνης για τη χρηματοδότηση του Χου λογαριασμού») and releases escrow
+      («οριστικός δικαιούχος ... μέσω παρακαταθήκης»). 37 ΤΗΝΟΥ hits 2014-2026, none about a person: the default
+      rules.
+  - uid: "100015969"
+    name: ΥΠΟΥΡΓΕΙΟ ΝΑΥΤΙΛΙΑΣ ΚΑΙ ΝΗΣΙΩΤΙΚΗΣ ΠΟΛΙΤΙΚΗΣ
+    latin_name: nautilias_new
+    group: shipping
+    active_years: [2015, 2026]
+    keep: [tinos_body]
+    note: >
+      Its General Secretariat for the Aegean and Island Policy grants the municipality water works and desalination
+      rentals («Επιχορήγηση του Δήμου Τήνου ...»), approves each payment («Έγκριση πληρωμής των δαπανών ...») and
+      allocates public-investment payment authority (ΣΑΕ 330, ΣΑΝΑ 233/533). About 940 ΤΗΝΟΥ hits, most the port
+      and coast guard's own; only acts naming a Tinos body and hits of the municipality's or the port fund's ΑΦΜ.
+  - uid: "100025905"
+    name: ΥΠΟΥΡΓΕΙΟ ΥΠΟΔΟΜΩΝ ΚΑΙ ΜΕΤΑΦΟΡΩΝ
+    latin_name: ymeneo
+    group: infrastructure
+    active_years: [2016, 2026]
+    keep: [tinos_body]
+    note: >
+      Road grants to the municipality (2021, 2024), the heliport (2023), programme agreements with the port fund.
+      Most of its ΤΗΝΟΥ hits are payments to other agencies that mention the island; only acts naming a Tinos body.
+  - uid: "100016011"
+    name: ΥΠΟΥΡΓΕΙΟ ΥΠΟΔΟΜΩΝ, ΜΕΤΑΦΟΡΩΝ ΚΑΙ ΔΙΚΤΥΩΝ
+    latin_name: YYMD
+    group: infrastructure
+    active_years: [2015, 2016]
+    keep: [tinos_body]
+  - uid: "100054486"
+    name: ΥΠΟΥΡΓΕΙΟ ΨΗΦΙΑΚΗΣ ΔΙΑΚΥΒΕΡΝΗΣΗΣ
+    latin_name: mindigital
+    group: digital
+    active_years: [2019, 2026]
+    keep: [tinos_body]
+    note: The citizen-service centres' upgrade (2022) and smart-city applications (Recovery Fund, 2025).
+  - uid: "15"
+    name: ΥΠΟΥΡΓΕΙΟ ΟΙΚΟΝΟΜΙΚΩΝ
+    latin_name: minfin
+    group: economy
+    active_years: [2015, 2026]
+    keep: [tinos_body]
+    note: >
+      From 2023 the Ministry of National Economy and Finance, which runs the public-investment programme (ΠΔΕ) and
+      the ΕΣΠΑ: financing of the municipality's projects («Κατανομή Χρηματοδότησης σε βάρος της ΣΑ Ε367 ... (έργο
+      Τήνου)»). Before 2023 its ΤΗΝΟΥ hits are tax and property acts; only acts naming a Tinos body are kept.
+  - uid: "100016002"
+    name: ΥΠΟΥΡΓΕΙΟ ΟΙΚΟΝΟΜΙΑΣ, ΑΝΑΠΤΥΞΗΣ ΚΑΙ ΤΟΥΡΙΣΜΟΥ
+    latin_name: YOAT
+    group: economy
+    active_years: [2015, 2016]
+    keep: [tinos_body]
+    note: >
+      The ministry that ran the ΠΔΕ and the ΕΣΠΑ 2015-2016 («ΧΡΗΜΑΤΟΔΟΤΗΣΗ ΚΑΙ ΚΑΤΑΝΟΜΗ ΕΡΓΩΝ ΕΣΠΑ»), and its
+      successors under other names (100025890, 100054495, 100081597). Their ΤΗΝΟΥ hits are mostly calls, state aid
+      to businesses and energy projects; only acts naming a Tinos body and hits of the municipality's ΑΦΜ are kept.
+  - uid: "100025890"
+    name: ΥΠΟΥΡΓΕΙΟ ΟΙΚΟΝΟΜΙΑΣ ΚΑΙ ΑΝΑΠΤΥΞΗΣ
+    latin_name: mindev
+    group: economy
+    active_years: [2016, 2019]
+    keep: [tinos_body]
+  - uid: "100054495"
+    name: ΥΠΟΥΡΓΕΙΟ ΑΝΑΠΤΥΞΗΣ ΚΑΙ ΕΠΕΝΔΥΣΕΩΝ
+    latin_name: mindev_2019
+    group: economy
+    active_years: [2019, 2023]
+    keep: [tinos_body]
+  - uid: "100081597"
+    name: ΥΠΟΥΡΓΕΙΟ ΑΝΑΠΤΥΞΗΣ
+    latin_name: mindev2023
+    group: economy
+    active_years: [2023, 2026]
+    keep: [tinos_body]
+  - uid: "99221315"
+    name: ΕΛΛΗΝΙΚΟΣ ΟΡΓΑΝΙΣΜΟΣ ΤΟΥΡΙΣΜΟΥ (ΕΟΤ)
+    latin_name: eot
+    group: eot
+    active_years: [2015, 2026]
+    keep: [tinos_body]
+    note: >
+      The tourism organisation paid the municipality 17,460.00 in February 2015 (1219.0006, a 2009 conference);
+      its other ΤΗΝΟΥ hits are its own offices' spending and hospitality. Only acts naming a Tinos body.
+  - uid: "100025893"
+    name: ΥΠΟΥΡΓΕΙΟ ΤΟΥΡΙΣΜΟΥ
+    latin_name: mintourneo
+    group: tourism
+    active_years: [2016, 2026]
+    keep: [tinos_body]
+    note: Financed the municipality in 2026 (accepted in January 2026); nothing for a Tinos body before.

@@ -16,9 +16,16 @@ grant_decision  one row per decision kept by ``tinos fulltext-backfill`` (the
                 is one a search for ΤΗΝΟΥ could not have found.
 grant_line      one row per amount for a Tinos body read from a stored PDF
                 (``tinos.extract.grants.read_decision``; the Region's with
-                ``read_region``), with how it was validated against the
-                document. ``grantor`` is ``interior`` (the four Interior
-                Ministry uids) or ``region`` (the Region of South Aegean).
+                ``read_region``; the grantors the municipality's own
+                acceptances name with ``tinos.extract.grantors``), with how it
+                was validated against the document. ``grantor`` is the
+                issuer's reporting group in ``entities.yaml`` (``interior``
+                for the Interior Ministry's uids, ``region`` for the Region
+                and its fund, ``ped``, ``shipping``, ...). A decision whose
+                money reaches Tinos through another stored document (a
+                transfer paying an approval, a payment order paying a grant)
+                carries ``paid_by``; its lines lose their category, so the
+                money counts once (``_mark_paid_through``).
 
 Double postings. The same decision is sometimes posted twice (same issuer,
 protocol number, issue date and subject, minutes apart, two ADAs): the
@@ -40,9 +47,10 @@ from pathlib import Path
 from typing import Any
 
 from tinos.config import KEEP_RULES, Registry
-from tinos.extract.grants import (CATEGORY_OF_FAMILY, FOUNDATION_UID, ISSUER_FAMILIES, REGION_UIDS, TINOS_TPD_CODE,
-                                  budget_year, family_of, read_decision, read_foundation, read_other, read_region,
-                                  recipient_of)
+from tinos.extract import grantors
+from tinos.extract.grants import (FOUNDATION_UID, ISSUER_FAMILIES, REGION_UIDS, TINOS_TPD_CODE, budget_year,
+                                  category_of, family_of, read_decision, read_foundation, read_other, read_region,
+                                  recipient_of, refine_family)
 from tinos.sources.fulltext import KEEP_ALL, TINOS_BODY_RE, fold, issue_day, whitelist_reason
 
 
@@ -98,14 +106,16 @@ def keep_rules_for(ada: str, issuer: str, orgs: dict[str, set[str]], registry: R
 
 # The other grantors' families whose documents state money for a Tinos body; the rest (legality reviews, commitments,
 # programme notices) are listed, not read for an amount.
-OTHER_READ = frozenset({"election_costs", "school_books", "pde_financing", "culture_grant"})
+OTHER_READ = frozenset({"election_costs", "school_books", "pde_financing", "culture_grant", "ped_payment", "ped_grant",
+                        "green_fund_payment", "shipping_grant", "shipping_payment", "eot_payment", "rrf_payment",
+                        "tourism_grant"})
 
 
 def grant_rows(raw_dir: Path, stamp: dict[str, Any], anchors: frozenset[str] = frozenset(),
                registry: Registry | None = None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """(grant_decision rows, grant_line rows). Reads each stored PDF with ``pdftotext -layout``.
 
-    ``anchors``: the Tinos bodies' ΑΦΜ; a decision found by one of them is kept whatever its subject,
+    ``anchors``: the Tinos bodies' ΑΦΜ and their projects' codes; a decision found by one is kept whatever its subject,
     as ``tinos fulltext-backfill`` kept it. ``registry``: each issuer's whitelist keep rules and the
     grantor it is reported as (``entities.yaml``); without it every rule applies and an issuer is the
     Region or the Interior Ministry.
@@ -136,9 +146,14 @@ def grant_rows(raw_dir: Path, stamp: dict[str, Any], anchors: frozenset[str] = f
         pdf_sha = hashlib.sha256(pdf.read_bytes()).hexdigest() if pdf.is_file() else None
         status = "no_pdf"
         amounts = []
+        text = ""
         if pdf_sha:
             text = subprocess.run(["pdftotext", "-layout", str(pdf), "-"], capture_output=True, text=True, check=True).stdout
-            if region:  # the payment order's purpose line and the credit's recipient refine the family
+            if issuer in grantors.READERS or family == "rrf_payment":  # the grantors found from the acceptances (F12)
+                reader = grantors.READERS.get(issuer, grantors.read_pde)
+                amounts, status, family = reader(text, family, subject,
+                                                 codes=registry.anchor_codes if registry else None)
+            elif region:  # the payment order's purpose line and the credit's recipient refine the family
                 amounts, status, family = read_region(text, subject, family, agreements)
             elif issuer == FOUNDATION_UID:  # its items name their recipients; the statutory grant's refine the family
                 if family in ("foundation_statutory_grant", "foundation_grant"):
@@ -149,14 +164,17 @@ def grant_rows(raw_dir: Path, stamp: dict[str, Any], anchors: frozenset[str] = f
                 amounts, status = read_other(text, subject, afm_uid) if family in OTHER_READ else ([], "listed")
             else:
                 amounts, status = read_decision(text, subject)
+                family = refine_family(family, text)
         if own and (not pdf_sha or family != "region_credit"):
             # the Region's own project, paid through its fund or to another body (or not read): not money to Tinos
             family, amounts, status = "region_own_credit", [], "absent" if pdf_sha else status
-        category = CATEGORY_OF_FAMILY.get(family)
         grantor = registry.grantor_group(issuer) if registry else "region" if region else "interior"
         # the year the money is for; the foundation's statutory grant names the year of the receipts it is 10% of, but
         # is booked when paid, so its payment year counts
         year_for = day.year if family.startswith("foundation_") else budget_year(subject, day.year)
+        if family == "ped_grant" and text:  # the Union's budget year the grant is charged to (December 2021: 2022)
+            year_for = grantors.ped_budget_year(text) or year_for
+        category = category_of(family, year_for)
         decisions.append({
             "ada": rec["ada"], "issuer": issuer, "grantor": grantor,
             "issuer_label": (rec.get("organization") or {}).get("label"),
@@ -169,20 +187,79 @@ def grant_rows(raw_dir: Path, stamp: dict[str, Any], anchors: frozenset[str] = f
             "read_status": status, "n_amounts": len(amounts),
             "n_validated": sum(1 for a in amounts if a.validation and a.amount is not None),
             "pdf_sha256": pdf_sha, "source_ada": rec["ada"], "source_path": str(path), "source_sha256": sha, **stamp,
+            "_cites": grantors.cited_adas(text) - {rec["ada"]} if text else set(),
         })
         for i, a in enumerate(amounts):
             lines.append({
                 "grant_line_id": f"{rec['ada']}:{i}", "line_no": i, "ada": rec["ada"], "issuer": issuer, "grantor": grantor,
                 "recipient_tpd_code": TINOS_TPD_CODE, "recipient_entity": a.recipient or recipient_of(subject),
                 "date": day, "year": day.year, "budget_year": year_for, "status": rec.get("status"),
-                "family": family, "category": category,
+                # an amount of its own purpose (a table paying two, one column each) carries that family and category
+                "family": a.family or family, "category": category_of(a.family, year_for) if a.family else category,
                 "amount": a.amount / 100 if a.amount is not None else None,
                 "net_paid": a.net / 100 if a.net is not None else None,
                 "method": a.method, "validation": a.validation, "detail": a.detail,
                 "source_ada": rec["ada"], "source_path": str(pdf), "source_sha256": pdf_sha, **stamp,
             })
     _mark_duplicates(decisions, lines)
+    _mark_paid_through(decisions, lines)
     return decisions, lines
+
+
+# A document counted instead of the one it pays: (the paying family, the families it pays, the issuers).
+PAYS = (
+    # the Aegean secretariat's transfer to the project account pays the approval it cites
+    ("pde_authorisation", {"shipping_payment"}, {"100015969"}),
+    # the Regional Union's payment order pays the board grant it cites
+    ("ped_payment", {"ped_grant"}, {"53992"}),
+)
+
+
+def _mark_paid_through(decisions: list[dict[str, Any]], lines: list[dict[str, Any]]) -> None:
+    """``paid_by``: the stored document through which a decision's money is counted instead of its own amount.
+
+    A transfer or payment order citing an approval or grant it pays (its ADA in the text); a later decision of the
+    Regional Union citing an earlier grant replaces it (the 2023 water-shortage campaign was not paid, «δεν
+    απορροφήθηκε», and was granted again in 2024); and a Union grant followed within a year by a payment order of
+    the same amount that cites nothing of it (Karagoutis Training Camp, April and August 2024). Their lines keep
+    their amounts and lose their category: listed, not counted."""
+    by_ada = {d["ada"]: d for d in decisions}
+    for d in decisions:
+        d["paid_by"] = None
+    for payer_family, paid_families, issuers in PAYS:
+        for d in sorted(decisions, key=lambda x: (x["date"], x["ada"])):
+            if d["family"] != payer_family or d["issuer"] not in issuers or d["duplicate_of"]:
+                continue
+            for ada in sorted(d["_cites"]):
+                cited = by_ada.get(ada)
+                if cited and cited["issuer"] == d["issuer"] and cited["family"] in paid_families and not cited["paid_by"]:
+                    cited["paid_by"] = d["ada"]
+    union = [d for d in decisions if d["issuer"] == "53992" and not d["duplicate_of"]]
+    for d in union:  # a later decision replacing an earlier grant
+        for ada in d["_cites"]:
+            cited = by_ada.get(ada)
+            if cited and cited in union and cited["family"] == "ped_grant" and cited["date"] < d["date"] \
+                    and not cited["paid_by"]:
+                cited["paid_by"] = d["ada"]
+    amount_of = {}
+    for line in lines:
+        if line["amount"] is not None and line["validation"]:
+            amount_of.setdefault(line["ada"], []).append(line["amount"])
+    used = {d["paid_by"] for d in union if d["paid_by"]}
+    for grant in sorted((d for d in union if d["family"] == "ped_grant" and not d["paid_by"]), key=lambda x: x["date"]):
+        for pay in sorted((d for d in union if d["family"] == "ped_payment" and d["ada"] not in used),
+                          key=lambda x: x["date"]):
+            if 0 <= (pay["date"] - grant["date"]).days <= 366 and amount_of.get(pay["ada"]) == amount_of.get(grant["ada"]):
+                grant["paid_by"] = pay["ada"]
+                used.add(pay["ada"])
+                break
+    paid = {d["ada"]: d["paid_by"] for d in decisions if d["paid_by"]}
+    for line in lines:
+        if line["ada"] in paid:
+            line["category"] = None
+            line["detail"] = f"{line['detail']}; counted at {paid[line['ada']]}"
+    for d in decisions:
+        d.pop("_cites", None)
 
 
 def _mark_duplicates(decisions: list[dict[str, Any]], lines: list[dict[str, Any]]) -> None:

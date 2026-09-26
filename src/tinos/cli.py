@@ -551,8 +551,9 @@ def fulltext_backfill(
         typer.echo(f"refusing: {unknown} not among the grantors in entities.yaml", err=True)
         raise typer.Exit(code=2)
     terms = term or ["ΤΗΝΟΥ"]
-    # A Tinos body's own ΑΦΜ as the term anchors every hit to it: kept unless about a person.
-    anchors = {e.afm for e in reg.in_scope if e.afm}
+    # A Tinos body's own ΑΦΜ, or one of its projects' codes (entities.yaml ``anchor_codes``), as the term anchors every
+    # hit to it: kept unless about a person.
+    anchors = reg.anchors
     d0, d1 = _parse_date(start), _parse_date(end)
     if d1 < d0:
         raise typer.BadParameter("--end is before --start")
@@ -664,7 +665,7 @@ def fulltext_purge(
 
     st = _settings()
     reg = load_registry(st.entities_file)
-    anchors = {e.afm for e in reg.in_scope if e.afm}
+    anchors = reg.anchors
     store = RawStore(st.raw_dir)
     found, _, found_orgs = search_index_by_issuer(st.raw_dir)
     base = st.raw_dir / "diavgeia" / "fulltext"
@@ -732,7 +733,7 @@ def fulltext_status(
         # Every stored record the current whitelist would still keep, scanned for first names (PRIVACY.md Q7).
         # Saints and places carry the same words; each hit is for a person to read.
         reg = load_registry(st.entities_file)
-        anchors = {e.afm for e in reg.in_scope if e.afm}
+        anchors = reg.anchors
         found, _, found_orgs = search_index_by_issuer(st.raw_dir)
         scanned = hits = 0
         for path in store.iter_fulltext_decisions():

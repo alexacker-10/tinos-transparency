@@ -36,6 +36,9 @@ FAMILIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.compile(p)) 
     # repairs 615Ζ465ΦΘΕ-ΑΡ0 with 7ΛΞ9465ΦΘΕ-9Ι1, fire protection Ω40Λ465ΦΘΕ-ΧΝΙ with 6ΖΒΘ465ΦΘΕ-Σ2Σ,
     # same day, same amounts): the same money again, listed, never reconciled.
     ("kap_transfer_order", r"ΕΝΤΟΛΗ ΜΕΤΑΦΟΡΑΣ ΠΙΣΤΩΣΕΩΝ.*ΑΥΤΟΤΕΛ(?:ΕΙΣ|ΩΝ) ΠΟΡ"),
+    # A Recovery Fund payment order to its beneficiaries («Εκκαθάριση-εντολή πληρωμής της ΣΑ ΤΑ015 ...»): its payment
+    # lines, read like the Digital Governance Ministry's (``tinos.extract.grantors.read_pde``)
+    ("rrf_payment", r"ΕΚΚΑΘΑΡΙΣΗ\s*-\s*ΕΝΤΟΛΗ ΠΛΗΡΩΜΗΣ"),
     # Approvals of financing (and their amendments), paid out later by transfer letters.
     ("pde_approval", r"^ΧΡΗΜΑΤΟΔΟΤΗΣΗ ΤΟΥ ΔΗΜΟΥ|ΑΠΟΦΑΣΗΣ? ΧΡΗΜΑΤΟΔΟΤΗΣΗΣ|ΑΠΟΦΑΣΗΣ ΕΠΙΧΟΡΗΓΗΣΗΣ|ΑΠΟΡΡΙΜΜΑΤΟΦΟΡ"),
     # Public-investment cash: ΣΑΕ/ΣΑΝΑ allocations and transfer orders, whatever the programme.
@@ -132,6 +135,49 @@ _EDUCATION = _P(
 _CULTURE = _P(("commitment", r"^ΑΑΥ|ΑΝΑΛΗΨΗ|ΔΕΣΜΕΥΣΗ"), ("culture_grant", r"ΕΠΙΧΟΡΗΓ"), ("programme", r"ΕΝΤΑΞ"))
 ISSUER_FAMILIES.update({u: _EDUCATION for u in ("100010887", "100015990", "100054501", "100081880")})
 ISSUER_FAMILIES.update({u: _CULTURE for u in ("17", "100015966", "100081912")})
+# Grantors found from the municipality's own acceptances (2026-09-26; FINDINGS F12).
+ISSUER_FAMILIES.update({
+    # The Regional Union of Municipalities of the South Aegean: its board grants a request («Αίτημα Δήμου Τήνου για
+    # χρηματοδότηση ...»), from 2021 it pays by payment order («Χρηματικό Ένταλμα Πληρωμής Α-142 για: ΧΡΗΜΑΤΟΔΟΤΗΣΗ ΤΟΥ
+    # ΔΗΜΟΥ ...»; 2021: «ΠΟΛΙΤΙΣΤΙΚΗ ΧΟΡΗΓΙΑ ΤΗΣ ΠΕΔ ... ΣΤΟ ΔΗΜΟ ΤΗΝΟΥ»); a co-organised event it pays its suppliers for
+    "53992": _P(
+        ("ped_payment", r"ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ|^ΠΟΛΙΤΙΣΤΙΚΗ ΧΟΡΗΓΙΑ|^ΧΡΗΜΑΤΟΔΟΤΗΣΗ ΤΟΥ ΔΗΜΟΥ"),
+        ("ped_grant", r"ΑΙΤΗΜΑ|ΣΥΝΔΙΟΡΓΑΝΩΣΗ|ΧΟΡΗΓΙΑ"),
+    ),
+    # The Green Fund: payments by account of a project («Έγκριση δαπάνης για τη χρηματοδότηση του 2ου λογαριασμού»),
+    # escrow released to the municipality («οριστικός δικαιούχος ... μέσω παρακαταθήκης»); programmes and calls listed
+    "99201054": _P(
+        ("green_fund_payment", r"ΕΓΚΡΙΣΗ ΔΑΠΑΝΗΣ|ΟΡΙΣΤΙΚΟΥ ΔΙΚΑΙΟΥΧΟΥ|ΑΠΟΔΕΣΜΕΥΣΗΣ ΠΟΣΟΥ"),
+        ("programme", r"ΕΝΤΑΞ|ΠΡΟΣΚΛΗΣ|ΧΡΗΜΑΤΟΔΟΤΙΚΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ|ΠΡΑΚΤΙΚΟΥ"),
+    ),
+    # The Shipping Ministry's General Secretariat for the Aegean: a grant («Επιχορήγηση του Δήμου Τήνου για ...»), each
+    # payment of it («Έγκριση της 1ης πληρωμής των δαπανών ...»), public-investment payment authority (ΣΑΕ 330, ΣΑΝΑ 233)
+    "100015969": _P(
+        ("shipping_payment", r"^ΕΓΚΡΙΣΗ\b.{0,40}ΠΛΗΡΩΜ"),
+        ("pde_authorisation", r"ΕΞΟΥΣΙΟΔΟΤΗΣ\w* ΠΛΗΡΩΜΗΣ|ΕΝΤΟΛΗ ΚΑΤΑΝΟΜΗΣ ΣΑΕ"),
+        ("shipping_grant", r"ΕΠΙΧΟΡΗΓΗΣ"),
+        ("programme", r"ΠΡΟΓΡΑΜΜΑΤΙΚ|ΚΛΕΙΣΙΜΟ|ΑΔΕΙΑ|ΣΧΕΔΙΟ ΠΑΡΑΛΑΒΗΣ|ΠΡΑΚΤΙΚΟ|ΜΙΣΘΩΣΗΣ|ΧΑΡΑΚΤΗΡΙΣΜΟΣ"),
+    ),
+    # The Ministry of National Economy and Finance (the ΠΔΕ and ΕΣΠΑ from 2023) and its predecessors for public
+    # investment: financing of a Tinos project («Κατανομή Χρηματοδότησης σε βάρος της ΣΑ Ε367 ... (έργο Τήνου)»)
+    **{u: _P(("espa_financing", r"ΕΡΓΩΝ ΕΣΠΑ$"),  # «Χρηματοδότηση και κατανομή έργων ΕΣΠΑ» (2016)
+             ("pde_financing", r"ΚΑΤΑΝΟΜΗ ΧΡΗΜΑΤΟΔΟΤΗΣΗΣ|ΧΡΗΜΑΤΟΔΟΤΗΣΗ (?:KAI|ΚΑΙ) (?:KATANOMH|ΚΑΤΑΝΟΜΗ)|^ΚΑΤΑΝΟΜΗ ΣΕ ΒΑΡΟΣ"),
+             ("water_bill", r"ΛΟΓΑΡΙΑΣΜ\w* ΥΔΡΕΥΣΗΣ"),  # the customs office's water bill: a sale, not a grant
+             ("commitment", r"ΔΕΣΜΕΥΣΗ"),
+             ("programme", r"ΕΝΤΑΞ|ΤΡΟΠΟΠΟΙΗΣΗ|ΟΛΟΚΛΗΡΩΣΗ|ΚΑΤΑΝΟΜΗ ΕΡΓΩΝ|ΠΡΑΓΜΑΤΟΓΝΩΜΟΣΥΝ"))
+       for u in ("15", "100016002", "100025890", "100054495", "100081597")},
+    # The Infrastructure Ministry: public-investment payment authority (Σ.Α. Ε071, Μ070), commitments and inclusions
+    **{u: _P(("pde_authorisation", r"ΕΞΟΥΣΙΟΔΟΤΗΣ\w* ΠΛΗΡΩΜΗΣ|ΑΝΑΚΑΤΑΝΟΜΗ ΠΙΣΤΩΣΕΩΝ"),
+             ("commitment", r"ΔΕΣΜΕΥΣΗΣ"),
+             ("programme", r"ΕΝΤΑΞ|ΠΡΟΓΡΑΜΜΑΤΙΚ|ΠΡΟΣΚΛΗΣ|ΠΡΟΘΕΣΗΣ"))
+       for u in ("100025905", "100016011")},
+    # The Digital Governance Ministry: payment orders of Recovery Fund projects («Εκκαθάριση-εντολή πληρωμής της ΣΑ
+    # ΤΑ063 ...»)
+    "100054486": _P(("rrf_payment", r"ΕΚΚΑΘΑΡΙΣΗ|ΕΝΤΟΛΗ ΠΛΗΡΩΜΗΣ")),
+    # The tourism organisation: its 2015 payment of a 2009 debt to the municipality, and the commitment behind it
+    "99221315": _P(("eot_payment", r"ΕΞΟΦΛΗΣΗ|ΟΦΕΙΛΕΣ ΠΡΟΗΓΟΥΜΕΝΩΝ ΕΤΩΝ"), ("commitment", r"ΟΦΕΙΛΗ|ΔΕΣΜΕΥΣΗ")),
+    "100025893": _P(("tourism_grant", r"ΧΡΗΜΑΤΟΔΟΤΗΣ|ΕΠΙΧΟΡΗΓ|ΕΝΤΑΞ")),
+})
 
 REGION_FAMILIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.compile(p)) for name, p in (
     ("region_payment", r"^ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ"),
@@ -163,7 +209,13 @@ CATEGORY_OF_FAMILY: dict[str, str | None] = {
     "welfare_benefits": "welfare",
     "extraordinary": "state_grants",
     "arrears": "state_grants",
+    # a ceiling («έως») for arrears the Deposits and Loans Fund pays to the creditors themselves, on the municipality's
+    # payment orders («Εντολές Εξόφλησης»): the municipality registers the grant (1219, 1215) only as it draws on it.
+    # Tinos's 2020 ceilings (127,272.07 and 380,450.00) appear in no statement: listed, not counted
+    "arrears_ceiling": None,
     "state_debts": "kap_other",
+    # the operating-cost column of a two-purpose table charged to the ΚΑΠ account (ΡΟ0946ΜΤΛ6-ΣΚ8, November 2024): 0619
+    "kap_supplementary": "kap_other",
     "advance_settlement": None,
     "lifeguards": "state_grants",
     "stray_animals": "kap_other",  # booked under 0619 (2023, 2025: 5,300.00 each)
@@ -184,6 +236,7 @@ CATEGORY_OF_FAMILY: dict[str, str | None] = {
     # 2018-2019, matched to the cent); the rest is listed, not reconciled
     "region_credit": "investment_programmes",
     "region_agreement_payment": "programme_agreements",  # 1213, 1326
+    "region_agreement_commitment": "programme_agreements",  # 1213 of 2015: the snow clearing, less its withholdings
     # the development fund's payments: under a programme agreement (1213, 1326) or for a project (1322)
     "region_fund_agreement_payment": "programme_agreements",
     "region_fund_payment": "investment_programmes",
@@ -208,13 +261,62 @@ CATEGORY_OF_FAMILY: dict[str, str | None] = {
     "commitment": None,
     "culture_grant": None,
     "port_fund_balance": None,
+    # the grantors found from the municipality's own acceptances (FINDINGS F12)
+    # the Regional Union of Municipalities: 1219 «Λοιπές επιχορηγήσεις» (1211 for 2022-2023's lodging of ambulance staff).
+    # A board grant is counted only when no payment order of the Union pays it and no later decision replaces it
+    # (``tinos.curated_grants``): the Union published no payment orders to Tinos in 2022-2023
+    "ped_payment": "state_grants",
+    "ped_grant": "state_grants",
+    "ped_own_spending": None,  # an event it co-organises or procures itself: its own spending
+    "green_fund_payment": "investment_programmes",  # 1329 «Λοιπές επιχορηγήσεις για επενδύσεις και έργα»
+    # the Shipping Ministry's Aegean secretariat: a grant is a ceiling; a payment approved on invoices is counted unless
+    # the transfer order that pays it is published, the transfer is counted (1216 for rentals, 1322 for works)
+    "shipping_grant": None,
+    "shipping_payment": "investment_programmes",
+    "pde_authorisation": "investment_programmes",
+    "espa_financing": None,  # ΕΣΠΑ allocations (1328): only 2016's are indexed, so the line is not reconciled
+    # the Recovery Fund's payment orders to the municipality: 1324 «Χρηματοδοτήσεις από το Ταμείο Ανάκαμψης», from 2026
+    # 1350109 «Απολήψεις από το Ταμείο Ανάκαμψης» (August 2026: 26,549.50 to the cent)
+    "rrf_payment": "recovery_fund",
+    "water_bill": None,
+    "eot_payment": "state_grants",  # 1219.0006 of 2015
+    "tourism_grant": None,
 }
+
+# Where a family's money was booked differently in some years. The statements of 2015-2016 have no line of their own
+# for «Βοήθεια στο Σπίτι»: its ΚΑΠ money arrived in 0619 «ΚΑΠ για λοιπούς σκοπούς» (May-August 2016: 42,093.28, the three
+# 2016 allocations to the cent; FINDINGS F8). From 2023 it has its own line, 0624.
+# Likewise, from the monthly statements: 2015's two desalination instalments arrived in 1219 (F8); the COVID grants of
+# 2020-2021, 2020's stray-animal grant and the school cleaners' pay of 2020-2022 in 1211, before 0621 existed (each
+# less 0.15%, the 0.15% often refunded months later: 1211 of 2020 and of 2021 close to the cent).
+CATEGORY_BY_YEAR: dict[tuple[str, int], str] = {
+    ("home_help", 2015): "kap_other", ("home_help", 2016): "kap_other",
+    ("desalination", 2015): "state_grants",
+    ("covid", 2020): "state_grants", ("covid", 2021): "state_grants", ("stray_animals", 2020): "state_grants",
+    ("school_cleaners", 2020): "state_grants", ("school_cleaners", 2021): "state_grants",
+    ("school_cleaners", 2022): "state_grants",
+}
+# A national arrears grant paid to the creditors through the Deposits and Loans Fund, not to the municipality.
+_ARREARS_CEILING = re.compile(r"ΕΝΤΟΛ\w* ΕΞΟΦΛΗΣΗΣ|ΚΑΘΑΡΟΥ ΠΟΣΟΥ ΠΡΟΣ ΤΟΥΣ ΤΕΛΙΚΟΥΣ ΔΙΚΑΙΟΥΧΟΥΣ")
+
+
+def refine_family(family: str, text: str) -> str:
+    """A family the document itself refines: an arrears grant paid to the creditors is a ceiling (``arrears_ceiling``)."""
+    if family == "arrears" and _ARREARS_CEILING.search(fold(" ".join(text.split()))):
+        return "arrears_ceiling"
+    return family
+
+
+def category_of(family: str | None, budget_year: int) -> str | None:
+    """The revenue category a family's money is reconciled against in a budget year."""
+    return CATEGORY_BY_YEAR.get((family, budget_year)) or CATEGORY_OF_FAMILY.get(family)
+
 
 # Revenue lines of the year-end statement, by folded name (first match wins); ``kae`` narrows
 # the few names shared by a current-year line and a prior-year receivable (group 32).
 REVENUE_CATEGORIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.compile(p)) for name, p in (
-    ("kap_general", r"ΚΑΠ ΓΙΑ ΚΑΛΥΨΗ ΓΕΝΙΚΩΝ"),
-    ("kap_investment", r"ΚΑΠ ΕΠΕΝΔΥΤΙΚΩΝ"),
+    ("kap_general", r"ΚΑΠ ΓΙΑ (?:ΤΗΝ )?ΚΑΛΥΨΗ ΓΕΝΙΚΩΝ"),  # «ΚΑΠ για την κάλυψη γενικών αναγκών» from 2026
+    ("kap_investment", r"ΚΑΠ ΕΠΕΝΔΥΤΙΚΩΝ|ΚΑΠ ΓΙΑ ΕΠΕΝΔΥΤΙΚΕΣ"),
     ("kap_schools", r"ΚΑΠ ΓΙΑ ΤΗΝ ΚΑΛΥΨΗ ΤΩΝ ΛΕΙΤΟΥΡΓΙΚΩΝ"),
     ("school_rents", r"ΚΑΠ ΓΙΑ ΤΗΝ ΚΑΤΑΒΟΛΗ ΜΙΣΘΩΜΑΤΩΝ"),
     ("school_repairs", r"ΕΠΙΣΚΕΥΗ ΚΑΙ ΣΥΝΤΗΡΗΣΗ ΣΧΟΛΙΚΩΝ"),
@@ -224,13 +326,33 @@ REVENUE_CATEGORIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.co
     ("kap_other", r"ΚΑΠ ΓΙΑ ΛΟΙΠΟΥΣ ΣΚΟΠΟΥΣ"),
     ("welfare", r"ΠΡΟΝΟΙΑΚ"),
     # 1319 «Λοιπά ειδικά προγράμματα» (2015 only): the Region's 2015 credits and its fund's payment, to the cent
-    ("investment_programmes", r"ΘΗΣΕΑΣ|ΦΙΛΟΔΗΜΟΣ|ΕΙΔΙΚΑ ΠΡΟΓΡΑΜΜΑΤΑ|ΚΕΝΤΡΙΚΟΥΣ ΦΟΡΕΙΣ"),
-    ("advertising_fee", r"^ΤΕΛΟΣ ΔΙΑΦΗΜΙΣΗΣ.*ΚΑΤΗΓΟΡΙΑΣ Δ"),  # 0715; 0462 is the municipality's own fee
-    ("property_tax", r"^ΤΕΛΟΣ ΑΚΙΝΗΤΗΣ ΠΕΡΙΟΥΣΙΑΣ"),
+    # 1329 «Λοιπές επιχορηγήσεις για επενδύσεις και έργα»: the Green Fund's payments (2018-2023), to the cent
+    # 1216 «Από εθνικούς πόρους (μέσω του εθνικού τμήματος του ΠΔΕ)»: public-investment money the municipality books as an
+    # operating grant (the Economy Ministry's Ε367 transfers for waste processing, 2024 to the cent; the Aegean
+    # secretariat's desalination rentals)
+    ("investment_programmes", r"ΘΗΣΕΑΣ|ΦΙΛΟΔΗΜΟΣ|ΕΙΔΙΚΑ ΠΡΟΓΡΑΜΜΑΤΑ|ΚΕΝΤΡΙΚΟΥΣ ΦΟΡΕΙΣ|ΛΟΙΠΕΣ ΕΠΙΧΟΡΗΓΗΣΕΙΣ ΓΙΑ ΕΠΕΝΔΥΣΕΙΣ|"
+                              r"ΕΘΝΙΚΟΥ ΤΜΗΜΑΤΟΣ ΤΟΥ ΠΔΕ"),
+    # 0715; 0462 is the municipality's own fee. From 2026 one line, «Δημοτικά τέλη διαφήμισης» (1140918), budgeted at
+    # exactly the ministry's allocation of the category Δ fee (28,129.88)
+    ("advertising_fee", r"^ΤΕΛΟΣ ΔΙΑΦΗΜΙΣΗΣ.*ΚΑΤΗΓΟΡΙΑΣ Δ|^ΔΗΜΟΤΙΚΑ ΤΕΛΗ ΔΙΑΦΗΜΙΣΗΣ"),
+    ("property_tax", r"^(?:ΔΗΜΟΤΙΚΟ )?ΤΕΛΟΣ ΑΚΙΝΗΤΗΣ ΠΕΡΙΟΥΣΙΑΣ"),
     ("programme_agreements", r"ΠΡΟΓΡΑΜΜΑΤΙΚΕΣ ΣΥΜΒΑΣΕΙΣ"),  # 1213 operating, 1326 investment
+    ("recovery_fund", r"ΤΑΜΕΙΟ ΑΝΑΚΑΜΨΗΣ"),  # 1324; 1350109 from 2026
 ))
 # The state's operating grants to municipalities, by code: their names changed more than their codes.
 STATE_GRANT_KAE = ("1211", "1215", "1219")
+# The chart of accounts of 2026 names its grant lines for what they finance, not for who pays («Επιχορηγήσεις για
+# λοιπούς σκοπούς», «... για κτίρια και συναφείς υποδομές»). Its ΚΑΠ lines keep the old names and match the patterns
+# above; the codes whose purpose matches an old line are mapped here (FINDINGS F13).
+NEW_CHART_CATEGORIES = {
+    "1310114": "state_grants",  # Επιχορηγήσεις για δαπάνες διοίκησης και λειτουργίας (old 1211, 1219)
+    "1310189": "state_grants",  # Επιχορηγήσεις για λοιπούς σκοπούς (current)
+    "1310489": "programme_agreements",  # Λοιπές μεταβιβάσεις από ΟΤΑ: the Region's programme agreements (old 1213)
+    "1340101": "investment_programmes",  # capital grants: για κτίρια και συναφείς υποδομές
+    "1340102": "investment_programmes",  # για μηχανήματα και εξοπλισμό
+    "1340105": "investment_programmes",  # για μη παραγόμενα περιουσιακά στοιχεία
+    "1340189": "investment_programmes",  # για λοιπούς σκοπούς (capital)
+}
 
 
 # The Tinos body a grant goes to, when its subject names one other than the municipality (the school committees
@@ -276,6 +398,8 @@ def revenue_category(kae: str, description: str | None) -> str | None:
     """The reconciliation line of a revenue line, or None for revenue that is not such a transfer."""
     if kae == FOUNDATION_KAE:
         return "foundation_contribution"
+    if kae in NEW_CHART_CATEGORIES:
+        return NEW_CHART_CATEGORIES[kae]
     if not kae.startswith(("0", "1", "43")):
         return None  # prior-year receivables (2x/3x), loans (31), withholdings (41, 42), balances (5x)
     # 43xx is revenue collected for others: the schools' ΚΑΠ sat there (4311) in 2019-2024.
@@ -479,10 +603,26 @@ def parse_coded(text: str, subject: str | None = None) -> tuple[list[Table], lis
                 continue  # a line that only looks like a row (a wrapped name, a code stub alone)
             rows.append(Row(number, m.group(2), " ".join(_TOKEN.sub(" ", m.group(3) or "").split()),
                             tuple(v for v, _ in found), tuple(e for _, e in found)))
+        elif kind == "amounts" and i not in claimed and rows and rows[-1].number is not None \
+                and (m := _UNCODED_ROW.match(lines[i])) and int(m.group(1)) == rows[-1].number + 1 \
+                and not any(kinds[j][0] == "row" and not amounts_at(lines[j])
+                            for j in range(i + 1, min(i + 3, len(lines)))):
+            # a numbered row with no ΤΠΔ code (a regional unit among the municipalities: the 2016 «Βοήθεια στο
+            # Σπίτι» tables' row 48 «ΠΕΡΙΦΕΡΕΙΑ ΚΕΝΤΡΙΚΗΣ ΜΑΚΕΔΟΝΙΑΣ», 53.477,84): it counts in the columns' sums.
+            # Not when a code line without amounts follows: that row's code wrapped below its name and figures
+            # («112 ΜΑΝΤΟΥΔΙΟΥ-ΛΙΜΝΗΣ-ΑΓΙΑΣ 73.000,00» over «50409 ΕΥΒΟΙΑΣ») and it claims this line.
+            claimed.add(i)
+            found = amounts_at(lines[i])
+            rows.append(Row(int(m.group(1)), "", " ".join(_TOKEN.sub(" ", m.group(2)).split()),
+                            tuple(v for v, _ in found), tuple(e for _, e in found)))
         elif kind == "total" and rows:
             close(obj)
     close(None)
     return tables, stated
+
+
+# A numbered row with a name and amounts but no ΤΠΔ code: «48   ΚΕΝΤΡΙΚΗΣ   Π.Ε. ΚΙΛΚΙΣ ... 53.477,84».
+_UNCODED_ROW = re.compile(r"^\s*(\d{1,4})\s+([^\W\d_].*)$")
 
 
 # Name-keyed tables: any number is a column (whole euros «29.700», counts «1.190», amounts «8,50»).
@@ -730,6 +870,34 @@ class GrantAmount:
     validation: str | None  # column_totals | stated_amount | words_and_figures | figures_only | None
     detail: str  # layout, rows, columns: enough to find the figure in the PDF again
     recipient: str | None = None  # the Tinos body's uid when the document names it; else the subject's (recipient_of)
+    family: str | None = None  # this amount's own family when it differs from the decision's (a table paying two purposes)
+
+
+# A national table can pay two purposes from two accounts, one column each: ΡΟ0946ΜΤΛ6-ΣΚ8 (November 2024) pays arrears
+# to third parties from the account «Κάλυψη των πάσης φύσεως αναγκών» (90M) and operating costs «σε χρέωση του
+# λογαριασμού με τίτλο «Κεντρικοί Αυτοτελείς Πόροι των Δήμων»» (130M). The municipality books the ΚΑΠ column in 0619
+# «ΚΑΠ για λοιπούς σκοπούς», the other in 1215: the column whose total the text charges to the ΚΑΠ account is an amount
+# of its own, family ``kap_supplementary`` (category ``kap_other``).
+_KAP_CHARGE = re.compile(rf"({_AMT})\s*€?\s*(?:ΣΕ ΧΡΕΩΣΗ|ΝΑ ΒΑΡΥΝΕΙ|ΒΑΡΥΝΕΙ)\s+(?:ΤΟΝ\s+|ΤΟΥ\s+)?ΛΟΓΑΡΙΑΣΜΟ\w*\s+"
+                         r"(?:ΜΕ\s+(?:ΤΟΝ\s+)?ΤΙΤΛΟ\s+)?«?\s*ΚΕΝΤΡΙΚΟΙ\s+ΑΥΤΟΤΕΛΕΙΣ")
+
+
+def _kap_split(x: TinosLine, table: Table, kap_totals: set[int]) -> list[GrantAmount] | None:
+    """A ``sum`` table of two components whose one column the text charges to the ΚΑΠ: the Tinos row as two amounts."""
+    if x.layout != "sum" or len(x.row.amounts) != 3 or not table.totals or len(table.totals) != 3 or None in x.row.amounts:
+        return None
+    kap = [j for j in (0, 1) if table.totals[j] in kap_totals]
+    if len(kap) != 1:
+        return None
+    j = kap[0]
+    out = []
+    for col, fam in ((1 - j, None), (j, "kap_supplementary")):
+        ok = "column_totals" if table.valid_columns and table.valid_columns[col] else None
+        out.append(GrantAmount(x.row.amounts[col], x.row.amounts[col], "table", ok,
+                               f"table {x.table}, row {x.row.number or '-'} of {x.n_rows}, layout sum, column {col} of "
+                               f"{[a / 100 for a in x.row.amounts]}; column total {table.totals[col] / 100:.2f}"
+                               f"{' charged to the ΚΑΠ account' if fam else ''}", family=fam))
+    return out
 
 
 def read_decision(text: str, subject: str | None) -> tuple[list[GrantAmount], str]:
@@ -744,8 +912,13 @@ def read_decision(text: str, subject: str | None) -> tuple[list[GrantAmount], st
     all_letters = parse_letter(text)
     spelled = {x.amount for x in all_letters if x.words == x.amount}
     if lines:
+        kap_totals = {cents(m.group(1)) for m in _KAP_CHARGE.finditer(fold(" ".join(text.translate(_SYMBOLS).split())))}
         out = []
         for x in lines:
+            split = _kap_split(x, tables[x.table], kap_totals)
+            if split:
+                out.extend(split)
+                continue
             validation = x.validation
             # A one-row transfer table: the covering letter spells the same amount in words.
             if validation is None and x.amount is not None and x.n_rows == 1 and x.amount in spelled:
@@ -759,12 +932,37 @@ def read_decision(text: str, subject: str | None) -> tuple[list[GrantAmount], st
         return [GrantAmount(x.amount, x.amount, "letter", "words_and_figures" if x.words == x.amount else None,
                             f"figures {x.amount / 100:.2f}, words {x.words / 100 if x.words is not None else None}")
                 for x in letters], "read"
-    found = _stated_lines(text)
+    found = _stated_lines(text) or _section_rows(text)
     if found:
         return found, "read"
     if tables and all(t.validation for t in tables):
         return [], "absent"
     return [], "not_found"
+
+
+# The ΕΕΤΑΑ's «ΠΙΝΑΚΑΣ ΧΡΗΜΑΤΟΔΟΤΗΣΗΣ ΕΡΓΩΝ» of the Θησέας programme's transfer orders: one section per prefecture,
+# rows «6  Δήμος Τήνου  37544  <project>  36.540,00  ΤΗΝΟΥ» (Α/Α, body, project code, title, amount, tax office), the
+# title wrapping onto the next lines, each section closed by «ΣΥΝΟΛΑ  Αριθμός φορέων: 4 ... 175.202,15».
+_SECTION_ROW = re.compile(rf"^\s*\d{{1,4}}\s+(ΔΗΜΟΣ|ΣΥΝΔΕΣΜΟΣ|ΝΟΜΙΚΟ|ΔΗΜΟΤΙΚ|ΚΟΙΝΟΤΗΤΑ|ΠΕΡΙΦΕΡΕΙΑ)\S*\s.*?\s(\d{{2,6}})\s{{2,}}"
+                          rf"\S.*?\s({_AMT})\s{{2,}}\S+(?:\s\S+)?\s*$")
+_SECTION_TOTAL = re.compile(rf"^ΣΥΝΟΛΑ\s.*ΑΡΙΘΜΟΣ ΦΟΡΕΩΝ.*?\s({_AMT})\s*$")
+
+
+def _section_rows(text: str) -> list[GrantAmount]:
+    """The Tinos rows of a Θησέας financing table, each section's rows adding up to its «ΣΥΝΟΛΑ»."""
+    out, rows = [], []
+    for line in text.translate(_SYMBOLS).splitlines():
+        up = re.sub(r"\S+", lambda w: fold(w.group()), line)  # folded, columns kept
+        if m := _SECTION_ROW.match(up):
+            rows.append((cents(m.group(3)), bool(_TINOS_NAME.search(fold(line)))))
+        elif (t := _SECTION_TOTAL.match(up.strip())) and rows:
+            total = cents(t.group(1))
+            ok = sum(a for a, _ in rows) == total
+            out.extend(GrantAmount(a, a, "section_rows", "stated_amount" if ok else None,
+                                   f"{len(rows)} rows of the section adding up to {sum(a for a, _ in rows) / 100:.2f}; "
+                                   f"section total {total / 100:.2f}") for a, tinos in rows if tinos)
+            rows = []
+    return out
 
 
 _AFM_ROW = re.compile(rf"(?<!\d)(\d{{9}})(?!\d).*?({_AMT})\s*€?\s*(?:\S.*)?$")
@@ -794,7 +992,8 @@ def _stated_lines(text: str) -> list[GrantAmount]:
     return out
 
 
-_BUDGET_YEAR = re.compile(r"(?:ΕΤΟΥΣ|ΕΤΟΣ|ΚΑΠ)\s+(20[12]\d)")
+# «ΚΑΠ έτους 2016»; not a school year («διδακτικό έτος 2022-2023»: the allocation is booked when it is paid)
+_BUDGET_YEAR = re.compile(r"(?:ΕΤΟΥΣ|ΕΤΟΣ|ΚΑΠ)\s+(20[12]\d)(?!\s*[-–/]\s*(?:20)?\d\d)")
 
 
 # ---------------------------------------------------------------------------
@@ -821,6 +1020,8 @@ _CREDIT_AMOUNT = re.compile(rf"(?=(?:ΥΨΟΥΣ|ΠΟΣΟ\w*|ΠΙΣΤΩΣΗ\w*)\s
                             rf"(?P<fig>{_AMT})\s*€?\s*\))")
 _TO_TINOS = re.compile(r"ΜΕΤΑΒΙΒΑΣΤΕΙ ΣΤΟ ΔΗΜΟ ΤΗΝΟΥ|ΑΦΜ\W*800302968|800302968")
 _TINOS_PROJECT = re.compile(r"ΔΗΜΟΥ ΤΗΝΟΥ|ΔΗΜΟ ΤΗΝΟΥ|ΔΗΜΟΣ ΤΗΝΟΥ")
+_AGREEMENT_COMMITMENT = re.compile(r"ΕΓΚΡΙΝΟΥΜΕ ΤΗ ΔΕΣΜΕΥΣΗ ΠΙΣΤΩΣΗΣ .{0,200}?ΓΙΑ ΤΗΝ ΠΛΗΡΩΜΗ ΙΣΟΠΟΣΗΣ ΔΑΠΑΝΗΣ .{0,200}?"
+                                   r"(?:ΠΣ|ΠΡΟΓΡΑΜΜΑΤΙΚ\w* ΣΥΜΒΑΣ\w*) ΠΝΑ & ΔΗΜΟΣ ΤΗΝΟΥ")
 # Where a credit goes: «Η πίστωση αυτή ... θα μεταβιβαστεί στο Δήμο Τήνου, υπόλογο διαχειριστή ... Α.Φ.Μ. 800302968»,
 # or «... στο Π.Τ.Α. Νοτίου Αιγαίου, υπόλογο του έργου ... Α.Φ.Μ. 090355852», the Region's development fund, which
 # then pays the bill: to the municipality for a project it carries out (its own payment decisions, uid 14763), to a
@@ -1094,6 +1295,18 @@ def read_region(text: str, subject: str | None, family: str,
         return [GrantAmount(target, target, "credit", "words_and_figures" if ok else None,
                             f"stated {target / 100:.2f} in the subject; words and figures "
                             f"{'agree' if ok else 'not found'}; transferred to {recipient}")], "read", refined
+    if family == "region_agreement" and _AGREEMENT_COMMITMENT.search(flat) and _TINOS_PROJECT.search(flat):
+        # The Region's commitment of credit «για την πληρωμή ισόποσης δαπάνης» of a programme agreement with the
+        # municipality: before mid-2021 the Region published no payment orders (FINDINGS F9), so this is the last
+        # published step of the payment. One case, the 2015 snow clearing (612Π7ΛΞ-1Ο4, 49,867.41): the municipality's
+        # 1213 received it in December 2015 less the 0.10% ΕΑΑΔΗΣΥ withholding and 3.6% stamp duty on it (51.67).
+        stated = [cents(a) for a in AMOUNT.findall(subject or "")]
+        spelled = [(cents(m.group("fig")), words_to_cents(m.group("words"))) for m in _CREDIT_AMOUNT.finditer(flat)]
+        amounts = sorted({fig for fig, words in spelled if fig == words})
+        if len(amounts) == 1 and (not stated or stated[0] == amounts[0]):
+            return [GrantAmount(amounts[0], None, "commitment", "words_and_figures",
+                                f"commitment of credit for the payment, {amounts[0] / 100:.2f} in words and figures; "
+                                "the payment order is not published")], "read", "region_agreement_commitment"
     return [], "listed", family
 
 

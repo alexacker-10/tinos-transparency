@@ -47,7 +47,7 @@ import duckdb
 from tinos.config import Settings
 
 TABLES = ("act", "payment", "commitment", "award", "counterparty", "entity", "budget_line",
-          "procurement", "procurement_party", "grant_decision", "grant_line")
+          "procurement", "procurement_party", "grant_decision", "grant_line", "acceptance")
 
 VIEWS = {
     "v_act": "SELECT * FROM act",
@@ -195,17 +195,62 @@ VIEWS = {
         GROUP BY 1, 2, 3 ORDER BY 1, 2, 3
     """,
     # Monthly statements: what each line collected (or paid) in the month, from the cumulative figures. ``months`` > 1
-    # when the previous month's statement is missing: the change then spans that many months.
+    # when the previous month's statement is missing: the change then spans that many months. A line a later statement
+    # of the year no longer prints stands at zero there (``absent``): money booked to it was moved to another line (the
+    # tourism organisation's 17,460.00 of 2015, in 1329 in February and March, in 1219 from April), so its month gives
+    # the money back instead of counting it twice.
     "v_budget_month": """
         WITH m AS (
             SELECT entity, side, period_year AS year, period_month AS month, kae, any_value(description) AS description,
                    any_value(statement_ada) AS statement_ada, sum(assessed_or_warranted) AS assessed_to_date,
                    sum(collected_or_paid) AS collected_to_date
-            FROM budget_line GROUP BY 1, 2, 3, 4, 5)
-        SELECT *, collected_to_date - coalesce(lag(collected_to_date) OVER w, 0) AS collected_in_period,
-               month - coalesce(lag(month) OVER w, 0) AS months
-        FROM m WINDOW w AS (PARTITION BY entity, side, year, kae ORDER BY month)
+            FROM budget_line GROUP BY 1, 2, 3, 4, 5),
+        stmt AS (SELECT entity, side, year, month, any_value(statement_ada) AS statement_ada FROM m GROUP BY 1, 2, 3, 4),
+        k AS (SELECT entity, side, year, kae, min(month) AS first_month, arg_max(description, month) AS description
+              FROM m GROUP BY 1, 2, 3, 4),
+        g AS (
+            SELECT k.entity, k.side, k.year, s.month, k.kae, coalesce(m.description, k.description) AS description,
+                   coalesce(m.statement_ada, s.statement_ada) AS statement_ada,
+                   coalesce(m.assessed_to_date, 0) AS assessed_to_date, coalesce(m.collected_to_date, 0) AS collected_to_date,
+                   m.kae IS NULL AS absent
+            FROM k JOIN stmt s ON s.entity = k.entity AND s.side = k.side AND s.year = k.year AND s.month >= k.first_month
+            LEFT JOIN m ON m.entity = k.entity AND m.side = k.side AND m.year = k.year AND m.month = s.month
+                AND m.kae = k.kae)
+        SELECT entity, side, year, month, kae, description, statement_ada, assessed_to_date, collected_to_date,
+               collected_to_date - coalesce(lag(collected_to_date) OVER w, 0) AS collected_in_period,
+               month - coalesce(lag(month) OVER w, 0) AS months, absent
+        FROM g WINDOW w AS (PARTITION BY entity, side, year, kae ORDER BY month)
         ORDER BY entity, side, year, kae, month
+    """,
+    # The revenue side of every monthly statement in the grant categories: what each category collected in each month
+    # (``months`` > 1 across a missing statement). From 2026 the new chart's codes are sorted into the same categories
+    # (``tinos.extract.grants.NEW_CHART_CATEGORIES``; FINDINGS F13), so the months of 2026 compare with the grants.
+    "v_revenue_grant_month": """
+        WITH c AS (
+            SELECT entity, period_year AS year, kae, any_value(grant_category) AS category
+            FROM budget_line WHERE side = 'revenue' AND grant_category IS NOT NULL GROUP BY 1, 2, 3)
+        SELECT m.entity, m.year, m.month, c.category, max(m.months) AS months,
+               string_agg(DISTINCT m.kae, ', ' ORDER BY m.kae) AS kae_lines,
+               sum(m.collected_in_period) AS collected_in_period, sum(m.collected_to_date) AS collected_to_date
+        FROM v_budget_month m JOIN c USING (entity, year, kae)
+        WHERE m.side = 'revenue'
+        GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 4, 3
+    """,
+    # The year so far: allocations dated up to the last statement month of each year against what each category had
+    # collected by then (for a closed year, the whole year; for 2026, January-August). Compare, never add.
+    "v_grant_to_date": """
+        WITH last AS (SELECT year, max(month) AS month FROM v_revenue_grant_month WHERE entity = '6296' GROUP BY 1),
+        r AS (SELECT m.year, m.category, max(m.month) AS through_month, sum(m.collected_to_date) AS collected_to_date
+              FROM v_revenue_grant_month m JOIN last USING (year, month) WHERE m.entity = '6296' GROUP BY 1, 2),
+        g AS (SELECT l.year, g.category, count(DISTINCT g.ada) AS n_decisions, sum(g.amount) AS allocated_to_date
+              FROM v_grant_line g JOIN last l ON g.budget_year = l.year
+                   AND g.date <= last_day(make_date(l.year, l.month, 1))
+              WHERE g.recipient_entity = '6296' AND g.category IS NOT NULL GROUP BY 1, 2)
+        SELECT coalesce(r.year, g.year) AS year, coalesce(r.category, g.category) AS category, r.through_month,
+               coalesce(g.n_decisions, 0) AS n_decisions, coalesce(g.allocated_to_date, 0) AS allocated_to_date,
+               r.collected_to_date, coalesce(g.allocated_to_date, 0) - coalesce(r.collected_to_date, 0)
+                   AS allocated_minus_collected
+        FROM r FULL JOIN g ON r.year = g.year AND r.category = g.category ORDER BY 1, 2
     """,
     "v_grant_reconciliation": """
         WITH g AS (
@@ -221,6 +266,17 @@ VIEWS = {
                g.net_paid, coalesce(g.net_paid, 0) - coalesce(r.assessed, 0) AS net_minus_assessed
         FROM g FULL JOIN r ON g.year = r.year AND g.category = r.category
         ORDER BY 1, 2
+    """,
+    # The Tinos bodies' own decisions accepting other bodies' money, by the grantor their titles name (FINDINGS F12).
+    # The same grant can be accepted in two acts (a decision and its correction): ``distinct_stated`` counts each stated
+    # amount once per grantor and year.
+    "v_acceptance_year": """
+        SELECT entity, year, grantor, count(*) AS n_acts,
+               count(*) FILTER (WHERE kind = 'acceptance') AS n_acceptances,
+               count(*) FILTER (WHERE kind <> 'acceptance') AS n_proposals_and_amendments,
+               sum(amount_stated) FILTER (WHERE kind = 'acceptance') AS stated,
+               list_sum(list_distinct(list(amount_stated) FILTER (WHERE amount_stated IS NOT NULL))) AS distinct_stated
+        FROM acceptance WHERE status = 'PUBLISHED' GROUP BY 1, 2, 3 ORDER BY 1, 2, 3
     """,
     "v_direct_award_year": """
         SELECT entity, year, count(*) AS n_awards, sum(total_cost_without_vat) AS value_without_vat

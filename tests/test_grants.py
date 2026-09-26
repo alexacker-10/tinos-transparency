@@ -2,8 +2,8 @@
 
 import unittest
 
-from tinos.extract.grants import (CATEGORY_OF_FAMILY, budget_year, family_of, parse_allocation, read_decision,
-                                  revenue_category, tinos_lines, words_to_cents)
+from tinos.extract.grants import (CATEGORY_OF_FAMILY, _section_rows, budget_year, family_of, parse_allocation,
+                                  read_decision, revenue_category, tinos_lines, words_to_cents)
 
 # A monthly ΚΑΠ table: gross, withholdings, net; the ΣΥΝΟΛΑ line closes it.
 KAP = """\
@@ -24,9 +24,35 @@ class Tables(unittest.TestCase):
         self.assertEqual((line.amount, line.net, line.validation, line.n_rows), (19767798, 19767798, "column_totals", 3))
 
     def test_a_missed_row_leaves_the_table_unvalidated(self):
-        broken = KAP.replace("  2     50117   ΜΕΣΟΛΟΓΓΙΟΥ", "  2     ΜΕΣΟΛΟΓΓΙΟΥ")
+        broken = KAP.replace("  2     50117   ΜΕΣΟΛΟΓΓΙΟΥ", "        ΜΕΣΟΛΟΓΓΙΟΥ")  # neither Α/Α nor code
         (line,) = tinos_lines(parse_allocation(broken)[0])
         self.assertIsNone(line.validation)
+
+    def test_a_numbered_row_without_a_code_counts_in_the_sums(self):
+        # the 2016 «Βοήθεια στο Σπίτι» tables end with a regional unit, numbered but with no ΤΠΔ code
+        text = KAP.replace("  2     50117   ΜΕΣΟΛΟΓΓΙΟΥ", "  2             ΚΕΝΤΡΙΚΗΣ Π.Ε.")
+        tables = parse_allocation(text)[0]
+        self.assertEqual([r.code for r in tables[0].rows], ["50102", "", "58216"])
+        (line,) = tinos_lines(tables)
+        self.assertEqual((line.amount, line.validation), (19767798, "column_totals"))
+        # out of sequence it is not a row
+        text = KAP.replace("  2     50117   ΜΕΣΟΛΟΓΓΙΟΥ", "  7             ΚΕΝΤΡΙΚΗΣ Π.Ε.")
+        (line,) = tinos_lines(parse_allocation(text)[0])
+        self.assertIsNone(line.validation)
+
+    def test_a_table_paying_two_purposes_splits_at_the_kap_column(self):
+        # ΡΟ0946ΜΤΛ6-ΣΚ8 (November 2024): arrears from one account, operating costs charged to the ΚΑΠ, one column each
+        text = """\
+α) για το ποσό των 100,00€ σε χρέωση του λογαριασμού με τίτλο «Κάλυψη των πάσης φύσεως αναγκών των ΟΤΑ» και
+β) για το ποσό των 50,00€ σε χρέωση του λογαριασμού με τίτλο «Κεντρικοί Αυτοτελείς Πόροι των Δήμων», ως ακολούθως:
+  1  50102  ΑΓΡΙΝΙΟΥ   ΑΙΤΩΛ/ΝΙΑΣ   100,00   50,00   150,00
+  2  58216  ΤΗΝΟΥ      ΚΥΚΛΑΔΩΝ     121.570,34   115.031,59   236.601,93
+          ΣΥΝΟΛΟ                121.670,34   115.081,59   236.751,93
+""".replace("100,00€", "121.670,34€").replace("50,00€", "115.081,59€")
+        amounts, status = read_decision(text, "Συμπληρωματική επιχορήγηση των Δήμων")
+        self.assertEqual(status, "read")
+        self.assertEqual([(a.amount, a.family, a.validation) for a in amounts],
+                         [(12157034, None, "column_totals"), (11503159, "kap_supplementary", "column_totals")])
 
     def test_components_then_total(self):
         text = """\
@@ -408,3 +434,23 @@ class OtherGrantors(unittest.TestCase):
         from tinos.extract.grants import read_other
         self.assertEqual(read_other("ΑΠΟΦΑΣΙΖΟΥΜΕ την επιχορήγηση ποσού πέντε ευρώ (5,00 €) στον Δήμο Σύρου", "", AFM_UID),
                          ([], "not_found"))
+
+
+# The ΕΕΤΑΑ's Θησέας financing table (6ΙΧ2465ΦΘΕ-Ο2Κ, March 2016): one section per prefecture, closed by its ΣΥΝΟΛΑ.
+THESEUS = """\
+Νοµός:         Κυκλάδων
+Α/Α      Φορέας                                      Κωδικός         Τίτλος έργου                              Ποσό               ∆.Ο.Υ.
+  2      ∆ήµος Άνδρου                                 18053    ΜΕΤΑΤΡΟΠΗ ΚΟΙΝΟΤΙΚΟΥ ΚΤΙΡΙΟΥ                  9.146,46        ΑΝ∆ΡΟΥ
+  3      ∆ήµος Κύθνου                                 4188     Κατασκευή ∆ηµοτικού Κτιρίου                   4.798,51          ΚΕΑΣ
+  6      ∆ήµος Τήνου                                  37544    Μελέτη εγκατάστασης επεξεργασίας λυµάτων     36.540,00         ΤΗΝΟΥ
+                                                               του ∆ήµου Εξωµβούργου Τήνου
+ΣΥΝΟΛΑ                           Αριθµός φορέων: 3               Αριθµός έργων: 3                             50.484,97
+"""
+
+
+class TheseusTables(unittest.TestCase):
+    def test_the_tinos_row_of_a_section_adding_up_to_its_total(self):
+        (a,) = _section_rows(THESEUS)
+        self.assertEqual((a.amount, a.validation), (3654000, "stated_amount"))
+        (a,) = _section_rows(THESEUS.replace("50.484,97", "50.484,98"))
+        self.assertIsNone(a.validation)

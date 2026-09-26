@@ -379,7 +379,8 @@ def write_summary(settings: Settings) -> Path:
                              sum(amount) FILTER (WHERE family = 'region_credit'),
                              sum(amount) FILTER (WHERE family = 'region_fund_payment'),
                              sum(coalesce(net_paid, amount)) FILTER (WHERE family IN ('region_agreement_payment',
-                                                                                      'region_fund_agreement_payment')),
+                                                                                      'region_fund_agreement_payment',
+                                                                                      'region_agreement_commitment')),
                              sum(coalesce(net_paid, amount)) FILTER (WHERE category IS NOT NULL),
                              sum(amount) FILTER (WHERE family = 'region_utility_payment')
                       FROM v_grant_line WHERE grantor = 'region' AND budget_year BETWEEN 2015 AND 2025
@@ -452,10 +453,18 @@ def write_summary(settings: Settings) -> Path:
         if others:
             grantor_names = {"evangelistria": "the Evangelistria foundation (Ιερό Ίδρυμα Ευαγγελιστρίας)",
                      "decentralised": "the Decentralised Administration of the Aegean",
-                     "education": "the Education Ministry", "culture": "the Culture Ministry"}
+                     "education": "the Education Ministry", "culture": "the Culture Ministry",
+                     "ped": "the Regional Union of Municipalities of the South Aegean (ΠΕΔ)",
+                     "green_fund": "the Green Fund (Πράσινο Ταμείο)",
+                     "shipping": "the Shipping and Island Policy Ministry", "infrastructure": "the Infrastructure Ministry",
+                     "digital": "the Digital Governance Ministry",
+                     "economy": "the Economy, Development and National Economy ministries",
+                     "eot": "the tourism organisation ΕΟΤ", "tourism": "the Tourism Ministry"}
+            # counted lines only: a grant that is a ceiling, an approval paid through a transfer and a grant paid
+            # through a payment order are listed in grant_decision (``paid_by``), not here
             lines = q("""SELECT grantor, budget_year, recipient_entity, family, count(DISTINCT ada), sum(amount)
                          FROM v_grant_line WHERE grantor NOT IN ('interior', 'region', 'evangelistria')
-                           AND budget_year BETWEEN 2015 AND 2025
+                           AND budget_year BETWEEN 2015 AND 2025 AND category IS NOT NULL
                          GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 3, 4""")
             w("### By other public bodies")
             w("")
@@ -463,8 +472,10 @@ def write_summary(settings: Settings) -> Path:
               "Q7): " + "; ".join(f"{grantor_names.get(g, g)}, {n:,} decisions kept, {p:,} with their PDF"
                                   for g, n, p in others)
               + ". Amounts are read from the PDFs and validated in words and figures, or by rows that add up to the "
-              "stated total. Recipient: the Tinos body the decision names (54500 the school committees, 55049 the "
-              "Panormos cultural centre, 100032995 the Tsoklis museum) or the municipality (6296). The 2015 election "
+              "stated total, and counted once, at the document that moves the money: a transfer to the project "
+              "account, not the approval it pays; a payment order, not the grant it pays (FINDINGS.md F12). "
+              "Recipient: the Tinos body the decision names (54500 the school committees, 55049 the "
+              "Panormos cultural centre, 100032995 the Tsoklis museum, 50256 the port fund) or the municipality (6296). The 2015 election "
               "grants are line 1211 of 2015 to the cent, the municipality's school books line 1219 of December 2024 and "
               "December 2025, the Panormos grant of 2018 its line 1219 (FINDINGS.md F10).")
             w("")
@@ -484,9 +495,12 @@ def write_summary(settings: Settings) -> Path:
             "advertising_fee": "Advertising fee, category Δ (0715)",
             "kap_other": "ΚΑΠ, other purposes, and the state's debts, art. 27 ν.3756/2009 (0619)",
             "school_cleaners": "School cleaners' pay (0621 from 2023)",
-            "state_grants": "State grants (1211, 1215, 1219): with election grants and school books",
-            "investment_programmes": "Investment programmes (1314, 1315, 1319, 1322): the ministry and the Region",
-            "programme_agreements": "Programme agreements (1213, 1326): the Region's payments found",
+            "state_grants": "State grants (1211, 1215, 1219): with election grants, school books, the Regional Union",
+            "investment_programmes": "Investment programmes (1216, 1314, 1315, 1319, 1322, 1329): the ministries, "
+                                     "the Region, the Green Fund",
+            "programme_agreements": "Programme agreements (1213, 1326): the Region's payments found (the rest is the "
+                                    "port fund's own)",
+            "recovery_fund": "Recovery Fund (1324)",
             "property_tax": "Property levy ΤΑΠ, the ministry's share (0441)",
             "welfare": "Welfare benefits (0621 in 2015)",
         }
@@ -524,13 +538,16 @@ def write_summary(settings: Settings) -> Path:
           "2021, 2022 and 2025 within 550 €). 2018 and 2019 are one "
           "supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy "
           "(ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 "
-          "by construction; the investment-programme and state-grant lines also receive money from other ministries "
-          "and the EU. With the Region's payments the investment programmes match in 2018 and 2019 as well, and every "
-          "Region payment found under a programme agreement is booked to the cent (2016, 2021, 2022; 2017 and 2023 in "
-          "part: the rest of those lines is money we have not found). The monthly statements place 0619's extra "
-          "receipts of 2015, 2016 and 2024 (the state's debts, art. 27 ν.3756/2009, and a quarter of the schools' "
-          "ΚΑΠ) and show 2015's desalination money booked in 1219 (FINDINGS.md F8). Allocations and booked revenue "
-          "are two views of the same transfers: compare them, never add them.")
+          "by construction. The state-grant and investment-programme lines take money from the other grantors "
+          "above: with the Regional Union's grants every 1219 receipt of 2021-2025 is identified, and with the Green "
+          "Fund, the Aegean secretariat and the Economy Ministry's public-investment transfers the investment "
+          "programmes close in 2017-2019 and, but for timing, 2024; 2025's transfers are not in the index "
+          "(FINDINGS.md F12). Every Region payment found under a programme agreement is booked to the cent; the rest "
+          "of those lines in 2020, 2024 and 2025 is the municipality's own port fund paying it (F9). The monthly "
+          "statements place 0619's extra receipts of 2015, 2016 and 2024 (home help, the state's debts, art. 27 "
+          "ν.3756/2009, and a quarter of the schools' ΚΑΠ) and show 2015's desalination money booked in 1219 "
+          "(FINDINGS.md F8). Allocations and booked revenue are two views of the same transfers: compare them, never "
+          "add them.")
         w("")
 
     # ---- the subsidiaries' own statements

@@ -196,6 +196,19 @@ mismatch:
       metadata amount is it x100. It was the whole of ΚΑΕ 6222's excess over the 2019 statement
       (58,212.00 = 58,800.00 - 588.00), whose whole-year 6222 was 3,186.00.
 
+  - ada: ΩΔΔΧΟΡ07-5ΓΜ
+    entity: "50256"
+    metadata_amount: 23795.25
+    document_amount: 23975.25
+    document: data/raw/diavgeia/docs/50256/ΩΔΔΧΟΡ07-5ΓΜ.pdf
+    document_sha256: f88a0db8488c83156c512401ac9df636c951e7910a8cb0c5761ca12f9177bf1a
+    checked_on: 2026-09-26
+    note: >
+      The port fund's payment order of February 2020 to the municipality, first account of the playground works in
+      the port under their programme agreement (ΚΑΕ 00.6737.0001). The document pays 23.975,25 (its total line and
+      the payment statement agree); the metadata has two digits transposed. The municipality's 1326 received
+      23,975.25 in February 2020 (FINDINGS.md F9).
+
 duplicate:
   - ada: 61ΘΚΩΗ6-4ΤΛ
     entity: "6296"

@@ -352,3 +352,38 @@ class StatutoryGrantRule(unittest.TestCase):
         # the rule is the foundation's: another issuer's whitelist does not have it
         self.assertEqual(whitelist_reason({"subject": "ΕΝΤΑΝΤΙ ΤΑΚΤΙΚΗΣ ΕΠΙΧΟΡΗΓΗΣΗΣ ΕΤΟΥΣ 2017"}, False, ("tinos_body",)),
                          "not_a_grant")
+
+
+class RegionalUnionAndMinistriesRules(unittest.TestCase):
+    """Rules added on 2026-09-26 from the real subjects of the Regional Union of Municipalities (ΠΕΔ), the Shipping,
+    Infrastructure, development and tourism ministries, read in memory before anything was stored (names replaced)."""
+
+    def test_the_municipality_in_a_list_or_abbreviated_is_a_tinos_body(self):
+        only = ("tinos_body",)
+        for subject in ("Αίτημα Δήμων Τήνου, Άνδρου, Πάρου και Νάξου για χρηματοδότηση της αθλητικής διοργάνωσης",
+                        "Αίτημα Δ. Τήνου, Άνδρου, Νάξου, Πάρου για την αθλητική διοργάνωση",
+                        "Έγκριση πρωτογενούς αιτήματος για συνδιοργάνωση με τους Δήμους Τήνου, Πάρου, Άνδρου",
+                        "ΣΥΝΔΙΟΡΓΑΝΩΣΗ Π.Ε.Δ. Ν.ΑΙΓΑΙΟΥ ΜΕ ΔΗΜΟ ΤΗΝΟΥ ΤΗΣ ΕΚΔΗΛΩΣΗΣ"):
+            with self.subTest(subject=subject[:40]):
+                self.assertIsNone(whitelist_reason(rec(subject=subject, dtype="Α.2", org="53992"), keep=only))
+        # the police station and the coast guard of Tinos are not Tinos bodies
+        for subject in ("Προμήθεια καυσίμων του Α.Τ. Τήνου", "ΠΡΟΜΗΘΕΙΑ ΚΑΥΣΙΜΩΝ ΕΠΙΧΕΙΡΗΣΙΑΚΩΝ ΜΕΣΩΝ Λ/Χ ΤΗΝΟΥ"):
+            with self.subTest(subject=subject[:40]):
+                self.assertEqual(whitelist_reason(rec(subject=subject, dtype="Β.1.1"), keep=only), "not_a_grant")
+
+    def test_staff_travel_authors_and_private_individuals_are_personal(self):
+        for subject in ("ΕΓΚΡΙΣΗ ΔΕΣΜΕΥΣΗΣ ΠΙΣΤΩΣΗΣ ΓΙΑ ΥΠΗΡΕΣΙΑΚΕΣ ΜΕΤΑΚΙΝΗΣΕΙΣ ΚΑΤΑ ΤΟΝ ΙΟΥΛΙΟ",
+                        "ΔΕΣΜΕΥΣΗ ΠΙΣΤΩΣΗΣ ΥΠΗΡΕΣΙΑΚΗΣ ΜΕΤΑΚΙΝΗΣΗΣ",
+                        "Δέσμευση πίστωσης για την δαπάνη ημερήσιας αποζημίωσης μετακινούμενων υπαλλήλων",
+                        "Έγκριση δέσμευσης πίστωσης για την πληρωμή δαπανών μετακινούμενων υπαλλήλων του Υπουργείου",
+                        "Χρηματοδότηση έκδοσης του βιβλίου του Δρ. Ονόματος Επωνύμου",
+                        "Αίτημα για χρηματοδότηση του κόστους έκδοσης βιβλίου από τον Δωδεκανήσιο συγγραφέα",
+                        "Καθορισμός αποζημίωσης ιδιώτη – μέλους Επιτροπής Διαγωνισμού"):
+            with self.subTest(subject=subject[:40]):
+                self.assertEqual(whitelist_reason(rec(subject=subject, dtype="Β.1.3"), anchored=True), "personal")
+        # pupils' transport, a study written for the municipality and private law are not about a person
+        for subject in ("Κατανομή ποσού για τη μεταφορά μαθητών Δήμου Τήνου",
+                        "Χρηματοδότηση της σύνταξης μελέτης του Δήμου Τήνου",
+                        "Επιχορήγηση Ν.Π.Ι.Δ. (ιδιωτικού δικαίου) του Δήμου Τήνου"):
+            with self.subTest(subject=subject[:40]):
+                self.assertIsNone(whitelist_reason(rec(subject=subject, dtype="Α.2")))
