@@ -129,9 +129,18 @@ class Classification(unittest.TestCase):
                  "επισκευή και συντήρηση σχολικών κτιρίων, (ΣΑΤΑ).", "kap_transfer_order"),
                 ("Εντολή μεταφοράς πιστώσεων Κεντρικών Αυτοτελών Πόρων 2015 (ΣΑΤΑ) στους Δήμους για κάλυψη δράσεων "
                  "πυροπροστασίας", "kap_transfer_order"),
-                ("Εντολή μεταφοράς πιστώσεων για τη χρηματοδότηση έργων Προγράμματος «ΘΗΣΕΑΣ».", "pde_financing")):
+                ("Εντολή μεταφοράς πιστώσεων για τη χρηματοδότηση έργων Προγράμματος «ΘΗΣΕΑΣ».", "pde_financing"),
+                # the state's own debts to the municipalities, booked in 0619, not the municipalities' arrears (1215)
+                ("Απόδοση στους Δήμους της χώρας, ποσού ύψους 213.875.000,00 €, έτους 2015, στο πλαίσιο εξόφλησης των "
+                 "πάσης φύσεως οφειλών του Ελληνικού Δημοσίου προς αυτούς, σύμφωνα με το άρθρο 27 του ν.3756/2009",
+                 "state_debts"),
+                ("Επιχορήγηση ΟΤΑ της Χώρας για την εξόφληση ληξιπρόθεσμων υποχρεώσεών τους προς τρίτους.", "arrears"),
+                # settling advances already paid: the money was counted when it was advanced
+                ("Έκδοση συμψηφιστικών χρηματικών ενταλμάτων για την τακτοποίηση προκαταβολών οικονομικού έτους 2016 που "
+                 "χορηγήθηκαν σε ΟΤΑ α΄και β΄βαθμού έναντι της Κρατικής Επιχορήγησης", "advance_settlement")):
             with self.subTest(subject=subject[:50]):
                 self.assertEqual(family_of(subject), family)
+        self.assertEqual(CATEGORY_OF_FAMILY["state_debts"], "kap_other")
         self.assertIsNone(CATEGORY_OF_FAMILY["pde_approval"])  # an approval is not money sent
         self.assertIsNone(CATEGORY_OF_FAMILY["kap_transfer_order"])
 
@@ -201,7 +210,78 @@ CREDIT = """\
 """
 
 
+AGREEMENT_ORDER = """\
+                                     Δίνεται εντολή πληρωμής ευρώ:                           #13.020,00#
+ Οικονομικό Έτος:       2021         (δέκα τρεις χιλιάδες είκοσι Ευρώ )
+ Αρ. Εντάλματος:        02060K       στο δικαιούχο ΔΗΜΟΣ ΤΗΝΟΥ
+                                     Διεύθυνση:              ΧΩΡΑ ΤΗΝΟΥ
+                                     ΑΦΜ:                    800302968
+Για:ΠΡΟΓΡΑΜΜΑΤΙΚΗ ΣΥΜΒΑΣΗ "ΔΗΜΙΟΥΡΓΙΑ ΗΛΕΚΤΡΟΝΙΚΗΣ ΕΦΑΡΜΟΓΗΣ ΓΙΑ ΤΗΝ ΑΝΑΔΕΙΞΗ ΤΟΥ ΠΕΖΟΠΟΡΙΚΟΥ
+ΔΙΚΤΥΟΥ ΤΗΣ ΤΗΝΟΥ "
+            ΕΝΤΕΛΛΟΜΕΝΟ ΠΟΣΟ                ΣΤΟ ΔΙΚΑΙΟΥΧΟ:                 13.002,48
+ A/A    Ανάλ. KAE        Ποσό            ΚΡΑΤΗΣΕΙΣ
+  1     1549 9479στ12α   13.020,00       1 ΑΕΠΠ 0,06%                  7,81
+        Σύνολο:          13.020,00       2 Ε.Α.Α.Δ.Σ. 0,07%            9,11
+                                         3 ΟΓΑ ΧΑΡΤΟΣΗΜΟΥ ΑΕΠΠ         0,05
+                                         4 ΟΓΑ ΧΑΡΤΟΣΗΜΟΥ ΕΑΑΔΣ        0,05
+                                         5 ΧΑΡΤΟΣΗΜΟ ΑΕΠΠ              0,23
+                                         6 ΧΑΡΤΟΣΗΜΟ ΕΑΑΔΣ             0,27
+                                         Σύνολο Κρατήσεων:            17,52
+"""
+FUND_CREDIT = CREDIT.replace(
+    "θα μεταβιβαστεί στο Δήμο Τήνου, υπόλογο διαχειριστή, με Α.Φ.Μ. 800302968",
+    "θα μεταβιβαστεί στο Π.Τ.Α. Νοτίου Αιγαίου, υπόλογο του έργου της ΣΑΕΠ 767 με Α.Φ.Μ. 090355852")
+
+
 class Region(unittest.TestCase):
+    def test_other_grantors_families_and_recipients(self):
+        from tinos.extract.grants import recipient_of
+        for subject, issuer, family in (
+                ("ΕΝΑΝΤΙ ΘΕΣΜΟΘΕΤΗΜΕΝΗΣ ΤΑΚΤΙΚΗΣ ΕΠΙΧΟΡΗΓΗΣΗΣ ΣΤΟΝ ΔΗΜΟ ΤΗΝΟΥ", "99206908", "foundation_statutory_grant"),
+                ("ΑΝΤΙΤΙΜΟ ΚΑΤΑΝΑΛΩΣΗΣ ΝΕΡΟΥ ΑΚΙΝΗΤΟΥ ΤΟΥ ΠΙΙΕΤ ΣΤΗΝ ΤΗΝΟ", "99206908", "foundation_water_bill"),
+                ("ΣΥΜΒΑΣΗ ΧΡΗΣΙΔΑΝΕΙΟΥ ΜΕΤΑΞΥ ΠΙΙΕΤ ΚΑΙ ΔΗΜΟΥ ΤΗΝΟΥ", "99206908", "in_kind"),
+                ("ΤΑΚΤΙΚΗ ΕΠΙΧΟΡΗΓΗΣΗ ΙΔΡΥΜΑΤΟΣ ΤΗΝΙΑΚΟΥ ΠΟΛΙΤΙΣΜΟΥ-ΕΞΟΦΛΗΣΗ ΕΤΟΥΣ 2019", "99206908", "foundation_to_others"),
+                ("ΑΠΟΦΑΣΗ ΓΙΑ ΤΑΚΤΙΚΗ ΕΠΙΧΟΡΗΓΗΣΗ ΔΗΜΟΥ - Ι.ΤΗ.Π. - Ι.ΜΗΤΡΟΠΟΛΗ ΣΥΡΟΥ", "99206908",
+                 "foundation_statutory_grant"),
+                ("Απόφαση έγκρισης επιχορήγησης στο Δήμο Τήνου για τις εκλογές του 2014", "50203", "election_costs"),
+                ("«Αποδοχή χρηματοδότησης της Περιφέρειας Νοτίου Αιγαίου προς το Δήμο Τήνου»", "50203", "supervision"),
+                ("ΑΠΟΦΑΣΗ ΧΡΗΜΑΤΟΔΟΤΗΣΗΣ ΣΧΟΛΙΚΗΣ ΕΠΙΤΡΟΠΗΣ ΔΗΜΟΥ ΤΗΝΟΥ ΓΙΑ ΠΡΟΜΗΘΕΙΑ ΞΕΝΟΓΛΩΣΣΩΝ ΒΙΒΛΙΩΝ", "100054501",
+                 "school_books"),
+                # the commitment behind a grant decided separately (2018: ΩΕΚΟ4653Π4-ΩΧΦ, then Ω5Γ34653Π4-ΞΞΘ): listed
+                ("ΑΑΥ για την επιχορήγηση του Πνευματικού Κέντρου Πανόρμου «Γιαννούλης Χαλεπάς»", "100015966",
+                 "commitment"),
+                ("Επιχορήγηση ΠΝΕΥΜΑΤΙΚΟ ΚΕΝΤΡΟ ΠΑΝ.ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ 6500 €", "100015966", "culture_grant"),
+                ("Έγκριση μελέτης ανέγερσης νέου μουσείου Κώστα Τσόκλη", "100015966", "other")):
+            with self.subTest(subject=subject[:40]):
+                self.assertEqual(family_of(subject, issuer), family)
+        self.assertEqual(recipient_of("ΑΠΟΦΑΣΗ ΧΡΗΜΑΤΟΔΟΤΗΣΗΣ ΣΧΟΛΙΚΗΣ ΕΠΙΤΡΟΠΗΣ ΔΗΜΟΥ ΤΗΝΟΥ"), "54500")
+        self.assertEqual(recipient_of("ΑΠΟΦΑΣΗ ΧΡΗΜΑΤΟΔΟΤΗΣΗΣ ΔΗΜΟΥ ΤΗΝΟΥ ΓΙΑ ΠΡΟΜΗΘΕΙΑ ΞΕΝΟΓΛΩΣΣΩΝ ΒΙΒΛΙΩΝ"), "6296")
+        self.assertEqual(recipient_of("επιχορήγηση του Πνευματικού Κέντρου Πανόρμου «Γιαννούλης Χαλεπάς»"), "55049")
+
+    def test_the_net_after_the_orders_own_withholdings(self):
+        # the municipality booked 13,002.48 in 1213 in 2021: the order's figure less its own 17.52 of withholdings
+        from tinos.extract.grants import read_region
+        (a,), status, family = read_region(AGREEMENT_ORDER, "ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ", "region_payment")
+        self.assertEqual((status, family, a.amount, a.net, a.validation),
+                         ("read", "region_agreement_payment", 1302000, 1300248, "words_and_figures"))
+        self.assertIn("withholdings 17.52", a.detail)
+        broken = AGREEMENT_ORDER.replace("13.002,48", "13.012,48")  # figures that do not add up leave no net
+        self.assertIsNone(read_region(broken, "ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ", "region_payment")[0][0].net)
+        (w,), _, _ = read_region(WATER_ORDER, "ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ", "region_payment")  # no withholdings printed
+        self.assertEqual(w.net, 1550)
+
+    def test_a_credit_through_the_development_fund_is_not_counted_twice(self):
+        # the fund pays the bill; its own payment to the municipality is what counts
+        from tinos.extract.grants import read_region
+        subject = "Έγκριση πίστωσης 13.094,40 € σε βάρος των πιστώσεων του έργου Δήμου Τήνου"
+        (a,), status, family = read_region(FUND_CREDIT, subject, "region_credit")
+        self.assertEqual((status, family, a.amount), ("read", "region_credit_via_fund", 1309440))
+        self.assertIsNone(CATEGORY_OF_FAMILY["region_credit_via_fund"])
+        self.assertEqual(family_of("Απόφαση έγκρισης δαπάνης ποσού 7.880,00 € για τη χρηματοδότηση του 1ου λογαριασμού "
+                                   "του υποέργου «ΠΣ μεταξύ του Δ. Τήνου και της ΠΝΑ»", "14763"), "region_fund_payment")
+        self.assertEqual(family_of("ΕΝΤΟΛΗ ΠΛΗΡΩΜΗΣ 152-24/01/2022", "14763"), "region_fund_payment")
+
+
     def test_region_families(self):
         for subject, family in (
                 ("ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ", "region_payment"),
@@ -243,3 +323,88 @@ class Region(unittest.TestCase):
         elsewhere = CREDIT.replace("Δήμου Τήνου", "Δήμου Άνδρου").replace("Δήμο Τήνου", "Δήμο Άνδρου").replace(
             "800302968", "999999999")
         self.assertEqual(read_region(elsewhere, subject, "region_credit")[:2], ([], "absent"))
+
+
+# The foundation's decisions (texts shortened from the stored PDFs; officers' names left out)
+FOUNDATION_ITEMS = """Η Διοικούσα Επιτροπή του Π.Ι.Ι.Ε.Τ. αποφασίζει κι εγκρίνει
+1. Την καταβολή ποσού εξήντα πέντε χιλιάδων (65.000,00) €υρώ στο Δήμο Τήνο, έναντι της νομοθετημένης εισφοράς
+ποσοστού 10% επί των εσόδων Π.Ι.Ι.Ε.Τ. οικ. έτους 2019, εις βάρος του ΚΑΕ 2499.1.
+2. Την καταβολή ποσού είκοσι τριών χιλιάδων (23.000,00) €υρώ στην Ιερά Μητρόπολη Σύρου, έναντι της νομοθετημένης
+εισφοράς ποσοστού 2% επί των εσόδων του Π.Ι.Ι.Ε.Τ. οικ. έτους 2019, εις βάρος του ΚΑΕ 2499.3.
+"""
+FOUNDATION_FIGURES = """αποφασίζει εγκρίνει την αρχική καταβολή ποσού 50.000,00 έναντι της θεσμοθετημένης τακτικής επιχορήγησης στον
+Δήμο Τήνου (ποσοστό 10% επί των ακαθαρίστων εισπράξεων έτους 2017)."""
+# the shifted font of five PDFs (Ψ3ΗΤ469Β79-ΚΣΦ, ΨΞΑΦ469Β79-Ζ3Υ): Η for Τ, Ζ for Σ, Π for Ρ; the digits are intact
+FOUNDATION_SHIFTED = """αποφαζίδει εγκπίνει ηην καηαβολή ποζού εκαηόν είκοζι ηεζζάπων χιλιάδων ηπιακοζίων είκοζι πένηε €υρώ & ογδόνηα
+έξι λεπηών (124.325,86 €) ζηον Δήμο Σήνου, ωρ εξόθληζη ηηρ ηακηικήρ επισοπήγηζηρ έηοςρ 2024."""
+FOUNDATION_SCHOOLS = """αποφασίζει την καταβολή ποσού τετρακοσίων (400) ευρώ στην Ενιαία Σχολική Επιτροπή Α/θμιας Εκπαίδευσης
+Δήμου Τήνου, ως συμμετοχή στην προμήθεια φωτοτυπικού μηχανήματος."""
+
+
+class Foundation(unittest.TestCase):
+    def test_only_the_item_for_the_municipality(self):
+        from tinos.extract.grants import read_foundation
+        (a,), status, family = read_foundation(FOUNDATION_ITEMS)
+        self.assertEqual((a.amount, a.validation, a.recipient, status, family),
+                         (6_500_000, "words_and_figures", "6296", "read", "foundation_statutory_grant"))
+
+    def test_figures_alone_are_marked(self):
+        from tinos.extract.grants import read_foundation
+        (a,), _, _ = read_foundation(FOUNDATION_FIGURES)
+        self.assertEqual((a.amount, a.validation), (5_000_000, "figures_only"))
+
+    def test_the_shifted_font_words_still_check_the_figures(self):
+        from tinos.extract.grants import read_foundation
+        (a,), _, _ = read_foundation(FOUNDATION_SHIFTED)
+        self.assertEqual((a.amount, a.validation, a.recipient), (12_432_586, "words_and_figures", "6296"))
+
+    def test_the_school_committee_is_its_own_recipient(self):
+        from tinos.extract.grants import read_foundation
+        (a,), _, family = read_foundation(FOUNDATION_SCHOOLS)
+        self.assertEqual((a.amount, a.validation, a.recipient, family), (40_000, "words_and_figures", "54500", "foundation_grant"))
+
+
+AFM_UID = {"800302968": "6296", "800303105": "54500", "800300300": "55049"}
+ELECTION_GRANT = """ΑΠΟΦΑΣΙΖΟΥΜΕ
+       Εγκρίνουμε την απόδοση επιχορήγησης ύψους πέντε χιλιάδων τετρακοσίων εξήντα ευρώ (5460,00 €)
+στο Δήμο ΤΗΝΟΥ, (Α.Φ.Μ.: 800302968), το οποίο αφορά καταβολή εκλογικής αποζημίωσης.
+και βεβαιώνεται ότι οι ανωτέρω δαπάνες ύψους πέντε χιλιάδων τετρακοσίων εξήντα ευρώ (5.460,00 € ) είναι
+Υπόλοιπο προς ανάληψη: 49.856,43 €"""
+SCHOOL_BOOKS = """                                   Αποφασίζουμε
+    Χρηματοδοτούμε τη Σχολική Επιτροπή Δήμου Τήνου για την κάλυψη της δαπάνης προμήθειας βιβλίων ως εξής:
+    Σχολική Επιτροπή                              ΤΡΑΠΕΖΑ
+    Π. Ε. Δήμου Τήνου    Σύρου      800303105     ΠΕΙΡΑΙΩΣ          ΒΙΒΛΙΟ Ι.Κ.Ε.     109,65
+    Π. Ε. Δήμου Τήνου    Σύρου      800303105     ΠΕΙΡΑΙΩΣ          ΒΙΒΛΙΟ Ι.Κ.Ε.     103,20
+    Π. Ε. Δήμου Τήνου    Σύρου      800303105     ΠΕΙΡΑΙΩΣ          ΒΙΒΛΙΟ Ι.Κ.Ε.     135,45
+                                                                    ΣΥΝΟΛΟ(€):        348,30"""
+# a per-school subtotal and its parts: only the total's column adds up
+SCHOOL_BOOKS_SUBTOTALS = "\n".join((
+    "                                     Αποφαςίζουμε",
+    "    ΔΘΜΟ΢ ΣΘΝΟ΢             800302968          ΢ΤΡΟΤ",
+    "1 ΣΗΝΟΤ                  ΕΚΔ.ΟΙΚΟ΢ LIVRE OUVERT".ljust(70) + "55,08".rjust(12),
+    "2ο ΣΗΝΟΤ                 ΕΚΔ.ΟΙΚΟ΢ LIVRE OUVERT 58,32".ljust(70) + "111,12".rjust(12),
+    "                         ΕΚΔ.ΟΙΚΟ΢ HUEBER HELLAS          52,80",
+    "3 ΣΗΝΟΤ                  ΕΚΔ.ΟΙΚΟ΢ LIVRE OUVERT".ljust(70) + "47,52".rjust(12),
+    "                                                ΢ΤΝΟΛΟ".ljust(70) + "213,72".rjust(12)))
+
+
+class OtherGrantors(unittest.TestCase):
+    def test_words_and_figures(self):
+        from tinos.extract.grants import read_other
+        (a,), status = read_other(ELECTION_GRANT, "Απόφαση απόδοσης εκλογικής επιχορήγησης στο Δήμο Τήνου", AFM_UID)
+        self.assertEqual((a.amount, a.validation, a.recipient, status), (546_000, "words_and_figures", "6296", "read"))
+
+    def test_rows_add_up_to_the_stated_total(self):
+        from tinos.extract.grants import read_other
+        (a,), _ = read_other(SCHOOL_BOOKS, "ΑΠΟΦΑΣΗ ΧΡΗΜΑΤΟΔΟΤΗΣΗΣ ΣΧΟΛΙΚΗΣ ΕΠΙΤΡΟΠΗΣ ΔΗΜΟΥ ΤΗΝΟΥ", AFM_UID)
+        self.assertEqual((a.amount, a.validation, a.recipient), (34_830, "stated_amount", "54500"))
+
+    def test_the_totals_column(self):
+        from tinos.extract.grants import read_other
+        (a,), _ = read_other(SCHOOL_BOOKS_SUBTOTALS, "ΑΠΟΦΑΣΗ ΧΡΗΜΑΤΟΔΟΤΗΣΗΣ ΔΗΜΟΥ ΤΗΝΟΥ", AFM_UID)
+        self.assertEqual((a.amount, a.validation, a.recipient), (21_372, "stated_amount", "6296"))
+
+    def test_no_tinos_body_no_amount(self):
+        from tinos.extract.grants import read_other
+        self.assertEqual(read_other("ΑΠΟΦΑΣΙΖΟΥΜΕ την επιχορήγηση ποσού πέντε ευρώ (5,00 €) στον Δήμο Σύρου", "", AFM_UID),
+                         ([], "not_found"))

@@ -105,31 +105,129 @@ out_of_scope:
 # fall in (probe 2026-09-25). The index holds document text only from about November 2015;
 # earlier acts match by subject alone, so 2015 is searched with the term ΑΥΤΟΤΕΛΕΙΣ (every ΚΑΠ
 # decision's subject) as well. Uid 12 (the 2009-2011 ministry) is not searched.
+# `group` is the grantor as the curated layer reports it (a ministry under all its uids, the Region with its
+# development fund); `keep` narrows what the privacy whitelist keeps from that issuer (PRIVACY.md Q7).
 grantors:
   - uid: "30"
     name: ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ
     latin_name: min-interior
+    group: interior
     active_years: [2012, 2015]
     note: issued the January 2015 ΚΑΠ allocations before the ministry was renamed
   - uid: "100010874"
     name: ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ ΚΑΙ ΔΙΟΙΚΗΤΙΚΗΣ ΑΝΑΣΥΓΚΡΟΤΗΣΗΣ
     latin_name: min_esdan
+    group: interior
     active_years: [2015, 2016]
     note: also ran the police and fire service; most of its hits are their own purchases
   - uid: "100025896"
     name: ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ
     latin_name: ypesneo
+    group: interior
     active_years: [2016, 2019]
   - uid: "100054492"
     name: ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ
     latin_name: ypes_2019
+    group: interior
     active_years: [2019, 2026]
   - uid: "5011"
     name: ΠΕΡΙΦΕΡΕΙΑ ΝΟΤΙΟΥ ΑΙΓΑΙΟΥ
     latin_name: pnai
+    group: region
     active_years: [2011, 2026]
     note: >
       Searched from 2026-09-26 for ΤΗΝΟΥ and for the municipality's ΑΦΜ (800302968; the other bodies'
       ΑΦΜ return nothing, 2015-2025). Its money to Tinos is in acts that name a Tinos body without a
       grant word (regional investment credits for municipal projects, programme agreements) and in
       payment orders titled only «ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ», found by the ΑΦΜ (probe 2026-09-26).
+  - uid: "14763"
+    name: ΠΕΡΙΦΕΡΕΙΑΚΟ ΤΑΜΕΙΟ ΑΝΑΠΤΥΞΗΣ ΠΕΡΙΦΕΡΕΙΑΣ ΝΟΤΙΟΥ ΑΙΓΑΙΟΥ
+    latin_name: ptana
+    group: region
+    active_years: [2015, 2023]
+    keep: [tinos_body]
+    note: >
+      The Region's development fund, paying agent of its investment programme: most of the Region's
+      credits are transferred to it, and it pays the bills, the municipality's among them. Searched
+      from 2026-09-26 for the Tinos bodies' ΑΦΜ only (800302968: 27 payments 2015-2023, the same 27
+      that a full scan of its payment metadata finds; 800303074: 2); every hit is anchored. Counted as
+      the Region's money (grantor `region`).
+  - uid: "99206908"
+    name: ΠΑΝΕΛΛΗΝΙΟ ΙΕΡΟ ΙΔΡΥΜΑ ΕΥΑΓΓΕΛΙΣΤΡΙΑΣ ΤΗΝΟΥ
+    latin_name: panagiatinou
+    group: evangelistria
+    active_years: [2015, 2026]
+    keep: [tinos_body, statutory_grant]
+    note: >
+      Out of scope as our entity (above), searched as a grantor from 2026-09-26: it owes the
+      municipality a statutory grant, 10% of its gross receipts. Every act carries ΤΗΝΟΥ in its
+      letterhead (about 7,400 hits 2015-2025) and most of its grants go to people (scholarships,
+      welfare, dowries) and associations, so only acts naming a Tinos body are kept, acts about its
+      statutory grants (to the municipality and other public and church bodies; titles often name no
+      recipient), and hits of the municipality's ΑΦΜ.
+  - uid: "50203"
+    name: ΑΠΟΚΕΝΤΡΩΜΕΝΗ ΔΙΟΙΚΗΣΗ ΑΙΓΑΙΟΥ
+    latin_name: apdik_aigaiou
+    group: decentralised
+    active_years: [2015, 2026]
+    keep: [grant_words]
+    note: >
+      The municipality's supervisor (legality reviews of its decisions, budget ratifications),
+      searched from 2026-09-26: about 3,000 ΤΗΝΟΥ hits 2015-2025. It paid the municipality the
+      election grants of 2014-2015 (Β.4). Its reviews name the municipality in nearly every subject
+      and its staff acts name people, so only subjects with a grant word are kept (37 in the probe).
+  - uid: "100010887"
+    name: ΥΠΟΥΡΓΕΙΟ ΠΟΛΙΤΙΣΜΟΥ, ΠΑΙΔΕΙΑΣ ΚΑΙ ΘΡΗΣΚΕΥΜΑΤΩΝ
+    latin_name: min_ppth
+    group: education
+    active_years: [2015, 2015]
+    keep: [tinos_body]
+    note: the Education and Culture ministries merged, 2015 (21 ΤΗΝΟΥ hits)
+  - uid: "100015990"
+    name: ΥΠΟΥΡΓΕΙΟ ΠΑΙΔΕΙΑΣ, ΕΡΕΥΝΑΣ ΚΑΙ ΘΡΗΣΚΕΥΜΑΤΩΝ
+    latin_name: YPET
+    group: education
+    active_years: [2015, 2019]
+    keep: [tinos_body]
+    note: >
+      The Education Ministry's four uids 2015-2025 (this, 100010887, 100054501, 100081880; uid 8 has
+      hits only to 2014), searched from 2026-09-26. Most ΤΗΝΟΥ hits are teachers' placements and
+      expense commitments naming one person, so only acts naming a Tinos body are kept, and hits of a
+      Tinos body's ΑΦΜ: its financing of the school committees' foreign-language books, a 2019
+      investment project, a 2024 commitment to the municipality.
+  - uid: "100054501"
+    name: ΥΠΟΥΡΓΕΙΟ ΠΑΙΔΕΙΑΣ ΚΑΙ ΘΡΗΣΚΕΥΜΑΤΩΝ
+    latin_name: minedu_2019
+    group: education
+    active_years: [2019, 2023]
+    keep: [tinos_body]
+  - uid: "100081880"
+    name: ΥΠΟΥΡΓΕΙΟ ΠΑΙΔΕΙΑΣ, ΘΡΗΣΚΕΥΜΑΤΩΝ ΚΑΙ ΑΘΛΗΤΙΣΜΟΥ
+    latin_name: yp_paideias
+    group: education
+    active_years: [2023, 2026]
+    keep: [tinos_body]
+  - uid: "17"
+    name: ΥΠΟΥΡΓΕΙΟ ΠΟΛΙΤΙΣΜΟΥ ΚΑΙ ΑΘΛΗΤΙΣΜΟΥ
+    latin_name: YPPOA
+    group: culture
+    active_years: [2012, 2015]
+    keep: [tinos_body]
+  - uid: "100015966"
+    name: ΥΠΟΥΡΓΕΙΟ ΠΟΛΙΤΙΣΜΟΥ ΚΑΙ ΑΘΛΗΤΙΣΜΟΥ
+    latin_name: YPPOA_NEW
+    group: culture
+    active_years: [2015, 2023]
+    keep: [tinos_body]
+    note: >
+      The Culture Ministry's uids 2015-2025 (17, this, 100081912), searched from 2026-09-26. Its ΤΗΝΟΥ
+      hits are archaeological consents for private houses and shops (named owners), grants to
+      cultural associations on the island (not Tinos bodies), and its own works there; only acts
+      naming a Tinos body are kept (the Panormos cultural centre, the Tsoklis museum), and hits of a
+      Tinos body's ΑΦΜ.
+  - uid: "100081912"
+    name: ΥΠΟΥΡΓΕΙΟ ΠΟΛΙΤΙΣΜΟΥ
+    latin_name: minculture
+    group: culture
+    active_years: [2023, 2026]
+    keep: [tinos_body]

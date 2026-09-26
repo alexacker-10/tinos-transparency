@@ -605,7 +605,7 @@ def fulltext_backfill(
                         for page in pages:
                             keep, dropped = set(), Counter()
                             for rec in page.decisions:
-                                reason = whitelist_reason(rec, anchored=t in anchors)
+                                reason = whitelist_reason(rec, anchored=t in anchors, keep=grantors[org].keep)
                                 if reason is None:
                                     keep.add(rec["ada"])
                                 else:
@@ -659,19 +659,20 @@ def fulltext_purge(
     import json
     import re
 
-    from tinos.curated_grants import search_index
+    from tinos.curated_grants import keep_rules_for, search_index_by_issuer
     from tinos.sources.fulltext import whitelist_reason
 
     st = _settings()
     reg = load_registry(st.entities_file)
     anchors = {e.afm for e in reg.in_scope if e.afm}
     store = RawStore(st.raw_dir)
-    found, _ = search_index(st.raw_dir)
+    found, _, found_orgs = search_index_by_issuer(st.raw_dir)
     base = st.raw_dir / "diavgeia" / "fulltext"
     personal: dict[str, list[Path]] = {}
     for path in sorted((base / "decisions").glob("*/*.json")):
         rec = json.loads(path.read_bytes())
-        if whitelist_reason(rec, anchored=bool(anchors & set(found.get(rec["ada"], [])))) == "personal":
+        if whitelist_reason(rec, anchored=bool(anchors & set(found.get(rec["ada"], []))),
+                            keep=keep_rules_for(rec["ada"], path.parent.name, found_orgs, reg)) == "personal":
             personal.setdefault(rec["ada"], []).append(path)
     page_re = re.compile(r"(\d{4}-\d{2}-\d{2}_\d{4}-\d{2}-\d{2}_p\d{3})_[0-9a-f]{12}\.json")
     pages: dict[Path, list[str]] = {}
@@ -716,14 +717,38 @@ def fulltext_purge(
 @app.command(name="fulltext-status")
 def fulltext_status(
     missing_docs: bool = typer.Option(False, "--missing-docs", help="List kept decisions whose PDF is not stored yet."),
+    names: bool = typer.Option(False, "--names", help="List kept decisions whose subject holds a common first name "
+                                                      "(a privacy review of what the whitelist keeps)."),
 ) -> None:
     """Kept full-text decisions by issuer and year, and which PDFs are stored."""
     import json
 
-    from tinos.sources.fulltext import issue_day
+    from tinos.curated_grants import keep_rules_for, search_index_by_issuer
+    from tinos.sources.fulltext import first_name_words, issue_day, whitelist_reason
 
     st = _settings()
     store = RawStore(st.raw_dir)
+    if names:
+        # Every stored record the current whitelist would still keep, scanned for first names (PRIVACY.md Q7).
+        # Saints and places carry the same words; each hit is for a person to read.
+        reg = load_registry(st.entities_file)
+        anchors = {e.afm for e in reg.in_scope if e.afm}
+        found, _, found_orgs = search_index_by_issuer(st.raw_dir)
+        scanned = hits = 0
+        for path in store.iter_fulltext_decisions():
+            rec = json.loads(path.read_bytes())
+            org = path.parent.name
+            if whitelist_reason(rec, anchored=bool(anchors & set(found.get(rec["ada"], []))),
+                                keep=keep_rules_for(rec["ada"], org, found_orgs, reg)) is not None:
+                continue
+            scanned += 1
+            words = first_name_words(rec.get("subject"))
+            if words:
+                hits += 1
+                typer.echo(f"{org}\t{rec['ada']}\t{issue_day(rec['issueDate'])}\t{','.join(words)}\t"
+                           f"{' '.join(str(rec.get('subject')).split())[:160]}")
+        typer.echo(f"kept subjects scanned: {scanned}  with a first-name word: {hits}")
+        return
     rows = []
     for path in store.iter_fulltext_decisions():
         rec = json.loads(path.read_bytes())

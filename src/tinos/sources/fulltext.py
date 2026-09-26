@@ -272,6 +272,9 @@ PERSONAL_RE = re.compile("|".join([
     # one employee or official by name, not staff in general («υπαλλήλων» stays): expenses, travel,
     # payments «στο όνομα του», the Region's local official (Έπαρχος; «Επαρχιακή Οδός» is a road)
     _word(r"ΥΠΑΛΛΗΛ(?:ΟΣ|ΟΥ|Ο)"), r"ΣΤΟ ΟΝΟΜΑ Τ(?:ΟΥ|ΗΣ)", r"ΜΕΤΑΚΙΝΗΣΗΣ? Τ(?:ΟΥ|ΗΣ) ",
+    # a travel expense, the traveller named or not («για μετακίνηση ‹surname›», «δαπάνης μετακίνησης»); not the
+    # transport of pupils, disabled people, goods or waste
+    r"ΜΕΤΑΚΙΝΗΣ(?:Η|ΗΣ|ΕΩΝ) (?!ΜΑΘΗΤ|ΤΩΝ ΜΑΘΗΤ|ΑΤΟΜΩΝ|ΑΜΕΑ|ΥΛΙΚ|ΟΧΗΜ|ΑΠΟΡΡΙΜ|ΕΠΙΒΑΤ)",
     _word(r"ΕΠΑΡΧ(?:ΟΣ|ΟΥ|Ο|ΟΙ|ΩΝ)"),
     _word(r"ΑΜΚΑ"), r"Α\.Δ\.Τ\.", r"@", r"ΔΙΚΗΓΟΡ",                  # identity numbers, e-mail, lawyers
     r"ΕΠΕΝΔΥΤΙΚ\w* ΣΧΕΔΙ",                                     # a business's investment plan (a sole trader)
@@ -281,6 +284,22 @@ PERSONAL_RE = re.compile("|".join([
     r"ΣΥΜΒΑΣ\w* ΑΝΑΘΕΣΗΣ", r"ΑΝΑΘΕΣΗ ΣΤ(?:ΗΝ|ΟΝ|Ο|Η) ", r"ΑΤΟΜΙΚ\w* ΕΠΙΧΕΙΡΗΣ",
     r"ΑΙΤΗΣ\w* (?:ΑΚΥΡΩΣΗΣ|ΑΝΑΣΤΟΛΗΣ|ΑΝΑΙΡΕΣΗΣ)", r"ΚΑΤΑ ΤΗΣ ΠΡΟΣΒΑΛΛΟΜΕΝΗΣ", r"ΔΙΚΑΙΩΜΑΤΟΣ ΠΑΡΕΜΒΑΣΗΣ",
     r"ΑΔΕΙ\w* ΑΛΙΕΙΑΣ", r"ΑΛΙΕΥΤΙΚ\w* (?:ΕΡΓΑΛΕΙ|ΣΚΑΦ)",        # not «αλιευτικό καταφύγιο», a works project
+    # a foundation's grants to people (added for the Evangelistria foundation, 2026-09-26): scholarships, student
+    # and welfare aid, dowries, aid to the poor (not «μαθητών», the allocations for pupils' transport)
+    # (the EU food-aid fund «Ταμείο Ευρωπαϊκής Βοήθειας προς τους Απόρους», ΤΕΒΑ, is a programme, not a person)
+    r"ΥΠΟΤΡΟΦ", r"ΒΟΗΘΗΜ", r"ΠΡΟΙΚ", r"(?<!ΤΑΜΕΙΟ ΕΥΡΩΠΑΙΚΗΣ ΒΟΗΘΕΙΑΣ ΠΡΟΣ ΤΟΥΣ )(?<!ΤΑΜΕΙΟ ΓΙΑ ΤΟΥΣ )"
+    + _word(r"ΑΠΟΡ(?:ΟΣ|ΟΥ|Ο|ΟΙ|ΩΝ|ΟΥΣ|ΕΣ|Η|ΗΣ)"),
+    # teachers and other staff placed, substituting, or with degrees recognised (the Education Ministry, 2026-09-26);
+    # not «προμήθεια και τοποθέτηση εξοπλισμού», not «αναπληρωτές υπουργοί»
+    r"ΤΟΠΟΘΕΤΗΣ\w*[- ]+(?:ΔΙΑΘΕΣ\w* )?(?:ΑΝΑΠΛΗΡΩΤ|ΕΚΠΑΙΔΕΥΤΙΚ|ΜΕΛΩΝ|ΠΡΟΣΩΡΙΝ|ΥΠΑΛΛΗΛ|ΠΡΟΣΩΠΙΚ)",
+    r"ΑΝΑΠΛΗΡΩΤ\w* (?:ΕΚΠΑΙΔΕΥΤΙΚ|ΕΙΔΙΚΟΥ|ΜΕΛ[ΩΟΗ]|ΓΕΝΙΚΗΣ|Ε\.?Ε\.?Π|Ε\.?Β\.?Π)", r"ΔΕΥΤΕΡΗΣ ΕΙΔΙΚΟΤΗΤΑΣ",
+    r"ΣΥΝΑΦΕΙΑΣ .{0,60}ΤΙΤΛ",
+    # permits for a private property or business (the Culture Ministry's archaeological consents, 2026-09-26): a
+    # house, «φερόμενης ιδιοκτησίας ‹name›», a shop's licence; not property of the municipality, the state or a church
+    r"ΙΔΙΟΚΤΗΣΙΑΣ (?!(?:ΤΟΥ |ΤΗΣ |ΤΩΝ )?(?:ΔΗΜΟΥ|ΔΗΜΟΣΙΟΥ|ΙΕΡ|Ι\.|ΕΚΚΛΗΣΙ|ΜΟΝΗΣ|ΠΕΡΙΦΕΡΕΙΑΣ|ΚΟΙΝΟΤΗΤ|ΕΛΛΗΝΙΚΟΥ|"
+    r"ΠΑΝΕΛΛΗΝΙΟΥ|ΥΠΟΥΡΓΕΙΟΥ|ΠΙΙΕΤ|Π\.Ι\.Ι\.Ε\.Τ|ΙΔΡΥΜΑΤΟΣ|Ν\.?Π\.?Δ\.?Δ))",
+    r"(?:ΕΠΙΣΚΕΥΗΣ|ΑΝΕΓΕΡΣΗΣ|ΠΡΟΣΘΗΚΗΣ|ΑΝΑΚΑΙΝΙΣΗΣ|ΑΠΟΚΑΤΑΣΤΑΣΗΣ)\w* (?:[Α-Ω]+ ){0,3}?(?:ΚΑΤΟΙΚΙ|ΟΙΚΙΑΣ)",
+    r"ΚΑΤΑΣΤΗΜΑΤΟΣ (?:ΥΓΕΙΟΝΟΜΙΚΟΥ|ΜΑΖΙΚΗΣ|ΛΙΑΝΙΚΗΣ)", r"ΑΥΘΑΙΡΕΤ", r"4495/2017",  # legalised private works
     # designating a person: a supervisor, representative, member, officer (not «Καθορισμός», not posts)
     _word(r"ΟΡΙΣΜΟΣ|ΟΡΙΣΜΟΥ") + r" (?:ΤΟΥ |ΤΗΣ |ΤΩΝ )?(?:ΕΠΟΠΤ|ΕΚΠΡΟΣΩΠ|ΜΕΛ[ΩΟΗ]|ΥΠΕΥΘΥΝ|ΑΝΑΠΛΗΡΩ|ΓΡΑΜΜΑΤΕ|ΠΡΟΕΔΡ|"
     r"ΧΕΙΡΙΣΤ|ΣΥΝΤΟΝΙΣΤ|ΕΛΕΓΚΤ|ΔΙΑΧΕΙΡΙΣΤ|ΕΠΙΒΛΕΠ|ΑΞΙΟΛΟΓΗΤ|ΥΠΑΛΛΗΛ|ΥΠΟΛΟΓ)",
@@ -304,23 +323,68 @@ TINOS_BODY_RE = re.compile("|".join([
 ]))
 
 
-def whitelist_reason(rec: dict[str, Any], anchored: bool = False) -> str | None:
+# The Evangelistria foundation's statutory grants, to the municipality and to other public and church bodies alike
+# («Τακτική επιχορήγηση Δήμου - Ι.ΤΗ.Π. - Ι.Μητρόπολη Σύρου», «Έναντι τακτικής επιχορήγησης έτους 2017»): titles that
+# often name no recipient, so ``tinos_body`` misses them (seven of 2018-2021, found by 2119's monthly receipts).
+STATUTORY_GRANT_RE = re.compile(r"ΤΑΚΤΙΚ\w* (?:ΕΤΗΣΙΑΣ )?(?:ΟΙΚΟΝΟΜΙΚ\w* )?ΕΠΙΧΟΡΗΓ|ΘΕΣΜΟΘΕΤΗΜΕΝ\w* (?:ΤΑΚΤΙΚ\w* )?ΕΠΙΧΟΡΗΓ|"
+                                r"ΝΟΜΟΘΕΤΗΜΕΝ\w* (?:ΟΙΚ\w*\.? )?(?:ΕΠΙΧΟΡΗΓ|ΕΙΣΦΟΡ)|ΕΤΗΣΙΑΣ (?:ΤΑΚΤΙΚ\w* )?ΕΠΙΧΟΡΗΓ")
+
+KEEP_ALL = ("grant_words", "investment_acts", "tinos_body")
+
+# Common Greek first names in their case forms, folded: a review aid for what the whitelist keeps (`tinos
+# fulltext-status --names`), not a rule. Saints and places carry the same words (Αγίου Νικολάου, Αγίας Τριάδος,
+# Ευαγγελιστρίας), so every hit is read by a person before anything is decided.
+_NAME_STEMS = {
+    ("ΟΣ", "ΟΥ", "Ο"): "ΓΕΩΡΓΙ ΓΙΩΡΓ ΚΩΝΣΤΑΝΤΙΝ ΔΗΜΗΤΡΙ ΝΙΚΟΛΑ ΒΑΣΙΛΕΙ ΧΡΗΣΤ ΑΘΑΝΑΣΙ ΕΥΑΓΓΕΛ ΑΝΤΩΝΙ ΑΝΑΣΤΑΣΙ "
+                        "ΘΕΟΔΩΡ ΠΕΤΡ ΣΤΑΥΡ ΑΛΕΞΑΝΔΡ ΣΤΥΛΙΑΝ ΑΠΟΣΤΟΛ ΣΩΤΗΡΙ ΦΩΤΙ ΚΥΡΙΑΚ ΣΤΕΦΑΝ ΠΑΥΛ ΕΥΣΤΑΘΙ ΜΑΡΚ "
+                        "ΙΑΚΩΒ ΦΙΛΙΠΠ ΠΡΟΚΟΠΙ ΓΡΗΓΟΡΙ ΧΑΡΑΛΑΜΠ ΙΓΝΑΤΙ ΜΑΤΘΑΙ ΕΛΕΥΘΕΡΙ ΑΓΓΕΛ ΣΠΥΡ ΣΤΕΛΙ ΘΕΟΦΑΝ "
+                        "ΕΥΘΥΜΙ ΔΙΟΝΥΣΙ ΑΡΓΥΡ ΧΡΥΣΑΝΘ ΛΑΜΠΡ ΝΙΚΗΦΟΡ ΠΑΡΑΣΚΕΥ ΠΟΛΥΧΡΟΝΙ ΤΙΜΟΘΕ ΦΡΑΓΚΙΣΚ ΖΑΧΑΡΙ "
+                        "ΓΕΡΑΣΙΜ ΜΑΚΑΡΙ ΚΟΣΜ ΜΑΡΙΝ ΑΝΘΙΜ",
+    ("ΗΣ", "Η"): "ΙΩΑΝΝ ΓΙΑΝΝ ΠΑΝΑΓΙΩΤ ΒΑΣΙΛ ΔΗΜΗΤΡ ΜΙΧΑΛ ΑΝΤΩΝ ΜΑΝΟΛ ΜΑΝΩΛ ΣΩΤΗΡ ΦΩΤ ΠΑΝΤΕΛ ΑΡΙΣΤΕΙΔ ΘΑΝΑΣ "
+                 "ΒΑΓΓΕΛ ΣΤΕΛ ΧΡΙΣΤΟΔΟΥΛ ΘΕΜΙΣΤΟΚΛ ΣΟΦΟΚΛ ΠΕΡΙΚΛ ΗΡΑΚΛ ΜΗΝ ΜΙΛΤΙΑΔ ΕΥΡΙΠΙΔ ΑΝΑΡΓΥΡ ΣΑΡΑΝΤ ΤΑΚ",
+    ("ΑΣ", "Α"): "ΗΛΙ ΑΝΔΡΕ ΛΕΩΝΙΔ ΚΩΣΤ ΘΩΜ ΣΑΒΒ ΝΙΚΗΤ ΛΟΥΚ ΑΙΝΕΙ",
+    ("Α", "ΑΣ"): "ΜΑΡΙ ΣΟΦΙ ΓΕΩΡΓΙ ΔΗΜΗΤΡ ΕΥΑΓΓΕΛΙ ΙΩΑΝΝ ΚΩΝΣΤΑΝΤΙΝ ΑΝΑΣΤΑΣΙ ΧΡΙΣΤΙΝ ΑΛΕΞΑΝΔΡ ΑΝΤΩΝΙ ΑΘΑΝΑΣΙ "
+                 "ΘΕΟΔΩΡ ΝΙΚΟΛΕΤ ΠΑΝΑΓΙΩΤ ΜΑΡΓΑΡΙΤ ΕΥΤΥΧΙ ΕΥΘΥΜΙ ΚΑΤΕΡΙΝ ΜΑΡΙΝ ΕΥΔΟΚΙ ΛΑΜΠΡΙΝ ΣΤΑΜΑΤΙ ΣΤΑΥΡΟΥΛ "
+                 "ΧΡΥΣΟΥΛ ΠΟΛΥΞΕΝ ΑΣΠΑΣΙ ΣΕΒΑΣΤΙ ΑΝΤΙΓΟΝ ΙΦΙΓΕΝΕΙ ΒΙΚΤΩΡΙ ΜΥΡΤΩ ΜΑΡΘ ΤΑΤΙΑΝ ΝΑΤΑΛΙ ΓΑΡΥΦΑΛΛΙ "
+                 "ΙΟΥΛΙ ΛΟΥΚΙ ΞΑΝΘΙΠΠ ΣΠΥΡΙΔΟΥΛ ΤΡΙΑΝΤΑΦΥΛΛ ΧΑΡΙΚΛΕΙ ΟΛΓ ΑΝΝ ΡΕΝ ΖΩ",
+    ("Η", "ΗΣ"): "ΕΛΕΝ ΑΙΚΑΤΕΡΙΝ ΒΑΣΙΛΙΚ ΑΓΓΕΛΙΚ ΕΙΡΗΝ ΚΥΡΙΑΚ ΦΩΤΕΙΝ ΞΑΝΘ ΑΦΡΟΔΙΤ ΣΤΥΛΙΑΝ ΚΑΛΛΙΟΠ ΠΗΝΕΛΟΠ "
+                 "ΣΤΑΜΑΤΙΝ ΜΑΓΔΑΛΗΝ ΘΕΟΔΟΣΙ ΔΕΣΠΟΙΝ ΣΟΥΛΤΑΝ ΦΡΟΣΥΝ ΕΥΓΕΝΙ ΚΑΤΙΝ ΜΑΡΙΚ ΝΙΚ ΖΩ ΑΝΝ",
+}
+FIRST_NAMES = frozenset({"ΜΙΧΑΗΛ", "ΕΜΜΑΝΟΥΗΛ", "ΣΠΥΡΙΔΩΝ", "ΣΠΥΡΙΔΩΝΑ", "ΣΠΥΡΙΔΩΝΟΣ", "ΙΑΣΩΝ", "ΞΕΝΟΦΩΝ",
+                         "ΧΑΡΑΛΑΜΠΟΥΣ", "ΠΑΝΤΕΛΕΗΜΩΝ", "ΝΙΚΟΣ", "ΝΙΚΟΥ", "ΔΗΜΗΤΡΑ", "ΜΑΡΙΑ"}
+                        | {s + e for ends, stems in _NAME_STEMS.items() for s in stems.split() for e in ends})
+_CAPITAL_WORD = re.compile(r"[Α-Ω]+")
+
+
+def first_name_words(text: Any) -> list[str]:
+    """The words of ``text`` (folded) that are common Greek first names."""
+    return [w for w in _CAPITAL_WORD.findall(fold(text)) if w in FIRST_NAMES]
+
+
+def whitelist_reason(rec: dict[str, Any], anchored: bool = False, keep: tuple[str, ...] = KEEP_ALL) -> str | None:
     """None when the record is kept; otherwise ``'personal'`` or ``'not_a_grant'``.
 
     Kept: a subject about allocations, grants, financing or programme
-    inclusion (:data:`GRANT_RE`), a Β.1.1 act, a subject naming a Tinos body
-    (:data:`TINOS_BODY_RE`), or any record found by a Tinos body's own ΑΦΜ
-    (``anchored``: the Region's payment orders are titled only «ΕΝΤΑΛΜΑ
-    ΠΛΗΡΩΜΗΣ»); never a subject about people (:data:`PERSONAL_RE`, checked
-    first). Everything else found by a search for ΤΗΝΟΥ (a ministry's own police
-    and fire stations' purchases, the Region's licences and its own contracts on
-    the island, circulars) is ``not_a_grant``. See PRIVACY.md Q7.
+    inclusion (:data:`GRANT_RE`, rule ``grant_words``), a Β.1.1 act
+    (``investment_acts``), a subject naming a Tinos body (:data:`TINOS_BODY_RE`,
+    ``tinos_body``), or any record found by a Tinos body's own ΑΦΜ (``anchored``:
+    the Region's payment orders are titled only «ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ»); never a
+    subject about people (:data:`PERSONAL_RE`, checked first). ``keep`` is the
+    issuer's own list (``entities.yaml``, grantor ``keep``): a foundation whose
+    grants go mostly to named people keeps only ``tinos_body`` and its statutory
+    grants to public bodies (``statutory_grant``). Everything else
+    found by a search for ΤΗΝΟΥ (a ministry's own police and fire stations'
+    purchases, the Region's licences and its own contracts on the island,
+    circulars) is ``not_a_grant``. See PRIVACY.md Q7.
     """
     subject = fold(rec.get("subject"))
     if PERSONAL_RE.search(subject):
         return "personal"
     dtype = (rec.get("decisionType") or {}).get("uid")
-    if anchored or GRANT_RE.search(subject) or dtype in GRANT_TYPES or TINOS_BODY_RE.search(subject):
+    if (anchored or ("grant_words" in keep and GRANT_RE.search(subject))
+            or ("investment_acts" in keep and dtype in GRANT_TYPES)
+            or ("tinos_body" in keep and TINOS_BODY_RE.search(subject))
+            or ("statutory_grant" in keep and STATUTORY_GRANT_RE.search(subject))):
         return None
     return "not_a_grant"
 

@@ -210,6 +210,28 @@ class Whitelist(unittest.TestCase):
         self.assertEqual(whitelist_reason(rec(subject="Παράταση της σύμβασης καθαριότητας του Αυτοτελούς Κλιμακίου",
                                               dtype="Δ.1")), "not_a_grant")
 
+    def test_an_issuer_can_keep_only_acts_naming_a_tinos_body(self):
+        # the Evangelistria foundation: its grants go mostly to people and associations; only acts about the
+        # municipality are kept, and its hits of the municipality's ΑΦΜ (its payments of the statutory grant)
+        only = ("tinos_body",)
+        self.assertEqual(whitelist_reason(rec(subject="Επιχορήγηση Συλλόγου Γυναικών", dtype="Β.4"), keep=only),
+                         "not_a_grant")
+        self.assertIsNone(whitelist_reason(rec(subject="Επιχορήγηση Συλλόγου Γυναικών", dtype="Β.4")))  # the default
+        self.assertIsNone(whitelist_reason(rec(subject="ΑΡΧΙΚΗ ΚΑΤΑΒΟΛΗ ΘΕΣΜΟΘΕΤΗΜΕΝΗΣ ΤΑΚΤΙΚΗΣ ΕΠΙΧΟΡΗΓΗΣΗΣ ΣΤΟΝ ΔΗΜΟ "
+                                                   "ΤΗΝΟΥ", dtype="Β.1.3"), keep=only))
+        self.assertIsNone(whitelist_reason(rec(subject="ΕΝΑΝΤΙ ΕΤΗΣΙΑΣ ΕΠΙΧΟΡΗΓΗΣΗΣ ΠΟΣΟΣΤΟΥ 10%", dtype="Β.4"),
+                                           anchored=True, keep=only))
+        self.assertEqual(whitelist_reason(rec(subject="Έγκριση προϋπολογισμού", dtype="Β.1.1"), keep=only),
+                         "not_a_grant")
+
+    def test_scholarships_and_welfare_aid_are_personal(self):
+        for subject in ("ΠΡΟΚΗΡΥΞΗ ΥΠΟΤΡΟΦΙΩΝ ΚΑΙ ΣΠΟΥΔΑΣΤΙΚΩΝ ΒΟΗΘΗΜΑΤΩΝ ΣΕ ΕΓΓΕΓΡΑΜΜΕΝΟΥΣ ΣΤΟΝ ΔΗΜΟ ΤΗΝΟΥ",
+                        "Χορήγηση χρηματικού βοηθήματος", "Προικοδότηση απόρων κορασίδων", "Ενίσχυση απόρων οικογενειών"):
+            with self.subTest(subject=subject[:40]):
+                self.assertEqual(whitelist_reason(rec(subject=subject, dtype="Β.4"), anchored=True), "personal")
+        # pupils' transport is an allocation, not a person
+        self.assertIsNone(whitelist_reason(rec(subject="Κατανομή ποσού στις Περιφέρειες για μεταφορά μαθητών")))
+
     def test_redaction_keeps_only_what_the_guard_checks(self):
         kept, dropped = rec(), rec(ada="ΨΨΨΨ46ΜΤΛ6-ΑΒΓ", subject=CITIZEN)
         raw = page([kept, dropped], highlighting={kept["ada"]: {"documentText": ["230 58216 <pre>ΤΗΝΟΥ</pre> 1,00"]},
@@ -314,3 +336,19 @@ class Store(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StatutoryGrantRule(unittest.TestCase):
+    def test_the_foundations_statutory_grants_are_kept_people_never(self):
+        from tinos.sources.fulltext import whitelist_reason
+        keep = ("tinos_body", "statutory_grant")
+        for subject, reason in (("ΑΠΟΦΑΣΗ ΓΙΑ ΤΑΚΤΙΚΗ ΕΠΙΧΟΡΗΓΗΣΗ ΔΗΜΟΥ - Ι.ΤΗ.Π. - Ι.ΜΗΤΡΟΠΟΛΗ ΣΥΡΟΥ", None),
+                                ("ΕΝΤΑΝΤΙ ΤΑΚΤΙΚΗΣ ΕΠΙΧΟΡΗΓΗΣΗΣ ΕΤΟΥΣ 2017", None),
+                                ("ΚΑΤΑΒΟΛΗ ΝΟΜΟΘΕΤΗΜΕΝΗΣ ΕΙΣΦΟΡΑΣ", None),
+                                ("ΕΙΣΦΟΡΑ Γ΄ΤΡΙΜΗΝΟΥ 2018 ΥΠΕΡ ΤΠΟΕΚΕ", "not_a_grant"),
+                                ("ΤΑΚΤΙΚΗ ΕΠΙΧΟΡΗΓΗΣΗ ΑΠΟΡΩΝ ΟΙΚΟΓΕΝΕΙΩΝ", "personal")):
+            with self.subTest(subject=subject):
+                self.assertEqual(whitelist_reason({"subject": subject}, False, keep), reason)
+        # the rule is the foundation's: another issuer's whitelist does not have it
+        self.assertEqual(whitelist_reason({"subject": "ΕΝΤΑΝΤΙ ΤΑΚΤΙΚΗΣ ΕΠΙΧΟΡΗΓΗΣΗΣ ΕΤΟΥΣ 2017"}, False, ("tinos_body",)),
+                         "not_a_grant")

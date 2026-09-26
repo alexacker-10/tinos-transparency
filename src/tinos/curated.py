@@ -932,8 +932,10 @@ def build_curated(settings: Settings) -> BuildResult:
     from tinos.curated_khmdhs import procurement_rows
     procurement, parties = procurement_rows(settings.raw_dir, stamp)
     from tinos.curated_grants import grant_rows
-    anchors = frozenset(e.afm for e in load_registry(settings.entities_file).in_scope if e.afm)
-    grant_decisions, grant_lines = grant_rows(settings.raw_dir, stamp, anchors) if pdftotext else ([], [])
+    registry = load_registry(settings.entities_file)
+    anchors = frozenset(e.afm for e in registry.in_scope if e.afm)
+    grant_decisions, grant_lines = (grant_rows(settings.raw_dir, stamp, anchors, registry)
+                                    if pdftotext else ([], []))
     tables = {
         "act": to_table("act", acts),
         "payment": to_table("payment", payments),

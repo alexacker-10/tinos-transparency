@@ -177,9 +177,9 @@ VIEWS = {
         WHERE l.status = 'PUBLISHED' AND l.validation IS NOT NULL AND l.amount IS NOT NULL AND l.duplicate_of IS NULL
     """,
     "v_grant_year": """
-        SELECT budget_year AS year, grantor, category, family, count(DISTINCT ada) AS n_decisions, count(*) AS n_lines,
-               sum(amount) AS allocated, sum(net_paid) AS net_paid
-        FROM v_grant_line WHERE category IS NOT NULL GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 3, 4
+        SELECT budget_year AS year, grantor, recipient_entity, category, family, count(DISTINCT ada) AS n_decisions,
+               count(*) AS n_lines, sum(amount) AS allocated, sum(net_paid) AS net_paid
+        FROM v_grant_line WHERE category IS NOT NULL GROUP BY 1, 2, 3, 4, 5 ORDER BY 1, 2, 3, 4, 5
     """,
     "v_revenue_grant_year": """
         WITH s AS (
@@ -194,15 +194,31 @@ VIEWS = {
         WHERE b.side = 'revenue' AND b.grant_category IS NOT NULL
         GROUP BY 1, 2, 3 ORDER BY 1, 2, 3
     """,
+    # Monthly statements: what each line collected (or paid) in the month, from the cumulative figures. ``months`` > 1
+    # when the previous month's statement is missing: the change then spans that many months.
+    "v_budget_month": """
+        WITH m AS (
+            SELECT entity, side, period_year AS year, period_month AS month, kae, any_value(description) AS description,
+                   any_value(statement_ada) AS statement_ada, sum(assessed_or_warranted) AS assessed_to_date,
+                   sum(collected_or_paid) AS collected_to_date
+            FROM budget_line GROUP BY 1, 2, 3, 4, 5)
+        SELECT *, collected_to_date - coalesce(lag(collected_to_date) OVER w, 0) AS collected_in_period,
+               month - coalesce(lag(month) OVER w, 0) AS months
+        FROM m WINDOW w AS (PARTITION BY entity, side, year, kae ORDER BY month)
+        ORDER BY entity, side, year, kae, month
+    """,
     "v_grant_reconciliation": """
         WITH g AS (
-            SELECT year, category, sum(n_decisions) AS n_decisions, sum(allocated) AS allocated
-            FROM v_grant_year GROUP BY 1, 2),
+            SELECT year, category, sum(n_decisions) AS n_decisions, sum(allocated) AS allocated, sum(net_paid) AS net_paid
+            FROM v_grant_year WHERE recipient_entity = '6296' GROUP BY 1, 2),
         r AS (SELECT year, category, kae_lines, assessed, collected, statement_ada FROM v_revenue_grant_year WHERE entity = '6296')
         SELECT coalesce(g.year, r.year) AS year, coalesce(g.category, r.category) AS category,
                coalesce(g.n_decisions, 0) AS n_decisions, coalesce(g.allocated, 0) AS allocated,
                r.assessed, r.collected, r.kae_lines, r.statement_ada,
-               coalesce(g.allocated, 0) - coalesce(r.assessed, 0) AS allocated_minus_assessed
+               coalesce(g.allocated, 0) - coalesce(r.assessed, 0) AS allocated_minus_assessed,
+               -- what was paid after the payer's own withholdings, where the document states it (the Region's payment
+               -- orders: the municipality books this net amount)
+               g.net_paid, coalesce(g.net_paid, 0) - coalesce(r.assessed, 0) AS net_minus_assessed
         FROM g FULL JOIN r ON g.year = r.year AND g.category = r.category
         ORDER BY 1, 2
     """,

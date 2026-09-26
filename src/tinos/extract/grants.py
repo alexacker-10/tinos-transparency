@@ -18,6 +18,7 @@ reconciled.
 
 from __future__ import annotations
 
+import itertools
 import re
 from dataclasses import dataclass
 
@@ -61,8 +62,13 @@ FAMILIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.compile(p)) 
     ("advertising_fee", r"ΤΕΛΟΣ ΔΙΑΦΗΜΙΣΗΣ"),
     ("beer_tax", r"ΖΥΘΟΥ"),
     ("cruise_levy", r"ΚΡΟΥΑΖΙΕΡ"),
-    ("election_costs", r"ΕΚΛΟΓΙΚ"),
-    ("arrears", r"ΛΗΞΙΠΡΟΘΕΣΜ|ΔΙΑΤΑΓΕΣ ΠΛΗΡΩΜΗΣ|ΔΙΚΑΣΤΙΚ|ΠΑΣΗΣ ΦΥΣΕΩΣ ΟΦΕΙΛΩΝ"),
+    ("election_costs", r"ΕΚΛΟΓΙΚ|ΕΚΛΟΓΕΣ|ΕΚΛΟΓΩΝ|ΔΗΜΟΨΗΦΙΣΜ"),
+    # the state paying off its own debts to the municipalities (article 27 of law 3756/2009): 228,743.11 for Tinos in
+    # 2015 and 2016, booked in 0619 («Επιχορήγηση άρθρου 27 του Ν.3756/2009», the 2015 statements' 0619.0001)
+    ("state_debts", r"ΠΑΣΗΣ ΦΥΣΕΩΣ ΟΦΕΙΛΩΝ|3756/2009"),
+    # offsetting orders that settle advances already paid (bookkeeping of money counted when it was advanced)
+    ("advance_settlement", r"ΣΥΜΨΗΦΙΣΤΙΚ|ΤΑΚΤΟΠΟΙΗΣΗ ΠΡΟΚΑΤΑΒΟΛ"),
+    ("arrears", r"ΛΗΞΙΠΡΟΘΕΣΜ|ΔΙΑΤΑΓΕΣ ΠΛΗΡΩΜΗΣ|ΔΙΚΑΣΤΙΚ"),
     # The monthly general ΚΑΠ first: some of its subjects go on to mention investment spending.
     ("kap_general_monthly", r"ΑΥΤΟΤΕΛ.*ΛΕΙΤΟΥΡΓΙΚΩΝ ΚΑΙ ΛΟΙΠΩΝ ΓΕΝΙΚΩΝ ΔΑΠΑΝΩΝ"),
     ("kap_investment", r"ΕΠΕΝΔΥΤΙΚ|ΕΚΤΕΛΕΣΗΣ ΕΡΓΩΝ|" + _W + r"ΣΑΤΑ" + _E),
@@ -76,7 +82,57 @@ FAMILIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.compile(p)) 
 # counted; and payment orders titled only «ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ», found by the municipality's ΑΦΜ. A credit
 # for a project of the Region's own (its roads, its buildings) is not money to Tinos: `region_credit`
 # needs a subject naming a Tinos body or a decision found by the ΑΦΜ (curated_grants).
-REGION_UIDS = frozenset({"5011"})
+#
+# Most credits go not to the municipality but to the Region's development fund (Περιφερειακό Ταμείο Ανάπτυξης Νοτίου
+# Αιγαίου, uid 14763, ΑΦΜ 090355852), the paying agent of the Region's investment programme, which then pays the bill
+# (scan and search 2026-09-26): its payment decisions name the payee's ΑΦΜ, and those to the municipality close the
+# programme-agreement lines to the cent (2016, 2017, 2022, 2023). What reaches the municipality is counted once, at
+# the last step: the fund's payment, or the credit itself when it is transferred to the municipality directly.
+REGION_FUND_UID = "14763"
+REGION_UIDS = frozenset({"5011", REGION_FUND_UID})
+FUND_FAMILIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.compile(p)) for name, p in (
+    # «Απόφαση έγκρισης δαπάνης ποσού 7.880,00 € για τη χρηματοδότηση του 1ου λογαριασμού του υποέργου «ΠΣ μεταξύ του Δ.
+    # Τήνου και της ΠΝΑ» ...» (2015-2019), «ΕΝΤΟΛΗ ΠΛΗΡΩΜΗΣ 152-24/01/2022» (from 2022)
+    ("region_fund_payment", r"^ΕΝΤΟΛΗ ΠΛΗΡΩΜΗΣ|ΕΓΚΡΙΣΗΣ ΔΑΠΑΝΗΣ.*ΧΡΗΜΑΤΟΔΟΤΗΣΗ|^ΧΡΗΜΑΤΟΔΟΤΗΣΗ ΤΟΥ ΔΗΜΟΥ"),
+))
+# Other grantors searched from 2026-09-26, by issuer; checked before the ministry's families (first match wins).
+_P = lambda *pairs: tuple((name, re.compile(p)) for name, p in pairs)  # noqa: E731
+FOUNDATION_UID = "99206908"
+ISSUER_FAMILIES: dict[str, tuple[tuple[str, re.Pattern[str]], ...]] = {
+    # The Evangelistria foundation: the statutory grant it owes the municipality (10% of its gross receipts, «τακτική
+    # / θεσμοθετημένη / νομοθετημένη επιχορήγηση»), the water bills of its buildings it pays the municipality (a sale,
+    # as the Region's), a building lent for a school (in kind).
+    FOUNDATION_UID: _P(
+        ("foundation_water_bill", r"ΥΔΡΕΥΣ|ΝΕΡΟΥ|ΑΠΟΧΕΤΕΥΣ|ΚΟΙΝΟΧΡΗΣΤ|ΤΕΛ(?:Η|ΩΝ) ΑΚΙΝΗΤΟΥ"),
+        # its statutory grants to other bodies (the Tinian Culture Foundation, its elderly-care unit, the Metropolis of
+        # Syros, the Panormos school of fine arts, the Church's Apostoliki Diakonia, a pension fund): listed
+        ("foundation_to_others", r"^(?!.*ΔΗΜΟ)(?=.*(?:ΙΤΗΠ|Ι\.ΤΗ\.Π|ΙΔΡΥΜΑ\w* ΤΗΝΙΑΚΟΥ|ΜΗΤΡΟΠΟΛ|Μ\.Φ\.Η|ΜΦΗ|"
+                                 r"ΜΟΝΑΔΑ ΦΡΟΝΤΙΔΑΣ|ΜΕΓΑΛΟΧΑΡΗ|ΚΑΛΩΝ ΤΕΧΝΩΝ|ΑΠΟΣΤΟΛΙΚΗ|ΤΠΟΕΚΕ))"),
+        ("foundation_statutory_grant", r"ΤΑΚΤΙΚ\w* (?:ΕΤΗΣΙΑΣ )?ΕΠΙΧΟΡΗΓ|ΘΕΣΜΟΘΕΤΗΜΕΝ|ΝΟΜΟΘΕΤΗΜΕΝ|ΕΤΗΣΙΑΣ ΕΠΙΧΟΡΗΓ|"
+                                       r"10% ΕΠΙ|ΕΠΙΧΟΡΗΓΗΣ\w* ΔΗΜΟΥ ΤΗΝΟΥ ΓΙΑ ΕΤΟΣ"),
+        ("foundation_grant", r"ΕΠΙΧΟΡΗΓ|ΚΑΤΑΒΟΛΗΣ? ΠΟΣ|ΕΙΣΦΟΡ"),
+        ("in_kind", r"ΧΡΗΣΙΔΑΝΕΙ"),
+    ),
+    # The Decentralised Administration: election grants (the ministry's family), and its reviews of the municipality's
+    # own decisions, among them the municipality accepting other bodies' money: leads, not its money.
+    "50203": _P(
+        ("supervision", r"ΑΠΟΔΟΧΗ (?:ΤΗΣ )?(?:ΧΡΗΜΑΤΟΔΟΤ|ΕΠΙΧΟΡΗΓ)|ΕΠΙΚΥΡΩΣ|ΕΛΕΓΧΟΣ ΝΟΜΙΜΟΤΗΤΑΣ|ΔΙΑΠΙΣΤΩΤΙΚΗ|ΑΝΑΜΟΡΦΩΣΗ|"
+                        r"ΚΑΘΙΕΡΩΣΗ"),
+        ("own_spending", r"ΔΕΣΜΕΥΣΗΣ ΠΙΣΤΩΣΗΣ|ΔΕΣΜΕΥΣΗ ΠΙΣΤΩΣΗΣ"),
+        # the dissolved Cyclades port fund's balances shared among its successors (2016): the Tinos port fund's share?
+        ("port_fund_balance", r"ΛΙΜΕΝΙΚ\w* ΤΑΜΕΙ\w* ΚΥΚΛΑΔΩΝ"),
+    ),
+}
+_EDUCATION = _P(
+    ("school_books", r"ΞΕΝΟΓΛΩΣΣ"),  # the school committees' (from 2024 the municipality's) foreign-language books
+    ("pde_financing", r"ΧΡΗΜΑΤΟΔΟΤΗΣΗ ΕΡΓΟΥ|" + _W + r"ΣΑΕ \d"),
+    ("commitment", r"ΑΝΑΛΗΨΗ"),  # a commitment to pay: listed
+    ("programme", r"ΠΡΟΘΕΣΗΣ|ΕΝΤΑΞ"),
+)
+_CULTURE = _P(("commitment", r"^ΑΑΥ|ΑΝΑΛΗΨΗ|ΔΕΣΜΕΥΣΗ"), ("culture_grant", r"ΕΠΙΧΟΡΗΓ"), ("programme", r"ΕΝΤΑΞ"))
+ISSUER_FAMILIES.update({u: _EDUCATION for u in ("100010887", "100015990", "100054501", "100081880")})
+ISSUER_FAMILIES.update({u: _CULTURE for u in ("17", "100015966", "100081912")})
+
 REGION_FAMILIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.compile(p)) for name, p in (
     ("region_payment", r"^ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ"),
     ("region_credit", r"^(?:ΕΓΚΡΙΣΗ|ΔΙΑΘΕΣΗ) ΠΙΣΤΩΣΗΣ [\d.,]+ ?€ ΣΕ ΒΑΡΟΣ"),
@@ -107,6 +163,8 @@ CATEGORY_OF_FAMILY: dict[str, str | None] = {
     "welfare_benefits": "welfare",
     "extraordinary": "state_grants",
     "arrears": "state_grants",
+    "state_debts": "kap_other",
+    "advance_settlement": None,
     "lifeguards": "state_grants",
     "stray_animals": "kap_other",  # booked under 0619 (2023, 2025: 5,300.00 each)
     "election_costs": "state_grants",
@@ -126,6 +184,10 @@ CATEGORY_OF_FAMILY: dict[str, str | None] = {
     # 2018-2019, matched to the cent); the rest is listed, not reconciled
     "region_credit": "investment_programmes",
     "region_agreement_payment": "programme_agreements",  # 1213, 1326
+    # the development fund's payments: under a programme agreement (1213, 1326) or for a project (1322)
+    "region_fund_agreement_payment": "programme_agreements",
+    "region_fund_payment": "investment_programmes",
+    "region_credit_via_fund": None,  # the same money as the fund's payment: listed, counted there
     "region_utility_payment": None,  # the Region's water bill: a sale by the municipality, not a grant
     "region_payment": None,
     "region_allocation": None,
@@ -133,6 +195,19 @@ CATEGORY_OF_FAMILY: dict[str, str | None] = {
     "region_fine": None,
     "region_agreement": None,
     "region_licence": None,
+    # other grantors (2026-09-26): counted where the recipient's revenue line is identified, listed otherwise
+    # the foundation's 10%: prior years' revenue, 2119 («Εισφορά (10% επί των ακαθαρίστων) Π.Ι.Ι.Ε.ΤΗΝΟΥ παρελθόντων
+    # ετών», sub-account 2119.0002 in the statements of 2014-2015)
+    "foundation_statutory_grant": "foundation_contribution",
+    "foundation_grant": None,
+    "foundation_to_others": None,
+    "foundation_water_bill": None,  # a sale by the municipality, not a grant
+    "supervision": None,
+    "own_spending": None,
+    "school_books": "state_grants",  # the municipality's from 2024: 1219 (990.15, December 2024; 728.20, December 2025)
+    "commitment": None,
+    "culture_grant": None,
+    "port_fund_balance": None,
 }
 
 # Revenue lines of the year-end statement, by folded name (first match wins); ``kae`` narrows
@@ -148,7 +223,8 @@ REVENUE_CATEGORIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.co
     ("home_help", r"ΒΟΗΘΕΙΑ ΣΤΟ ΣΠΙΤΙ"),
     ("kap_other", r"ΚΑΠ ΓΙΑ ΛΟΙΠΟΥΣ ΣΚΟΠΟΥΣ"),
     ("welfare", r"ΠΡΟΝΟΙΑΚ"),
-    ("investment_programmes", r"ΘΗΣΕΑΣ|ΦΙΛΟΔΗΜΟΣ|ΕΙΔΙΚΑ ΠΡΟΓΡΑΜΜΑΤΑ ΠΡΟΓΡΑΜΜΑ|ΚΕΝΤΡΙΚΟΥΣ ΦΟΡΕΙΣ"),
+    # 1319 «Λοιπά ειδικά προγράμματα» (2015 only): the Region's 2015 credits and its fund's payment, to the cent
+    ("investment_programmes", r"ΘΗΣΕΑΣ|ΦΙΛΟΔΗΜΟΣ|ΕΙΔΙΚΑ ΠΡΟΓΡΑΜΜΑΤΑ|ΚΕΝΤΡΙΚΟΥΣ ΦΟΡΕΙΣ"),
     ("advertising_fee", r"^ΤΕΛΟΣ ΔΙΑΦΗΜΙΣΗΣ.*ΚΑΤΗΓΟΡΙΑΣ Δ"),  # 0715; 0462 is the municipality's own fee
     ("property_tax", r"^ΤΕΛΟΣ ΑΚΙΝΗΤΗΣ ΠΕΡΙΟΥΣΙΑΣ"),
     ("programme_agreements", r"ΠΡΟΓΡΑΜΜΑΤΙΚΕΣ ΣΥΜΒΑΣΕΙΣ"),  # 1213 operating, 1326 investment
@@ -157,18 +233,49 @@ REVENUE_CATEGORIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.co
 STATE_GRANT_KAE = ("1211", "1215", "1219")
 
 
+# The Tinos body a grant goes to, when its subject names one other than the municipality (the school committees
+# until 2023, the Panormos cultural centre, the Tsoklis museum, the port fund, the community enterprise).
+RECIPIENTS: tuple[tuple[str, re.Pattern[str]], ...] = tuple((uid, re.compile(p)) for uid, p in (
+    ("54500", r"ΣΧΟΛΙΚ\w* ΕΠΙΤΡΟΠ"),
+    ("55049", r"ΠΝΕΥΜΑΤΙΚ\w* (?:ΕΚΠΟΛΙΤΙΣΤΙΚ\w* )?ΚΕΝΤΡ\w* ΠΑΝΟΡΜΟΥ|ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ"),
+    ("100032995", r"ΜΟΥΣΕΙ\w* ΚΩΣΤΑ ΤΣΟΚΛΗ"),
+    ("50256", r"ΛΙΜΕΝΙΚ\w* ΤΑΜΕΙ\w* ΤΗΝΟΥ"),
+    ("53952", r"ΚΟΙΝΩΦΕΛ\w* ΕΠΙΧΕΙΡΗΣ"),
+))
+
+
+def recipient_of(subject: str | None) -> str:
+    """The recipient's entity uid: a Tinos body the subject names, else the municipality (6296)."""
+    s = fold(subject)
+    return next((uid for uid, pattern in RECIPIENTS if pattern.search(s)), "6296")
+
+
 def family_of(subject: str | None, issuer: str | None = None) -> str:
     s = fold(subject)
+    if issuer == REGION_FUND_UID:
+        return next((name for name, pattern in FUND_FAMILIES if pattern.search(s)), "other")
     if issuer in REGION_UIDS:
         return next((name for name, pattern in REGION_FAMILIES if pattern.search(s)), "other")
+    own = next((name for name, pattern in ISSUER_FAMILIES.get(issuer or "", ()) if pattern.search(s)), None)
+    if own:
+        return own
+    if issuer in ISSUER_FAMILIES and issuer != "50203":
+        return "other"  # a foundation's or another ministry's act: the Interior Ministry's families do not apply
     for name, pattern in FAMILIES:
         if pattern.search(s):
             return "kap_general" if name == "kap_general_monthly" else name
     return "other"
 
 
+# The foundation's statutory grant is booked as prior years' revenue: 2119 («Τακτικά έσοδα από λοιπά έσοδα»), which also
+# holds other prior-year revenue (rents, interest): compare, it is not all the foundation's.
+FOUNDATION_KAE = "2119"
+
+
 def revenue_category(kae: str, description: str | None) -> str | None:
     """The reconciliation line of a revenue line, or None for revenue that is not such a transfer."""
+    if kae == FOUNDATION_KAE:
+        return "foundation_contribution"
     if not kae.startswith(("0", "1", "43")):
         return None  # prior-year receivables (2x/3x), loans (31), withholdings (41, 42), balances (5x)
     # 43xx is revenue collected for others: the schools' ΚΑΠ sat there (4311) in 2019-2024.
@@ -620,8 +727,9 @@ class GrantAmount:
     amount: int | None  # cents; None when the document names Tinos but the amount is not established
     net: int | None  # cents paid after withholdings (monthly ΚΑΠ), else = amount
     method: str  # table | letter
-    validation: str | None  # column_totals | stated_amount | words_and_figures | None
+    validation: str | None  # column_totals | stated_amount | words_and_figures | figures_only | None
     detail: str  # layout, rows, columns: enough to find the figure in the PDF again
+    recipient: str | None = None  # the Tinos body's uid when the document names it; else the subject's (recipient_of)
 
 
 def read_decision(text: str, subject: str | None) -> tuple[list[GrantAmount], str]:
@@ -699,6 +807,10 @@ TINOS_AFMS = frozenset({"800302968"})  # the only Tinos body the Region's docume
 _ORDER_AMOUNT = re.compile(rf"ΕΝΤΟΛΗ ΠΛΗΡΩΜΗΣ ΕΥΡΩ:\s*#\s*(?P<fig>{_AMT})\s*#.{{0,160}}?\((?P<words>[^()]{{3,200}})\)")
 _ORDER_PAYEE = re.compile(r"ΣΤΟ ΔΙΚΑΙΟΥΧΟ\s+(?P<name>.{3,120}?)\s+ΔΙΕΥΘΥΝΣΗ:.{0,240}?ΑΦΜ:\s*(?P<afm>\d{9})")
 _ORDER_PURPOSE = re.compile(r"ΓΙΑ:\s*(?P<purpose>.{3,240}?)\s+ΕΝΤΕΛΛΟΜΕΝΟ ΠΟΣΟ")
+# What the payee receives after the order's own withholdings (0.06% ΑΕΠΠ, 0.07% ΕΑΑΔΗΣΥ and stamp duty on them:
+# 17.52 of the 13,020.00 paid in October 2021). The municipality books this net amount.
+_ORDER_NET = re.compile(rf"ΕΝΤΕΛΛΟΜΕΝΟ ΠΟΣΟ ΣΤΟ ΔΙΚΑΙΟΥΧΟ:\s*(?P<net>{_AMT})")
+_ORDER_WITHHELD = re.compile(rf"ΣΥΝΟΛΟ ΚΡΑΤΗΣΕΩΝ:\s*(?P<w>{_AMT})")
 _UTILITY = re.compile(r"ΥΔΡΕΥΣ|ΑΡΔΕΥΣ|ΑΔΡΕΥΣ|ΑΠΟΧΕΤΕΥΣ|ΥΔΡΟΜΕΤΡ|ΚΑΤΑΝΑΛΩΣΗ ΝΕΡΟΥ")
 # A credit: «Εγκρίνουμε (την ανάληψη) πίστωση(ς) ύψους ‹words› (‹figures› €) ... θα μεταβιβαστεί στο Δήμο
 # Τήνου, υπόλογο διαχειριστή ..., με Α.Φ.Μ. 800302968» (or to the regional development fund, the ΠΤΑ,
@@ -709,9 +821,224 @@ _CREDIT_AMOUNT = re.compile(rf"(?=(?:ΥΨΟΥΣ|ΠΟΣΟ\w*|ΠΙΣΤΩΣΗ\w*)\s
                             rf"(?P<fig>{_AMT})\s*€?\s*\))")
 _TO_TINOS = re.compile(r"ΜΕΤΑΒΙΒΑΣΤΕΙ ΣΤΟ ΔΗΜΟ ΤΗΝΟΥ|ΑΦΜ\W*800302968|800302968")
 _TINOS_PROJECT = re.compile(r"ΔΗΜΟΥ ΤΗΝΟΥ|ΔΗΜΟ ΤΗΝΟΥ|ΔΗΜΟΣ ΤΗΝΟΥ")
+# Where a credit goes: «Η πίστωση αυτή ... θα μεταβιβαστεί στο Δήμο Τήνου, υπόλογο διαχειριστή ... Α.Φ.Μ. 800302968»,
+# or «... στο Π.Τ.Α. Νοτίου Αιγαίου, υπόλογο του έργου ... Α.Φ.Μ. 090355852», the Region's development fund, which
+# then pays the bill: to the municipality for a project it carries out (its own payment decisions, uid 14763), to a
+# contractor for the Region's own (the sewage study of 2017, whose bill the Region's technical service sent).
+_TRANSFER = re.compile(r"ΜΕΤΑΒΙΒΑΣΤΕΙ ΣΤΟ[ΝΙ]? (?P<to>.{0,200})")
+_FUND = re.compile(r"^(?:Π\.? ?Τ\.? ?Α\.?|ΠΕΡΙΦΕΡΕΙΑΚΟ ΤΑΜΕΙΟ ΑΝΑΠΤΥΞΗΣ)|090355852")
+REGION_FUND_AFM = "090355852"
 
 
-def read_region(text: str, subject: str | None, family: str) -> tuple[list[GrantAmount], str, str]:
+# The development fund's documents. 2015-2019, an approval: «Την έγκριση δαπάνης ποσού επτά χιλιάδων οκτακοσίων
+# ογδόντα ευρώ (7.880,00 €). Η δαπάνη αφορά τη χρηματοδότηση του 1ου λογαριασμού του υποέργου «ΠΣ μεταξύ του Δ. Τήνου
+# και της ΠΝΑ» ... Το ποσό θα καταβληθεί στο δήμο Τήνου (ΑΦΜ:800302968 ...)». From 2022, a payment order: «ΘΕΜΑ:
+# Εκκαθάριση-εντολή πληρωμής της ΣΑ ΕΠ567 ... συνολικού ποσού 58.645,14 ευρώ για το έργο/α: 2015ΕΠ56700002», the
+# voucher's «ΣΥΝΟΛΙΚΗ ΑΞΙΑ ΠΑΡΑΣΤΑΤΙΚΟΥ 58.645,14» and the payee line «ΔΗΜΟΣ ΤΗΝΟΥ 58.645,14», with «ΤΙΤΛΟΣ ΥΠΟΕΡΓΟΥ:».
+_FUND_APPROVAL = re.compile(rf"ΕΓΚΡΙΣΗ ΔΑΠΑΝΗΣ (?:ΤΟΥ )?ΠΟΣΟΥ (?:ΤΩΝ )?(?P<words>[^()#\d]{{3,300}}?)\s*\(\s*"
+                            rf"(?P<fig>{_AMT})\s*€?\s*\)")
+_FUND_PAYEE = re.compile(r"(?:ΚΑΤΑΒΛΗΘΕΙ|ΑΠΟΔΟΘΕΙ) ΣΤΟ[ΝΙ]? ΔΗΜΟ ΤΗΝΟΥ[^.]{0,40}?800302968|"
+                         r"ΔΙΚΑΙΟΥΧΟΥ/ΩΝ: ΔΗΜΟΣ ΤΗΝΟΥ \(ΑΦΜ: 800302968")
+_FUND_ORDER_TOTAL = re.compile(rf"ΣΥΝΟΛΙΚΟΥ ΠΟΣΟΥ\s+(?P<fig>{_AMT})\s*ΕΥΡΩ")
+_FUND_VOUCHER = re.compile(rf"ΣΥΝΟΛΙΚΗ ΑΞΙΑ ΠΑΡΑΣΤΑΤΙΚΟΥ\s+(?P<fig>{_AMT})")
+# the sub-project: «ΤΙΤΛΟΣ ΥΠΟΕΡΓΟΥ: ‹title› ΚΩΔΙΚΟΣ ΝΟΜΙΚΗΣ ...» (orders), «... του υποέργου «‹title›» ...» (approvals)
+_FUND_SUBPROJECT = re.compile(r"ΤΙΤΛΟΣ ΥΠΟΕΡΓΟΥ:\s*(?P<a>.{3,200}?)\s*ΚΩΔΙΚΟΣ ΝΟΜΙΚΗΣ|ΥΠΟΕΡΓΟ[ΥΝ]? [«\"](?P<b>[^»\"]{3,200})[»\"]")
+_AGREEMENT = re.compile(r"ΠΡΟΓΡΑΜΜΑΤΙΚ|" + _W + r"Π\.?Σ\.? (?:ΜΕΤΑΞΥ|ΠΝΑ)")
+_ORDINAL_SUFFIX = re.compile(_W + r"ΟΥ" + _E)  # a superscript «ου» (2ου, 4ου) pdftotext moves into the words above
+
+
+def _subproject(flat: str) -> str:
+    m = _FUND_SUBPROJECT.search(flat)
+    return " ".join((m.group("a") or m.group("b") or "").replace("'", " ").replace('"', " ").split()) if m else ""
+
+
+def read_fund(text: str, subject: str | None,
+              agreements: frozenset[str] = frozenset()) -> tuple[list[GrantAmount], str, str]:
+    """The development fund's payment to a Tinos body: (amounts, status, family).
+
+    Validated in words and figures (an approval) or by the order's total agreeing with its voucher (a payment order);
+    the payee must be the municipality by its ΑΦΜ. A payment under a programme agreement is
+    ``region_fund_agreement_payment`` (lines 1213, 1326), any other ``region_fund_payment`` (1322): under an agreement
+    when its sub-project says so («ΠΣ μεταξύ ΠΝΑ και Δήμου Τήνου ...») or when a stored programme agreement of the
+    Region names that sub-project (``agreements``: their folded subjects; the slaughterhouse's orders say only
+    «Εκσυγχρονισμός Δημοτικού Σφαγείου Τήνου»).
+    """
+    flat = fold(" ".join(text.translate(_SYMBOLS).split()))
+    if not _FUND_PAYEE.search(flat):
+        return [], ("absent" if "800302968" not in flat else "not_found"), "region_fund_payment"
+    sub = _subproject(flat)
+    named = len(sub.split()) >= 3 and any(sub in " ".join(a.replace("'", " ").replace('"', " ").split())
+                                          for a in agreements)
+    family = ("region_fund_agreement_payment" if _AGREEMENT.search(sub + " " + fold(subject)) or named
+              else "region_fund_payment")
+    approval = _FUND_APPROVAL.search(flat)
+    if approval:
+        fig = cents(approval.group("fig"))
+        words = words_to_cents(_ORDINAL_SUFFIX.sub(" ", approval.group("words")))
+        return [GrantAmount(fig, fig, "fund_approval", "words_and_figures" if words == fig else None,
+                            f"approval: figures {fig / 100:.2f}, words {words / 100 if words is not None else None}, "
+                            f"payee Δήμος Τήνου (ΑΦΜ 800302968), sub-project: {sub[:120]}")], "read", family
+    total, voucher = _FUND_ORDER_TOTAL.search(flat), _FUND_VOUCHER.search(flat)
+    if total:
+        fig = cents(total.group("fig"))
+        ok = voucher is not None and cents(voucher.group("fig")) == fig
+        return [GrantAmount(fig, fig, "fund_payment_order", "stated_amount" if ok else None,
+                            f"payment order: total {fig / 100:.2f}, voucher "
+                            f"{cents(voucher.group('fig')) / 100 if voucher else None}, payee Δήμος Τήνου (ΑΦΜ 800302968), "
+                            f"sub-project: {sub[:120]}")], "read", family
+    return [], "not_found", family
+
+
+# The Evangelistria foundation's decisions approve payments: «αποφασίζει ... εγκρίνει την (αρχική) καταβολή ποσού
+# ενενήντα έξι χιλιάδων τετρακοσίων εβδομήντα τεσσάρων €υρώ & ογδόντα πέντε λεπτών (96.474,85 €) ... στον Δήμο Τήνου»,
+# sometimes several numbered items for several recipients, often in figures alone («ποσού 100.000,00 έναντι ...»).
+# Some PDFs carry a font whose Greek comes out shifted («καηαβολή ... ποζό» for «καταβολή ... ποσό», «Δήμο Σήνος» for
+# «Δήμο Τήνου», number words «ηεζζάπων» for «τεσσάρων»); the digits are intact.
+_FOUND_MARK = re.compile(r"ΑΠΟΦΑΣΙΖ|ΑΠΝΘΑΖΙΔ")
+_FOUND_ITEM = re.compile(r"ΚΑΤΑΒΟΛΗ|ΚΑΗΑΒΟΛΗ|ΘΑΗΑΒΝΙΗ")
+_FOUND_POSO = re.compile(r"(?:ΠΟΣΟ|ΠΟΖΟ|ΠΝΖΝ)[^\W\d_]*\s+(?:(?:ΤΩΝ|ΤΟΥ|ΗΩΝ|ΗΝΤ|ΣΩΝ|ΣΟΥ)\s+)?")
+_FOUND_AMOUNT = re.compile(r"\(?\s*(\d{1,3}(?:\.\d{3})+(?:,\d{2})?|\d+,\d{2}|\d{3,6})(?![\d%.,/])\s*\)?")
+_FOUND_TO_MUNICIPALITY = re.compile(r"ΔΗΜΟ\w? [ΤΣ]ΗΝΟ")
+# the shifted font's number words: each Η may stand for Τ, Ζ for Σ, Π for Ρ, Ρ for Σ
+_SHIFT = {"Η": "ΗΤ", "Ζ": "ΖΣ", "Π": "ΠΡ", "Ρ": "ΡΣ"}
+_NUMBER_WORDS = set(_UNITS) | {"ΧΙΛΙΑΔΕΣ", "ΧΙΛΙΑΔΩΝ", "ΧΙΛΙΑ", "ΧΙΛΙΩΝ", "ΕΥΡΩ", "ΛΕΠΤΑ", "ΛΕΠΤΩΝ", "ΛΕΠΤΟ", "ΚΑΙ",
+                                "ΕΚΑΤΟΜΜΥΡΙΟ", "ΕΚΑΤΟΜΜΥΡΙΑ", "ΕΚΑΤΟΜΜΥΡΙΩΝ"}
+
+
+def _is_number_word(w: str) -> bool:
+    return w in _NUMBER_WORDS or any(w.startswith(h) for h in _HUNDREDS)
+
+
+def _unshift(words: str) -> str:
+    """Number words as the shifted font printed them, restored where exactly one reading is a number word."""
+    out = []
+    for w in re.findall(r"[^\W_]+|&", words):
+        if w == "&" or _is_number_word(w):
+            out.append(w)
+            continue
+        slots = [_SHIFT.get(ch, ch) for ch in w]
+        readings = {"".join(c) for c in itertools.product(*slots)} if len(w) <= 14 else set()
+        hits = [r for r in readings if _is_number_word(r)]
+        out.append(hits[0] if len(hits) == 1 else w)
+    return " ".join(out)
+
+
+def _words_cents(words: str) -> int | None:
+    return words_to_cents(words + ("" if "ΕΥΡΩ" in words else " ΕΥΡΩ")) if words else None
+
+
+_FOUND_STATUTORY = re.compile(r"ΤΑΚΤΙΚ|ΘΕΣΜΟΘΕΤ|ΝΟΜΟΘΕΤ|10%|ΕΙΣΦΟΡ|ΗΑΚΗΙΚ|ΘΕΖΜΟΘΕΗ")
+
+
+def read_foundation(text: str, family: str = "foundation_grant") -> tuple[list[GrantAmount], str, str]:
+    """Every item of a foundation decision paying a Tinos body (the municipality or its school committee), a status,
+    and the family: ``foundation_statutory_grant`` when every item for the municipality pays the statutory grant.
+
+    The words, when the item spells the amount, check the figures (``words_and_figures``); an item in figures
+    alone is ``figures_only``, counted and marked as such."""
+    flat = fold(" ".join(text.translate(_SYMBOLS).split())).replace("€ΥΡΩ", "ΕΥΡΩ").replace("€ΥΠΩ", "ΕΥΡΩ")
+    mark = _FOUND_MARK.search(flat)
+    body = flat[mark.end():] if mark else flat
+    starts = [m.start() for m in _FOUND_ITEM.finditer(body)] or [0]
+    out, statutory, paid_others = [], [], 0
+    for i, st in enumerate(starts):
+        item = body[st: starts[i + 1] if i + 1 < len(starts) else len(body)]
+        recipient = next((uid for uid, pattern in RECIPIENTS if pattern.search(item)), None)
+        if recipient is None and _FOUND_TO_MUNICIPALITY.search(item):
+            recipient = "6296"
+        poso = _FOUND_POSO.search(item)
+        if poso is None:
+            continue
+        if recipient is None:  # an item paying another body (the Tinian Culture Foundation, its elderly-care unit ...)
+            paid_others += 1
+            continue
+        amt = _FOUND_AMOUNT.search(item, poso.end())
+        if amt is None or amt.start() - poso.end() > 400:
+            continue
+        figures = amt.group(1)
+        fig = cents(figures) if "," in figures else int(figures.replace(".", "")) * 100
+        words_text = item[poso.end():amt.start()].strip(" (")
+        words = _words_cents(words_text)
+        if words != fig and words_text:
+            words = _words_cents(_unshift(words_text))
+        out.append(GrantAmount(fig, fig, "foundation_decision", "words_and_figures" if words == fig else "figures_only",
+                               f"item {i + 1} of {len(starts)}: figures {fig / 100:.2f}, words "
+                               f"{words / 100 if words is not None else None}", recipient))
+        if recipient == "6296":
+            statutory.append(bool(_FOUND_STATUTORY.search(item)))
+    if statutory and all(statutory):
+        family = "foundation_statutory_grant"
+    return out, "read" if out else "absent" if paid_others else "not_found", family
+
+
+# The other grantors (the Decentralised Administration, the Education and Culture ministries) state one amount, in words
+# and figures («απόδοση επιχορήγησης ύψους πέντε χιλιάδων τετρακοσίων εξήντα ευρώ (5460,00 €) στο Δήμο ΤΗΝΟΥ», «με το
+# ποσό των τριών χιλιάδων ευρώ (3.000,00 €)»), or list rows for a Tinos body's ΑΦΜ whose amounts add up to a stated
+# total (school books: «ΣΥΝΟΛΟ 990,15»; a ΣΑΕ 047 transfer: «μεταφορά ποσού € 8.947,91» for four invoices).
+_OTHER_MARK = re.compile(r"ΑΠΟΦΑΣΙ[ΖΗ]|ΚΑΤΑΝΕΜΟΥΜΕ|ΣΑΣ ΠΑΡΑΚΑΛΟΥΜΕ")
+_OTHER_FIG = r"\d{1,3}(?:\.\d{3})+,\d{2}|\d+,\d{2}"
+_OTHER_WORDS = re.compile(rf"(?:ΠΟΣΟ\w*|ΥΨΟΥΣ)\s+(?:ΤΩΝ\s+|ΤΟΥ\s+)?(?P<words>[^()\d]{{3,300}}?)\s*\(\s*"
+                          rf"(?P<fig>{_OTHER_FIG})\s*€?\s*\)")
+_OTHER_STATED = re.compile(rf"(?:ΠΟΣΟΥ|ΠΟΣΟ)\s+€?\s*(?P<fig>{_OTHER_FIG})|(?:ΣΥΝΟΛΟ|ΣΥΝΟΛΙΚΟΥ ΠΟΣΟΥ)[\s(€):]{{0,80}}(?P<tot>{_OTHER_FIG})")
+_OTHER_AMT = re.compile(rf"(?<![\d.,])(?:{_OTHER_FIG})(?![\d,])")
+_OTHER_TOTAL_LINE = re.compile(r"ΣΥΝΟΛΟ|ΥΠΟΛΟΙΠΟ")
+_TINOS_TO = re.compile(r"ΔΗΜΟ\w? ΤΗΝΟΥ")
+# a font that prints Σ as ΢ (U+03A2) and shifts letters («΢ΤΝΟΛΟ» for «ΣΥΝΟΛΟ»): enough of it for totals
+_SHIFTED_TOTAL = str.maketrans({"\u03a2": "Σ"})
+
+
+def read_other(text: str, subject: str | None, afm_uid: dict[str, str]) -> tuple[list[GrantAmount], str]:
+    """The amount another grantor's decision gives a Tinos body, and a status.
+
+    ``afm_uid``: each Tinos body's ΑΦΜ -> its uid. The recipient is the Tinos body the operative part or the subject
+    names (``RECIPIENTS``), else the body whose ΑΦΜ it quotes, else the municipality when it names Δήμο Τήνου."""
+    raw = text.translate(_SYMBOLS).translate(_SHIFTED_TOTAL).splitlines()  # columns: fold() collapses spaces
+    lines = [fold(l).replace("ΣΤΝΟΛΟ", "ΣΥΝΟΛΟ") for l in raw]
+    flat = " ".join(" ".join(lines).split())
+    mark = None
+    for mark in _OTHER_MARK.finditer(flat):
+        pass
+    body = flat[mark.end():] if mark else flat
+    afms = [a for a in re.findall(r"(?<!\d)(\d{9})(?!\d)", body) if a in afm_uid]
+    recipient = (next((uid for uid, pattern in RECIPIENTS if pattern.search(body[:600])), None)
+                 or next((uid for uid, pattern in RECIPIENTS if pattern.search(fold(subject))), None)
+                 or (afm_uid[afms[0]] if afms else None)
+                 or ("6296" if _TINOS_TO.search(body) else None))
+    if recipient is None:
+        return [], "not_found"
+    m = _OTHER_WORDS.search(body)
+    if m:
+        fig = cents(m.group("fig"))
+        words = words_to_cents(m.group("words"))
+        return [GrantAmount(fig, fig, "letter", "words_and_figures" if words == fig else None,
+                            f"figures {fig / 100:.2f}, words {words / 100 if words is not None else None}", recipient)], "read"
+    # rows for a Tinos body, checked against a stated total: the amounts in the total's column, every amount of the
+    # table, or the longest run of rows from its start
+    start = max((i for i, l in enumerate(lines) if _OTHER_MARK.search(l)), default=0)
+    stated_hits = [(i, x) for i, l in enumerate(lines) for x in _OTHER_STATED.finditer(l)]
+    stated = {cents(x.group("fig") or x.group("tot")) for _, x in stated_hits}
+    stated |= {cents(x.group("fig") or x.group("tot")) for x in _OTHER_STATED.finditer(fold(subject))}
+    stated_lines = {i for i, _ in stated_hits}
+    cells = [(i, a.end(), cents(a.group())) for i, l in enumerate(raw) if i > start and i not in stated_lines
+             and not _OTHER_TOTAL_LINE.search(lines[i]) for a in _OTHER_AMT.finditer(l)]
+    ends = {i: max(c[1] for c in cells if c[0] == i) for i in {c[0] for c in cells}}
+    total_cols = {raw[i].rfind(x.group("tot")) + len(x.group("tot")) for i, x in stated_hits if x.group("tot") and i > start}
+    candidates = [("column", [v for i, e, v in cells if any(abs(e - c) <= 2 for c in total_cols)]),
+                  ("table", [v for _, _, v in cells]),
+                  ("rows", [v for i, e, v in cells if e == ends[i]])]
+    for how, amounts in candidates:
+        runs = [amounts] if how != "rows" else [amounts[:n] for n in range(len(amounts), 0, -1)]
+        for run in runs:
+            if run and sum(run) in stated:
+                total = sum(run)
+                return [GrantAmount(total, total, "table", "stated_amount",
+                                    f"{len(run)} amounts ({how}) adding up to the stated {total / 100:.2f}",
+                                    recipient)], "read"
+    return [], "not_found"
+
+
+def read_region(text: str, subject: str | None, family: str,
+                agreements: frozenset[str] = frozenset()) -> tuple[list[GrantAmount], str, str]:
     """The amount a Region of South Aegean document gives a Tinos body: (amounts, status, family).
 
     ``region_payment``: the payment order's amount, validated when its words equal its figures,
@@ -721,6 +1048,8 @@ def read_region(text: str, subject: str | None, family: str) -> tuple[list[Grant
     states, validated when the text gives it in words and figures and names the municipality as
     recipient or project owner. Other families are listed, not read.
     """
+    if family == "region_fund_payment":
+        return read_fund(text, subject, agreements)
     flat = fold(" ".join(text.translate(_SYMBOLS).split()))
     if family == "region_payment":
         order = _ORDER_AMOUNT.search(flat)
@@ -733,24 +1062,38 @@ def read_region(text: str, subject: str | None, family: str) -> tuple[list[Grant
         refined = ("region_utility_payment" if _UTILITY.search(purpose)
                    else "region_agreement_payment" if "ΠΡΟΓΡΑΜΜΑΤΙΚ" in purpose else family)
         fig, words = cents(order.group("fig")), words_to_cents(order.group("words"))
-        return [GrantAmount(fig, fig, "payment_order", "words_and_figures" if words == fig else None,
+        # the net the payee receives: figures less the order's own withholdings, when both are printed and agree
+        net_m, withheld_m = _ORDER_NET.search(flat), _ORDER_WITHHELD.search(flat)
+        withheld = cents(withheld_m.group("w")) if withheld_m else 0
+        net = cents(net_m.group("net")) if net_m else None
+        net_ok = net is not None and fig - withheld == net
+        return [GrantAmount(fig, net if net_ok else None, "payment_order", "words_and_figures" if words == fig else None,
                             f"payee ΑΦΜ {payee.group('afm')}, figures {fig / 100:.2f}, words "
-                            f"{words / 100 if words is not None else None}, for: {purpose[:120]}")], "read", refined
+                            f"{words / 100 if words is not None else None}, withholdings {withheld / 100:.2f}, net "
+                            f"{net / 100 if net is not None else None}{'' if net_ok else ' (does not add up)'}, "
+                            f"for: {purpose[:120]}")], "read", refined
     if family == "region_credit":
         stated = [cents(a) for a in AMOUNT.findall(subject or "")]
         if not stated:
             return [], "not_found", family
         target = stated[0]
         spelled = [m for m in _CREDIT_AMOUNT.finditer(flat) if cents(m.group("fig")) == target]
-        to_tinos = bool(_TO_TINOS.search(flat))
-        if not (to_tinos or _TINOS_PROJECT.search(flat)):
-            return [], "absent", family
         ok = any(words_to_cents(m.group("words")) == target for m in spelled)
+        transfer = _TRANSFER.search(flat)
+        to = transfer.group("to") if transfer else ""
+        if _FUND.search(to):
+            # through the development fund: its own payment to the municipality, if any, is what counts
+            recipient, refined = f"the Region's development fund (ΑΦΜ {REGION_FUND_AFM}), not the municipality", \
+                "region_credit_via_fund"
+        elif to.startswith("ΔΗΜΟ ΤΗΝΟΥ") or (not transfer and _TO_TINOS.search(flat)):
+            recipient, refined = "Δήμος Τήνου (ΑΦΜ 800302968)", family
+        elif transfer or not _TINOS_PROJECT.search(flat):
+            return [], "absent", family
+        else:
+            return [], "not_found", family  # a Tinos project, the recipient not stated
         return [GrantAmount(target, target, "credit", "words_and_figures" if ok else None,
                             f"stated {target / 100:.2f} in the subject; words and figures "
-                            f"{'agree' if ok else 'not found'}; transferred to "
-                            f"{'Δήμος Τήνου (ΑΦΜ 800302968)' if to_tinos else 'the project account, a Δήμος Τήνου project'}")], \
-            "read", family
+                            f"{'agree' if ok else 'not found'}; transferred to {recipient}")], "read", refined
     return [], "listed", family
 
 

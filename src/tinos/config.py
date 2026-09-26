@@ -12,6 +12,9 @@ from pathlib import Path
 
 import yaml
 
+# the full-text whitelist's keep rules an issuer may name (tinos.sources.fulltext.whitelist_reason)
+KEEP_RULES = ("grant_words", "investment_acts", "tinos_body", "statutory_grant")
+
 # src/tinos/config.py -> parents[2] is the repository root (editable install).
 _DEFAULT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -133,6 +136,10 @@ class Grantor:
     latin_name: str | None
     active_years: tuple[int, int] | None
     note: str | None = None
+    # What the full-text whitelist may keep from this issuer besides hits of a Tinos ΑΦΜ (PRIVACY.md Q7):
+    # grant_words, investment_acts (Β.1.1), tinos_body, statutory_grant (the foundation's). Default: the first three.
+    keep: tuple[str, ...] = ("grant_words", "investment_acts", "tinos_body")
+    group: str = "interior"  # the grantor as reported: one ministry under all its uids, the Region with its fund
 
 
 @dataclass
@@ -151,6 +158,18 @@ class Registry:
 
     def get(self, uid: str) -> Entity | None:
         return next((e for e in self.entities if e.uid == uid), None)
+
+    def keep_rules(self, issuer: str) -> tuple[str, ...]:
+        """The whitelist's keep rules for decisions stored under ``issuer`` (a co-issuer that is no grantor of ours
+        gets the default)."""
+        g = next((g for g in self.grantors if g.uid == issuer), None)
+        return g.keep if g else Grantor.keep
+
+    def grantor_group(self, issuer: str) -> str:
+        """The grantor a decision stored under ``issuer`` is reported as. A co-issuer that is no grantor of ours
+        (a joint decision found by an Interior Ministry search) counts with the ministry."""
+        g = next((g for g in self.grantors if g.uid == issuer), None)
+        return g.group if g else Grantor.group
 
 
 def load_registry(path: Path) -> Registry:
@@ -177,7 +196,12 @@ def load_registry(path: Path) -> Registry:
     reg.entities += [mk(r, False) for r in doc.get("out_of_scope", [])]
     for raw in doc.get("grantors", []) or []:
         years = raw.get("active_years")
+        keep = tuple(raw["keep"]) if raw.get("keep") else Grantor.keep
+        unknown = set(keep) - set(KEEP_RULES)
+        if unknown:
+            raise ValueError(f"grantor {raw['uid']}: unknown keep rule(s) {sorted(unknown)}")
         reg.grantors.append(Grantor(
             uid=str(raw["uid"]), name=str(raw["name"]), latin_name=raw.get("latin_name"),
-            active_years=(int(years[0]), int(years[1])) if years else None, note=raw.get("note")))
+            active_years=(int(years[0]), int(years[1])) if years else None, note=raw.get("note"), keep=keep,
+            group=str(raw.get("group") or Grantor.group)))
     return reg

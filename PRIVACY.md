@@ -181,6 +181,39 @@ ADAs, never a subject). The command refuses to delete a page without a later
 capture of it and anything outside the full-text store; it is the store's
 only exception to append-only.
 
+**Rules per issuer, 2026-09-26.** Each grantor names people differently, so the whitelist now takes each
+issuer's keep rules from `entities.yaml` (grantor `keep`). The Evangelistria foundation, whose grants go
+mostly to named students, poor families and associations, the Education Ministry (teachers' placements,
+expense commitments naming one person), the Culture Ministry (archaeological consents for private
+houses and shops) and the Region's development fund keep only acts naming a Tinos body, and hits of a
+Tinos body's own ΑΦΜ. The Decentralised Administration, whose legality reviews name the municipality in
+nearly every subject, keeps only subjects with a grant word. The Interior Ministry and the Region keep
+every rule, as before. A stored record is judged by the rules of the grantor whose search kept it. The
+rules about people, checked first for every issuer, now also cover scholarships, student and welfare
+aid, dowries and aid to the poor (not the EU food-aid fund ΤΕΒΑ, a programme); teachers' and other
+staff placements, substitutes, recognised degrees and second specialities; a travel expense, the
+traveller named or not; and permits for a private house, shop or property «φερόμενης ιδιοκτησίας» of a
+person, and legalised private works. Each new grantor's real subjects were read in memory before
+anything was stored (the probes of FINDINGS.md), and `tinos fulltext-status --names` scans every kept
+subject for common first names; its hits were places, saints, a programme («Αντώνης Τρίτσης») and a
+partnership named after its partner. Citizen Protection was probed and not registered: nothing it
+publishes about Tinos is money for a Tinos body. Two stored records the widened rules call personal
+(2016 revocations of a 200 € staff travel expense, found by the ministry's ΑΥΤΟΤΕΛΕΙΣ pass) were
+deleted by `tinos fulltext-purge --apply` on the owner's word, with the one 2016 page that held them
+whole, after that year was searched again; three lines in `manifests/ingest_log.jsonl`.
+
+**The foundation's statutory grants, 2026-09-26.** The foundation's titles for its statutory grants often
+name no recipient («Έναντι τακτικής επιχορήγησης έτους 2017», «Τακτική επιχορήγηση Δήμου - Ι.ΤΗ.Π. -
+Ι.Μητρόπολη Σύρου»), so the rule above missed the ones paying the municipality; the municipality's monthly
+receipts showed the gap (FINDINGS.md F10). A second keep rule for this issuer only, `statutory_grant`, keeps
+acts about its statutory grants: payments to the municipality and to other public and church bodies (the
+Tinian Culture Foundation, its elderly-care unit, the Metropolis of Syros, the Panormos school of fine arts),
+never to a person; the rules about people still come first. Before anything was stored, the titles it would
+add were read in memory from an echo-verified scan of all 7,399 of the foundation's decisions of 2015-2025:
+62, none naming a person, and a first-name scan found none. After the foundation was searched again (and the
+ministry for «3756», F8), the scan of every kept subject (2,748; 52 with a first-name word) found places,
+saints, programmes, a museum, the city of Sofia and a wreath («στεφάνου»), no person.
+
 ## Principles we are working from, pending decisions
 
 - Public office holders acting in office: name them.
