@@ -144,9 +144,9 @@ import pyarrow.parquet as pq
 from tinos import __version__
 from tinos.config import Settings, load_registry
 
-CURATED_SCHEMA_VERSION = 6  # 2: budget_line; 3: procurement, procurement_party; 4: budget_line.description;
+CURATED_SCHEMA_VERSION = 7  # 2: budget_line; 3: procurement, procurement_party; 4: budget_line.description;
 #                              5: grant_decision, grant_line, budget_line.grant_category;
-#                              6: grant_decision.found_by, text_indexed
+#                              6: grant_decision.found_by, text_indexed; 7: grantor on both grant tables
 PIPELINE_VERSION = f"{__version__}+curated{CURATED_SCHEMA_VERSION}"
 ATHENS = ZoneInfo("Europe/Athens")
 UTC = timezone.utc
@@ -829,7 +829,8 @@ SCHEMAS: dict[str, pa.Schema] = {
         pa.field("cpv", L(S())), pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),
     ]),
     "grant_decision": pa.schema([
-        pa.field("ada", S()), pa.field("issuer", S()), pa.field("issuer_label", S()), pa.field("co_issuers", L(S())),
+        pa.field("ada", S()), pa.field("issuer", S()), pa.field("grantor", S()), pa.field("issuer_label", S()),
+        pa.field("co_issuers", L(S())),
         pa.field("date", pa.date32()), pa.field("year", pa.int32()), pa.field("budget_year", pa.int32()),
         pa.field("decision_type", S()), pa.field("status", S()), pa.field("subject", S()), pa.field("family", S()),
         pa.field("category", S()), pa.field("protocol_number", S()), pa.field("submission_ts", S()),
@@ -840,6 +841,7 @@ SCHEMAS: dict[str, pa.Schema] = {
     ]),
     "grant_line": pa.schema([
         pa.field("grant_line_id", S()), pa.field("line_no", pa.int32()), pa.field("ada", S()), pa.field("issuer", S()),
+        pa.field("grantor", S()),
         pa.field("recipient_tpd_code", S()), pa.field("recipient_entity", S()), pa.field("date", pa.date32()),
         pa.field("year", pa.int32()), pa.field("budget_year", pa.int32()), pa.field("status", S()),
         pa.field("family", S()), pa.field("category", S()), pa.field("amount", pa.float64()),
@@ -930,7 +932,8 @@ def build_curated(settings: Settings) -> BuildResult:
     from tinos.curated_khmdhs import procurement_rows
     procurement, parties = procurement_rows(settings.raw_dir, stamp)
     from tinos.curated_grants import grant_rows
-    grant_decisions, grant_lines = grant_rows(settings.raw_dir, stamp) if pdftotext else ([], [])
+    anchors = frozenset(e.afm for e in load_registry(settings.entities_file).in_scope if e.afm)
+    grant_decisions, grant_lines = grant_rows(settings.raw_dir, stamp, anchors) if pdftotext else ([], [])
     tables = {
         "act": to_table("act", acts),
         "payment": to_table("payment", payments),

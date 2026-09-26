@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-26T09:13:12+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated6`, curated at 2026-09-26T09:06:43+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-26T10:20:04+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated7`, curated at 2026-09-26T10:15:28+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
@@ -235,9 +235,11 @@ The December execution statement (6ΝΠΘΩΗ6-Β64) is the denominator: what th
 
 The year-end execution statement is the municipality's own account of what it paid, parsed from its PDF with every column equal to the document's totals. Until 2018 Diavgeia's payment decisions carried nearly all non-staff payments; from 2019 most supplier payments are recorded in ΚΗΜΔΗΣ instead (FINDINGS.md F6). A share above 100% means some Diavgeia amount cannot be right (FINDINGS.md F7). Staff pay is withheld from Diavgeia by design.
 
-## Money given to Tinos by the Interior Ministry, 2015-2025
+## Money given to Tinos, 2015-2025
 
-Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (424 decisions), and for «ΑΥΤΟΤΕΛΕΙΣ», the word in the title of every allocation from the central funds (ΚΑΠ), because the search index holds some national tables by title only: 53 decisions with an amount for Tinos were found that way alone. Of 2,156 decisions kept, 423 give Δήμος Τήνου an amount read from their PDF and 24 have a validated table without Tinos; most of the rest concern single other municipalities and were not fetched. 395 of 398 amounts are validated against the document itself: the table's column sums its own total line, or the letter states the amount, or spells it in words. Only validated amounts are counted below, each once (two decisions posted twice are counted once; an order moving an allocation's funds is not counted again). Year = the year the allocation is for.
+### By the Interior Ministry
+
+Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (424 decisions), and for «ΑΥΤΟΤΕΛΕΙΣ», the word in the title of every allocation from the central funds (ΚΑΠ), because the search index holds some national tables by title only: 53 decisions with an amount for Tinos were found that way alone. Of 2,145 decisions kept, 423 give Δήμος Τήνου an amount read from their PDF and 24 have a validated table without Tinos; most of the rest concern single other municipalities and were not fetched. 395 of 398 amounts are validated against the document itself: the table's column sums its own total line, or the letter states the amount, or spells it in words. Only validated amounts are counted below, each once (two decisions posted twice are counted once; an order moving an allocation's funds is not counted again). Year = the year the allocation is for.
 
 | Year | Decisions | ΚΑΠ general € | ΚΑΠ investment € | Schools € | Other targeted € | State grants € | Investment programmes € | Fees collected centrally € | Total € |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -253,7 +255,25 @@ Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (424 de
 | 2024 | 39 | 2,371,590.44 | 245,610.00 | 239,570.20 | 402,956.23 | 246,261.93 | 3,087.60 | 57,129.88 | 3,566,206.28 |
 | 2025 | 37 | 2,692,510.41 | 245,610.00 | 184,098.00 | 560,979.57 | 258,054.70 | 52,622.76 | 57,129.88 | 4,051,005.32 |
 
-**Against the municipality's own books.** Each cell is allocated minus booked for that revenue line in the year-end statement (`v_grant_reconciliation`): «=» to the cent, «≈ 0.15%» booked exactly 0.15% less than allocated, otherwise the difference in euros (positive: allocated but not booked there).
+### By the Region of South Aegean
+
+Found by full-text search of the Region's decisions for «ΤΗΝΟΥ» and for the municipality's ΑΦΜ: 393 decisions kept, 68 with their PDF stored. The Region's money reaches the municipality as credits of its investment programme for a project the municipality carries out (each tranche decided twice, counted once: 10 credits), and as payment orders under programme agreements. Its other payment orders to the municipality pay its own water bills there: a sale by the municipality, shown, not counted. Its programme agreements with Tinos bodies (33 decisions) and ΕΣΠΑ inclusions of their projects (28) are entitlements and budgets, listed, not counted. Every amount below is validated in words and figures in its document (FINDINGS.md F9).
+
+| Year | Decisions | Investment credits € | Programme-agreement payments € | Total € | Water bills paid to the municipality € (not counted) |
+|---|---:|---:|---:|---:|---:|
+| 2015 | 1 | 8,755.24 |  | 8,755.24 |  |
+| 2017 | 2 | 89,709.88 |  | 89,709.88 |  |
+| 2018 | 5 | 156,488.46 |  | 156,488.46 |  |
+| 2019 | 1 | 13,094.40 |  | 13,094.40 |  |
+| 2021 | 2 | 8,028.91 | 13,020.00 | 21,048.91 | 47.72 |
+| 2022 | 0 |  |  |  | 31.00 |
+| 2023 | 0 |  |  |  | 115.46 |
+| 2024 | 1 |  | 9,300.00 | 9,300.00 | 67.41 |
+| 2025 | 0 |  |  |  | 44.21 |
+
+### Against the municipality's own books
+
+Each cell is allocated minus booked for that revenue line in the year-end statement (`v_grant_reconciliation`): «=» to the cent, «≈ 0.15%» booked exactly 0.15% less than allocated, otherwise the difference in euros (positive: allocated but not booked there).
 
 | Revenue line | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -268,11 +288,12 @@ Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (424 de
 | ΚΑΠ, other purposes (0619) | -63,929 | -270,171 | ≈ 0.15% | +99,018 | +138 | +184,732 | +34,200 | = | = | -186,471 | = |
 | School cleaners' pay (0621 from 2023) |  |  |  |  |  | +32,960 | +126,300 | +76,860 | +14,028 | +10,800 | -45,744 |
 | State grants (1211, 1215, 1219) | -248,305 | +228,743 |  | -98,722 | = | +214,906 | -214,098 | -157,660 | -25,880 | -109,709 | -21,003 |
-| Investment programmes (1314, 1315, 1322) | -37,217 | -36,485 | +59,343 | -206,488 | -13,094 | = | -202,967 | -460,985 | -19,874 | -68,195 | -615,907 |
+| Investment programmes (1314, 1315, 1322): the ministry and the Region | -28,462 | -36,485 | +149,053 | -50,000 | = | = | -194,938 | -460,985 | -19,874 | -68,195 | -615,907 |
+| Programme agreements (1213, 1326): the Region's payments found | -49,816 | -78,780 | -68,989 |  |  | -155,354 | +18 | -138,745 | -158,119 | -41,418 | -35,554 |
 | Property levy ΤΑΠ, the ministry's share (0441) | -111,627 | -120,192 | -111,005 | -109,865 | -108,798 | -114,518 | -152,541 | -147,055 | -170,220 | -172,113 | -178,403 |
 | Welfare benefits (0621 in 2015) | -4,696 |  |  |  |  |  |  |  |  |  |  |
 
-Where the two sources meet line for line they agree to the cent, or differ by exactly 0.15%: the ΚΑΠ investment share in every year, school repairs and fire protection in every year, the advertising fee in 2016 and 2018-2025, «Βοήθεια στο Σπίτι» 2023-2025, the general ΚΑΠ in 2015-2016, 2020 and 2023-2024 (2017, 2021, 2022 and 2025 within 550 €). 2018 and 2019 are one supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy (ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 by construction; the investment-programme and state-grant lines also receive money from other ministries and the EU. Allocations and booked revenue are two views of the same transfers: compare them, never add them.
+Where the two sources meet line for line they agree to the cent, or differ by exactly 0.15%: the ΚΑΠ investment share in every year, school repairs and fire protection in every year, the advertising fee in 2016 and 2018-2025, «Βοήθεια στο Σπίτι» 2023-2025, the general ΚΑΠ in 2015-2016, 2020 and 2023-2024 (2017, 2021, 2022 and 2025 within 550 €). 2018 and 2019 are one supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy (ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 by construction; the investment-programme and state-grant lines also receive money from other ministries and the EU. With the Region's investment credits the investment programmes match in 2019 as well; 2018 is short by one credit of 50,000.00 € decided on 28 December 2017 and booked in 2018. The programme-agreement lines also hold agreements with other public bodies, and the Region's payments are found only from 2021. Allocations and booked revenue are two views of the same transfers: compare them, never add them.
 
 ## How much of what the subsidiaries paid Diavgeia shows
 

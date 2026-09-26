@@ -11,7 +11,9 @@ Read these two files before doing anything in this repo:
 - `PROMPT.md` — the project brief: goals, data model, invariants, privacy rules.
 
 ## Hard invariants
-- `data/raw/` is append-only. Never edit or delete a file there.
+- `data/raw/` is append-only. Never edit or delete a file there. One exception, the owner's
+  (PRIVACY.md Q7): `tinos fulltext-purge` deletes full-text records later found to be about a
+  person, each deletion logged.
 - Every derived figure must trace to a stored document hash.
 - Never sum Diavgeia amounts naively — the same euro appears 3-4 times.
 - Payroll beneficiaries are absent BY DESIGN. Do not try to recover them.
@@ -39,12 +41,20 @@ double-posted amounts), `v_payment_combined` and `v_supplier_year_combined`
 `data/manual/amount_review.yaml` (`mismatch` by line, `duplicate`). Tests:
 `.venv/bin/python -m unittest discover -s tests`.
 Phase 4 (2026-09-26): money given TO Tinos. Diavgeia full-text search
-(`tinos fulltext-backfill`, `tinos fulltext-doctor`, `tinos fulltext-status`; no
-query echo: every window is proved by counts; PRIVACY.md Q7: hits about people are
-redacted at ingestion). 558 Interior Ministry decisions (uids in `entities.yaml`
-`grantors`), 447 PDFs, amounts read and validated by `tinos.extract.grants` into
-`grant_decision` / `grant_line`; `v_grant_reconciliation` sets them against the
-revenue lines of the statements (FINDINGS F8). Subsidiaries' December statements
-parsed for five bodies (24). Next: the 11 monthly ΚΑΠ PDFs the index misses (ADAs
-in FINDINGS F8) and the two port-authority x100 candidates (F7), 13 PDFs, ask before
-downloading; the Region of South Aegean (5011) as the next grantor; monthly statements.
+(`tinos fulltext-backfill`, `tinos fulltext-doctor`, `tinos fulltext-status`,
+`tinos fulltext-purge`; no query echo: every window is proved by counts; PRIVACY.md
+Q7: hits about people are redacted at ingestion, and records later found to be about
+a person are deleted by the purge, logged). Grantors in `entities.yaml`: the four
+Interior Ministry uids (ΤΗΝΟΥ, and ΑΥΤΟΤΕΛΕΙΣ for national tables the index holds by
+title only) and the Region of South Aegean (5011: ΤΗΝΟΥ and the municipality's ΑΦΜ,
+an anchored term). Amounts read and validated by `tinos.extract.grants`
+(`read_decision`; the Region's `read_region`) into `grant_decision` / `grant_line`
+(`grantor`, `found_by`, `text_indexed`); `v_grant_reconciliation` sets both grantors
+against the statements' revenue lines. 2015-2025: the ministry 28.83M (F8), the Region
+0.30M (F9); 48 line-years exact to the cent, 18 exactly 0.15% less. Subsidiaries'
+December statements parsed for five bodies (24). Verified x100 lines: 13 (F7).
+Next: the programme-agreement lines (1213/1326, 0.75M booked, 22k found: the Region's
+payment orders are findable by ΑΦΜ only from 2021; 43 Region credits for its own
+projects and the 33 agreement PDFs are unread for amounts); other grantors (Αποκεντρωμένη
+Διοίκηση Αιγαίου, the education, culture and civil-protection ministries, per the
+2024 facet in FINDINGS); monthly statements. Ask before downloading.

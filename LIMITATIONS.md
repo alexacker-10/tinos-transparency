@@ -56,9 +56,17 @@ the same figure.
   counted. An allocation whose title uses neither word would still be missed. Three amounts the municipality booked have no decision yet (the 2015
   advertising fee, a 2015 welfare amount, part of the «other purposes» line). «At least» means
   exactly that.
+- **The Region of South Aegean.** We also searched the Region's decisions. At least 0.30 million
+  euros in 2015-2025, mostly its investment money for the municipal gym and for the landfill and
+  sewage studies; with it, the investment-programme line matches the municipality's books to the cent
+  in 2019. The Region's payments to the municipality that we can see are mostly its own water bills
+  (about 300 euros in five years), which we show but do not count: they are sales, not grants. Its
+  payments before 2021 cannot be told apart from its payments to contractors on the island, and most
+  of the money the municipality booked under programme agreements (0.75 million) has no Region
+  decision we could find; such agreements can also be with other public bodies.
 - **One ministry among several.** Money from other ministries, the Region of South Aegean and EU
   programmes reaches the same revenue lines, so for investment money and extra grants our figure is
-  the Interior Ministry's share, not the whole. The property levy (ΤΑΠ) is mostly collected through
+  the share of the two bodies we searched, not the whole. The property levy (ΤΑΠ) is mostly collected through
   electricity bills, so the ministry's allocation is only a small part of what the municipality
   receives from it.
 - **Two decisions were published twice** (2018, 2022). We count each once.

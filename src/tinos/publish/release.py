@@ -29,10 +29,12 @@ casual reader gets the right numbers by default:
 - ``v_grant_line`` is every amount another body's decision gives Δήμος Τήνου
   that was validated against the document (column totals, a stated amount, or
   words and figures), published decisions only. ``v_grant_year`` sums it per
-  budget year, category and family; ``v_revenue_grant_year`` is the revenue
+  budget year, grantor (the Interior Ministry, the Region), category and
+  family; ``v_revenue_grant_year`` is the revenue
   side of the year-end statements in the same categories; and
-  ``v_grant_reconciliation`` sets them side by side. Allocations decided and
-  revenue booked are two views of the same transfers: compare, never add.
+  ``v_grant_reconciliation`` sets them side by side, every grantor together
+  (a revenue line does not say who paid). Allocations decided and revenue
+  booked are two views of the same transfers: compare, never add.
 """
 
 from __future__ import annotations
@@ -175,9 +177,9 @@ VIEWS = {
         WHERE l.status = 'PUBLISHED' AND l.validation IS NOT NULL AND l.amount IS NOT NULL AND l.duplicate_of IS NULL
     """,
     "v_grant_year": """
-        SELECT budget_year AS year, category, family, count(DISTINCT ada) AS n_decisions, count(*) AS n_lines,
+        SELECT budget_year AS year, grantor, category, family, count(DISTINCT ada) AS n_decisions, count(*) AS n_lines,
                sum(amount) AS allocated, sum(net_paid) AS net_paid
-        FROM v_grant_line WHERE category IS NOT NULL GROUP BY 1, 2, 3 ORDER BY 1, 2, 3
+        FROM v_grant_line WHERE category IS NOT NULL GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 3, 4
     """,
     "v_revenue_grant_year": """
         WITH s AS (

@@ -78,8 +78,9 @@ writing it here. Ranked by what they would add.
   privacy rule PRIVACY.md Q7). The 2024 re-check here (64 ministry acts naming Tinos;
   ΡΟ0946ΜΤΛ6-ΣΚ8 gives ΤΗΝΟΥ 236,601.93) holds: the backfill found the same 64 and read the same
   figure from the PDF. The index holds some national tables by title only; a second pass for the
-  title word ΑΥΤΟΤΕΛΕΙΣ (2016-2025, 4,367 hits) found 22 of them with money for Tinos (F8). Next
-  grantor: the Region of South Aegean (5011), 708 acts naming ΤΗΝΟΥ in 2024.
+  title word ΑΥΤΟΤΕΛΕΙΣ (2016-2025, 4,367 hits) found 22 of them with money for Tinos (F8). The Region
+  of South Aegean (5011) followed on 2026-09-26: ΤΗΝΟΥ 2015-2025 (7,409 hits) and the municipality's ΑΦΜ
+  (35), 393 decisions kept, 68 PDFs read (F9).
 - **Local-government indicators, Interior Ministry** — `https://deiktesota.gov.gr/reports/1008/view/`,
   Power BI, no export, reuse with attribution. 2024 row for Tinos (reported): financial
   independence 28.33%, direct awards 98.54% of contracts (consistent with ΚΗΜΔΗΣ: 358 of 364

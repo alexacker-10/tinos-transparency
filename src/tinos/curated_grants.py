@@ -15,8 +15,10 @@ grant_decision  one row per decision kept by ``tinos fulltext-backfill`` (the
                 decision found only by subject, whose text was never indexed,
                 is one a search for ΤΗΝΟΥ could not have found.
 grant_line      one row per amount for a Tinos body read from a stored PDF
-                (``tinos.extract.grants.read_decision``), with how it was
-                validated against the document.
+                (``tinos.extract.grants.read_decision``; the Region's with
+                ``read_region``), with how it was validated against the
+                document. ``grantor`` is ``interior`` (the four Interior
+                Ministry uids) or ``region`` (the Region of South Aegean).
 
 Double postings. The same decision is sometimes posted twice (same issuer,
 protocol number, issue date and subject, minutes apart, two ADAs): the
@@ -37,8 +39,9 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from tinos.extract.grants import CATEGORY_OF_FAMILY, TINOS_TPD_CODE, budget_year, family_of, read_decision
-from tinos.sources.fulltext import issue_day, whitelist_reason
+from tinos.extract.grants import (CATEGORY_OF_FAMILY, REGION_UIDS, TINOS_TPD_CODE, budget_year, family_of,
+                                  read_decision, read_region)
+from tinos.sources.fulltext import TINOS_BODY_RE, fold, issue_day, whitelist_reason
 
 
 def _iso(ts: Any) -> str:
@@ -74,28 +77,42 @@ def search_index(raw_dir: Path) -> tuple[dict[str, list[str]], set[str]]:
     return {a: sorted(t) for a, t in found.items()}, indexed
 
 
-def grant_rows(raw_dir: Path, stamp: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """(grant_decision rows, grant_line rows). Reads each stored PDF with ``pdftotext -layout``."""
+def grant_rows(raw_dir: Path, stamp: dict[str, Any],
+               anchors: frozenset[str] = frozenset()) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """(grant_decision rows, grant_line rows). Reads each stored PDF with ``pdftotext -layout``.
+
+    ``anchors``: the Tinos bodies' ΑΦΜ; a decision found by one of them is kept whatever its subject,
+    as ``tinos fulltext-backfill`` kept it.
+    """
     decisions, lines = [], []
     found_by, indexed = search_index(raw_dir)
     for path, sha, rec in iter_grant_decisions(raw_dir):
-        if whitelist_reason(rec) is not None:  # kept by an earlier whitelist; not carried (PRIVACY.md Q7)
+        anchored = bool(anchors & set(found_by.get(rec["ada"], [])))
+        if whitelist_reason(rec, anchored) is not None:  # kept by an earlier whitelist; not carried (PRIVACY.md Q7)
             continue
         issuer = path.parent.name
         day = issue_day(rec["issueDate"])
         subject = " ".join(str(rec.get("subject") or "").split())
-        family = family_of(subject)
-        category = CATEGORY_OF_FAMILY.get(family)
+        region = issuer in REGION_UIDS
+        family = family_of(subject, issuer)
+        if family == "region_credit" and not (anchored or TINOS_BODY_RE.search(fold(subject))):
+            family = "region_own_credit"  # a project of the Region's own on the island, not money to Tinos
         pdf = raw_dir / "diavgeia" / "docs" / issuer / f"{rec['ada']}.pdf"
         pdf_sha = hashlib.sha256(pdf.read_bytes()).hexdigest() if pdf.is_file() else None
         status = "no_pdf"
         amounts = []
         if pdf_sha:
             text = subprocess.run(["pdftotext", "-layout", str(pdf), "-"], capture_output=True, text=True, check=True).stdout
-            amounts, status = read_decision(text, subject)
+            if region:  # the payment order's purpose line refines its family
+                amounts, status, family = read_region(text, subject, family)
+            else:
+                amounts, status = read_decision(text, subject)
+        category = CATEGORY_OF_FAMILY.get(family)
+        grantor = "region" if region else "interior"
         year_for = budget_year(subject, day.year)
         decisions.append({
-            "ada": rec["ada"], "issuer": issuer, "issuer_label": (rec.get("organization") or {}).get("label"),
+            "ada": rec["ada"], "issuer": issuer, "grantor": grantor,
+            "issuer_label": (rec.get("organization") or {}).get("label"),
             "co_issuers": sorted(str(c.get("uid")) for c in rec.get("cooperatingOrganizations") or [] if isinstance(c, dict)),
             "date": day, "year": day.year, "budget_year": year_for, "decision_type": (rec.get("decisionType") or {}).get("uid"),
             "status": rec.get("status"), "subject": subject, "family": family, "category": category,
@@ -108,7 +125,7 @@ def grant_rows(raw_dir: Path, stamp: dict[str, Any]) -> tuple[list[dict[str, Any
         })
         for i, a in enumerate(amounts):
             lines.append({
-                "grant_line_id": f"{rec['ada']}:{i}", "line_no": i, "ada": rec["ada"], "issuer": issuer,
+                "grant_line_id": f"{rec['ada']}:{i}", "line_no": i, "ada": rec["ada"], "issuer": issuer, "grantor": grantor,
                 "recipient_tpd_code": TINOS_TPD_CODE, "recipient_entity": "6296",
                 "date": day, "year": day.year, "budget_year": year_for, "status": rec.get("status"),
                 "family": family, "category": category,
@@ -123,7 +140,6 @@ def grant_rows(raw_dir: Path, stamp: dict[str, Any]) -> tuple[list[dict[str, Any
 
 def _mark_duplicates(decisions: list[dict[str, Any]], lines: list[dict[str, Any]]) -> None:
     from collections import defaultdict
-    from tinos.sources.fulltext import fold
     groups: dict[tuple, list[dict[str, Any]]] = defaultdict(list)
     for d in decisions:
         d["duplicate_of"] = None

@@ -344,16 +344,19 @@ def write_summary(settings: Settings) -> Path:
                          sum(allocated) FILTER (WHERE category = 'investment_programmes'),
                          sum(allocated) FILTER (WHERE category IN ('advertising_fee', 'property_tax')),
                          sum(allocated)
-                  FROM v_grant_year WHERE year BETWEEN 2015 AND 2025 GROUP BY 1 ORDER BY 1""")
+                  FROM v_grant_year WHERE year BETWEEN 2015 AND 2025 AND grantor = 'interior' GROUP BY 1 ORDER BY 1""")
     if grants:
-        counts = dict(q("SELECT read_status, count(*) FROM grant_decision GROUP BY 1"))
+        counts = dict(q("SELECT read_status, count(*) FROM grant_decision WHERE grantor = 'interior' GROUP BY 1"))
         named, hidden = q("""SELECT count(*) FILTER (WHERE list_contains(found_by, 'ΤΗΝΟΥ')),
                                     count(*) FILTER (WHERE read_status = 'read' AND NOT text_indexed
                                                      AND NOT list_contains(found_by, 'ΤΗΝΟΥ'))
-                             FROM grant_decision""")[0]
+                             FROM grant_decision WHERE grantor = 'interior'""")[0]
         n_lines = q("""SELECT count(*), count(*) FILTER (WHERE validation IS NOT NULL) FROM grant_line
-                       WHERE category IS NOT NULL AND status = 'PUBLISHED' AND duplicate_of IS NULL""")[0]
-        w("## Money given to Tinos by the Interior Ministry, 2015-2025")
+                       WHERE category IS NOT NULL AND status = 'PUBLISHED' AND duplicate_of IS NULL
+                         AND grantor = 'interior'""")[0]
+        w("## Money given to Tinos, 2015-2025")
+        w("")
+        w("### By the Interior Ministry")
         w("")
         w(f"Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» ({named:,} decisions), and for "
           "«ΑΥΤΟΤΕΛΕΙΣ», the word in the title of every allocation from the central funds (ΚΑΠ), because the search "
@@ -371,6 +374,40 @@ def write_summary(settings: Settings) -> Path:
                  [[y, n, _eur(a), _eur(b), _eur(c), _eur(d), _eur(e), _eur(f), _eur(g), _eur(t)]
                   for y, n, a, b, c, d, e, f, g, t in grants], 1))
         w("")
+        region = q("""SELECT budget_year,
+                             count(DISTINCT ada) FILTER (WHERE category IS NOT NULL),
+                             sum(amount) FILTER (WHERE family = 'region_credit'),
+                             sum(amount) FILTER (WHERE family = 'region_agreement_payment'),
+                             sum(amount) FILTER (WHERE category IS NOT NULL),
+                             sum(amount) FILTER (WHERE family = 'region_utility_payment')
+                      FROM v_grant_line WHERE grantor = 'region' AND budget_year BETWEEN 2015 AND 2025
+                      GROUP BY 1 ORDER BY 1""")
+        if region:
+            from collections import Counter
+
+            from tinos.sources.fulltext import TINOS_BODY_RE, fold
+            # listed families: only the decisions that name a Tinos body or were found by its ΑΦΜ
+            rcounts = Counter(fam for fam, subj, found in q(
+                "SELECT family, subject, found_by FROM grant_decision WHERE grantor = 'region' AND duplicate_of IS NULL")
+                if fam in ("region_credit", "region_agreement_payment") or TINOS_BODY_RE.search(fold(subj))
+                or any(t.isdigit() for t in found))
+            rhits = q("SELECT count(*), count(*) FILTER (WHERE pdf_sha256 IS NOT NULL) FROM grant_decision WHERE grantor = 'region'")[0]
+            w("### By the Region of South Aegean")
+            w("")
+            w(f"Found by full-text search of the Region's decisions for «ΤΗΝΟΥ» and for the municipality's ΑΦΜ: "
+              f"{rhits[0]:,} decisions kept, {rhits[1]:,} with their PDF stored. The Region's money reaches the "
+              "municipality as credits of its investment programme for a project the municipality carries out "
+              f"(each tranche decided twice, counted once: {rcounts.get('region_credit', 0)} credits), and as payment "
+              "orders under programme agreements. Its other payment orders to the municipality pay its own water "
+              "bills there: a sale by the municipality, shown, not counted. Its programme agreements with Tinos "
+              f"bodies ({rcounts.get('region_agreement', 0)} decisions) and ΕΣΠΑ inclusions of their projects "
+              f"({rcounts.get('programme', 0)}) are entitlements and budgets, listed, not counted. Every amount below "
+              "is validated in words and figures in its document (FINDINGS.md F9).")
+            w("")
+            w(_table(["Year", "Decisions", "Investment credits €", "Programme-agreement payments €", "Total €",
+                      "Water bills paid to the municipality € (not counted)"],
+                     [[y, n, _eur(a), _eur(b), _eur(t), _eur(u)] for y, n, a, b, t, u in region], 1))
+            w("")
         labels = {
             "kap_general": "ΚΑΠ, general needs (0611)",
             "kap_investment": "ΚΑΠ, investment «ΣΑΤΑ» (1311, 0612 from 2023)",
@@ -383,7 +420,8 @@ def write_summary(settings: Settings) -> Path:
             "kap_other": "ΚΑΠ, other purposes (0619)",
             "school_cleaners": "School cleaners' pay (0621 from 2023)",
             "state_grants": "State grants (1211, 1215, 1219)",
-            "investment_programmes": "Investment programmes (1314, 1315, 1322)",
+            "investment_programmes": "Investment programmes (1314, 1315, 1322): the ministry and the Region",
+            "programme_agreements": "Programme agreements (1213, 1326): the Region's payments found",
             "property_tax": "Property levy ΤΑΠ, the ministry's share (0441)",
             "welfare": "Welfare benefits (0621 in 2015)",
         }
@@ -402,7 +440,9 @@ def write_summary(settings: Settings) -> Path:
                 cell = f"{diff:+,.0f}"
             cells.setdefault(cat, {})[year] = cell
         years = list(range(2015, 2026))
-        w("**Against the municipality's own books.** Each cell is allocated minus booked for that revenue line in the "
+        w("### Against the municipality's own books")
+        w("")
+        w("Each cell is allocated minus booked for that revenue line in the "
           "year-end statement (`v_grant_reconciliation`): «=» to the cent, «≈ 0.15%» booked exactly 0.15% less than "
           "allocated, otherwise the difference in euros (positive: allocated but not booked there).")
         w("")
@@ -417,8 +457,10 @@ def write_summary(settings: Settings) -> Path:
           "supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy "
           "(ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 "
           "by construction; the investment-programme and state-grant lines also receive money from other ministries "
-          "and the EU. Allocations and booked revenue are two views of the same transfers: compare them, never add "
-          "them.")
+          "and the EU. With the Region's investment credits the investment programmes match in 2019 as well; 2018 is "
+          "short by one credit of 50,000.00 € decided on 28 December 2017 and booked in 2018. The programme-agreement "
+          "lines also hold agreements with other public bodies, and the Region's payments are found only from 2021. "
+          "Allocations and booked revenue are two views of the same transfers: compare them, never add them.")
         w("")
 
     # ---- the subsidiaries' own statements

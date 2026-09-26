@@ -178,3 +178,68 @@ class DoublePostings(unittest.TestCase):
                      {**base, "ada": "ΨΥΓΦ465ΦΘΕ-ΞΧΨ", "submission_ts": "2016-09-09T15:28:45", "n_amounts": 1}]
         _mark_duplicates(decisions, [])
         self.assertEqual([d["duplicate_of"] for d in decisions], ["ΨΥΓΦ465ΦΘΕ-ΞΧΨ", None])
+
+
+# The Region of South Aegean's documents, as pdftotext -layout prints them (names replaced).
+WATER_ORDER = """\
+                                                     Δίνεται εντολή πληρωμής ευρώ:                          #15,50#
+ Οικονομικό Έτος:      2021                          (δέκα πέντε Ευρώ και πενήντα Λεπτά)
+ Αρ. Εντάλματος:       00904K                        στο δικαιούχο ΔΗΜΟΣ ΤΗΝΟΥ
+                                                     Διεύθυνση:             ΧΩΡΑ ΤΗΝΟΥ
+ Αρ. Πρωτοκ:           /1289
+                                                     ΑΦΜ:                   800302968
+Για:Υδρευση - άρδευση από 6/8/2020 εως 6/11/2020
+            ΕΝΤΕΛΛΟΜΕΝΟ ΠΟΣΟ                    ΣΤΟ ΔΙΚΑΙΟΥΧΟ:                   15,50
+"""
+CREDIT = """\
+Θέμα : Έγκριση πίστωσης 13.094,40 € σε βάρος των πιστώσεων του έργου «Αποπεράτωση Αθλητικού Γυμναστηρίου Δήμου Τήνου»
+9. Το έργο σε βάρος του οποίου μπορεί να αναληφθεί η πίστωση ύψους 13.094,40 €.
+                                                             ΑΠΟΦΑΣΙΖΟΥΜΕ
+         Εγκρίνουμε την ανάληψη πίστωσης ύψους δεκατριών χιλιάδων ενενήντα τεσσάρων ευρώ και σαράντα λεπτών
+(13.094,40 €) σε βάρος των πιστώσεων του έργου «Αποπεράτωση Αθλητικού Γυμναστηρίου Δήμου Τήνου».
+         Η πίστωση αυτή των 13.094,40 € θα μεταβιβαστεί στο Δήμο Τήνου, υπόλογο διαχειριστή, με Α.Φ.Μ. 800302968.
+"""
+
+
+class Region(unittest.TestCase):
+    def test_region_families(self):
+        for subject, family in (
+                ("ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ", "region_payment"),
+                ("Έγκριση πίστωσης 70.000,00 € σε βάρος των πιστώσεων του έργου Δήμου Τήνου", "region_credit"),
+                ("Διάθεση πίστωσης 8.028,91 € σε βάρος των πιστώσεων της μελέτης", "region_credit"),
+                ("Κατανομή ποσού 70.000,00 € για το έργο με κωδικό 2011ΕΠ76700012", "region_allocation"),
+                ("Επιβολή διοικητικών κυρώσεων (πρόστιμο) στο Δήμο Τήνου", "region_fine"),
+                ("Προγραμματική Σύμβαση μεταξύ ΠΝΑ και Δήμου Τήνου για την πράξη", "region_agreement"),
+                ("Ένταξη της Πράξης «ΚΗΦΗ Δήμου Τήνου» στο Πρόγραμμα «Νότιο Αιγαίο»", "programme"),
+                ("Υπαγωγή σε Πρότυπες Περιβαλλοντικές Δεσμεύσεις της Μονάδας Αφαλάτωσης", "region_licence")):
+            with self.subTest(subject=subject[:40]):
+                self.assertEqual(family_of(subject, "5011"), family)
+        # the same subject from a ministry is read by the ministry's families
+        self.assertEqual(family_of("Κατανομή ποσού 3.200.000,00€ σε Δήμους για αφαλάτωση"), "desalination")
+        self.assertEqual(CATEGORY_OF_FAMILY["region_credit"], "investment_programmes")
+        self.assertIsNone(CATEGORY_OF_FAMILY["region_utility_payment"])  # a water bill is a sale, not a grant
+
+    def test_payment_order_purpose_payee_and_words(self):
+        from tinos.extract.grants import read_region
+        amounts, status, family = read_region(WATER_ORDER, "ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ", "region_payment")
+        self.assertEqual((status, family), ("read", "region_utility_payment"))
+        self.assertEqual((amounts[0].amount, amounts[0].validation), (1550, "words_and_figures"))
+        agreement = WATER_ORDER.replace("Υδρευση - άρδευση από 6/8/2020 εως 6/11/2020", "ΠΡΟΓΡΑΜΜΑΤΙΚΗ ΣΥΜΒΑΣΗ «ΕΦΑΡΜΟΓΗ»")
+        self.assertEqual(read_region(agreement, "ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ", "region_payment")[2], "region_agreement_payment")
+        wrong_words = WATER_ORDER.replace("δέκα πέντε Ευρώ", "δέκα έξι Ευρώ")
+        self.assertIsNone(read_region(wrong_words, "ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ", "region_payment")[0][0].validation)
+        other_payee = WATER_ORDER.replace("800302968", "090000000")
+        self.assertEqual(read_region(other_payee, "ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ", "region_payment")[:2], ([], "absent"))
+
+    def test_credit_words_figures_and_recipient(self):
+        from tinos.extract.grants import read_region
+        subject = "Έγκριση πίστωσης 13.094,40 € σε βάρος των πιστώσεων του έργου Δήμου Τήνου"
+        amounts, status, _ = read_region(CREDIT, subject, "region_credit")
+        self.assertEqual((status, amounts[0].amount, amounts[0].validation), ("read", 1309440, "words_and_figures"))
+        self.assertIn("800302968", amounts[0].detail)
+        # a figure quoted earlier in the preamble («ύψους 13.094,40 €») does not hide the words
+        wrong = CREDIT.replace("σαράντα λεπτών", "πενήντα λεπτών")
+        self.assertIsNone(read_region(wrong, subject, "region_credit")[0][0].validation)
+        elsewhere = CREDIT.replace("Δήμου Τήνου", "Δήμου Άνδρου").replace("Δήμο Τήνου", "Δήμο Άνδρου").replace(
+            "800302968", "999999999")
+        self.assertEqual(read_region(elsewhere, subject, "region_credit")[:2], ([], "absent"))

@@ -70,6 +70,23 @@ FAMILIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.compile(p)) 
     ("extraordinary", r"ΕΠΙΧΟΡΗΓ"),
 ))
 
+# The Region of South Aegean (5011) gives Tinos money two ways (probe and backfill 2026-09-26): credits
+# of its investment programme (ΣΑΕΠ/ΣΑΜΠ) for a project a Tinos body carries out, each tranche decided
+# twice, «Κατανομή ποσού X» then «Έγκριση πίστωσης X» («Διάθεση πίστωσης» from 2021), the second
+# counted; and payment orders titled only «ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ», found by the municipality's ΑΦΜ. A credit
+# for a project of the Region's own (its roads, its buildings) is not money to Tinos: `region_credit`
+# needs a subject naming a Tinos body or a decision found by the ΑΦΜ (curated_grants).
+REGION_UIDS = frozenset({"5011"})
+REGION_FAMILIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.compile(p)) for name, p in (
+    ("region_payment", r"^ΕΝΤΑΛΜΑ ΠΛΗΡΩΜΗΣ"),
+    ("region_credit", r"^(?:ΕΓΚΡΙΣΗ|ΔΙΑΘΕΣΗ) ΠΙΣΤΩΣΗΣ [\d.,]+ ?€ ΣΕ ΒΑΡΟΣ"),
+    ("region_allocation", r"^ΚΑΤΑΝΟΜΗ ΠΟΣΟΥ [\d.,]+ ?€ (?:ΓΙΑ|ΣΕ ΒΑΡΟΣ)"),
+    ("region_fine", r"ΠΡΟΣΤΙΜ|ΚΥΡΩΣΕ"),
+    ("region_agreement", r"ΠΡΟΓΡΑΜΜΑΤΙΚ|ΔΙΑΒΑΘΜΙΔΙΚ|" + _W + r"ΠΣ (?:ΠΝΑ|ΜΕΤΑΞΥ)" + _E),
+    ("programme", r"ΕΝΤΑΞ|ΕΝΤΑΓΜΕΝ|ΠΡΑΞΗΣ|ΠΡΟΣΚΛΗΣ|ΑΠΟΡΡΙΨ"),
+    ("region_licence", r"ΑΔΕΙ|ΥΠΑΓΩΓΗ|ΓΝΩΜΟΔΟΤ|ΠΕΡΙΒΑΛΛΟΝΤΙΚ|ΧΩΡΟΘΕΤΗΣ"),
+))
+
 # The revenue line (by name) where each family's money should arrive. None: listed, not
 # reconciled (approvals and ceilings, money to others, in kind). The chart moved several of these
 # lines between codes over the years, hence names, not codes (module docstring).
@@ -105,6 +122,17 @@ CATEGORY_OF_FAMILY: dict[str, str | None] = {
     "to_regions": None,
     "in_kind": None,
     "other": None,
+    # the Region: its investment credits land where the ministry's investment programmes do (1322 in
+    # 2018-2019, matched to the cent); the rest is listed, not reconciled
+    "region_credit": "investment_programmes",
+    "region_agreement_payment": "programme_agreements",  # 1213, 1326
+    "region_utility_payment": None,  # the Region's water bill: a sale by the municipality, not a grant
+    "region_payment": None,
+    "region_allocation": None,
+    "region_own_credit": None,
+    "region_fine": None,
+    "region_agreement": None,
+    "region_licence": None,
 }
 
 # Revenue lines of the year-end statement, by folded name (first match wins); ``kae`` narrows
@@ -123,13 +151,16 @@ REVENUE_CATEGORIES: tuple[tuple[str, re.Pattern[str]], ...] = tuple((name, re.co
     ("investment_programmes", r"ΘΗΣΕΑΣ|ΦΙΛΟΔΗΜΟΣ|ΕΙΔΙΚΑ ΠΡΟΓΡΑΜΜΑΤΑ ΠΡΟΓΡΑΜΜΑ|ΚΕΝΤΡΙΚΟΥΣ ΦΟΡΕΙΣ"),
     ("advertising_fee", r"^ΤΕΛΟΣ ΔΙΑΦΗΜΙΣΗΣ.*ΚΑΤΗΓΟΡΙΑΣ Δ"),  # 0715; 0462 is the municipality's own fee
     ("property_tax", r"^ΤΕΛΟΣ ΑΚΙΝΗΤΗΣ ΠΕΡΙΟΥΣΙΑΣ"),
+    ("programme_agreements", r"ΠΡΟΓΡΑΜΜΑΤΙΚΕΣ ΣΥΜΒΑΣΕΙΣ"),  # 1213 operating, 1326 investment
 ))
 # The state's operating grants to municipalities, by code: their names changed more than their codes.
 STATE_GRANT_KAE = ("1211", "1215", "1219")
 
 
-def family_of(subject: str | None) -> str:
+def family_of(subject: str | None, issuer: str | None = None) -> str:
     s = fold(subject)
+    if issuer in REGION_UIDS:
+        return next((name for name, pattern in REGION_FAMILIES if pattern.search(s)), "other")
     for name, pattern in FAMILIES:
         if pattern.search(s):
             return "kap_general" if name == "kap_general_monthly" else name
@@ -656,6 +687,71 @@ def _stated_lines(text: str) -> list[GrantAmount]:
 
 
 _BUDGET_YEAR = re.compile(r"(?:ΕΤΟΥΣ|ΕΤΟΣ|ΚΑΠ)\s+(20[12]\d)")
+
+
+# ---------------------------------------------------------------------------
+# The Region of South Aegean's documents
+# ---------------------------------------------------------------------------
+TINOS_AFMS = frozenset({"800302968"})  # the only Tinos body the Region's documents name by ΑΦΜ (2015-2025)
+# A payment order: «Δίνεται εντολή πληρωμής ευρώ: #15,50# ... (δέκα πέντε Ευρώ και πενήντα Λεπτά) ... στο
+# δικαιούχο ΔΗΜΟΣ ΤΗΝΟΥ ... ΑΦΜ: 800302968 ... Για: Υδρευση - άρδευση ... ΕΝΤΕΛΛΟΜΕΝΟ ΠΟΣΟ». Printed twice
+# (original and copy); the first print is read.
+_ORDER_AMOUNT = re.compile(rf"ΕΝΤΟΛΗ ΠΛΗΡΩΜΗΣ ΕΥΡΩ:\s*#\s*(?P<fig>{_AMT})\s*#.{{0,160}}?\((?P<words>[^()]{{3,200}})\)")
+_ORDER_PAYEE = re.compile(r"ΣΤΟ ΔΙΚΑΙΟΥΧΟ\s+(?P<name>.{3,120}?)\s+ΔΙΕΥΘΥΝΣΗ:.{0,240}?ΑΦΜ:\s*(?P<afm>\d{9})")
+_ORDER_PURPOSE = re.compile(r"ΓΙΑ:\s*(?P<purpose>.{3,240}?)\s+ΕΝΤΕΛΛΟΜΕΝΟ ΠΟΣΟ")
+_UTILITY = re.compile(r"ΥΔΡΕΥΣ|ΑΡΔΕΥΣ|ΑΔΡΕΥΣ|ΑΠΟΧΕΤΕΥΣ|ΥΔΡΟΜΕΤΡ|ΚΑΤΑΝΑΛΩΣΗ ΝΕΡΟΥ")
+# A credit: «Εγκρίνουμε (την ανάληψη) πίστωση(ς) ύψους ‹words› (‹figures› €) ... θα μεταβιβαστεί στο Δήμο
+# Τήνου, υπόλογο διαχειριστή ..., με Α.Φ.Μ. 800302968» (or to the regional development fund, the ΠΤΑ,
+# for a project of Δήμος Τήνου).
+# Tried at every anchor (a lookahead, so matches may overlap): «πίστωσης ύψους ‹words›», «την πίστωση των
+# ‹words›»; the words hold no digits, so a figure quoted earlier in the preamble cannot start a match.
+_CREDIT_AMOUNT = re.compile(rf"(?=(?:ΥΨΟΥΣ|ΠΟΣΟ\w*|ΠΙΣΤΩΣΗ\w*)\s+(?:ΤΩΝ\s+)?(?P<words>[^()#\d]{{3,300}}?)\s*\(\s*"
+                            rf"(?P<fig>{_AMT})\s*€?\s*\))")
+_TO_TINOS = re.compile(r"ΜΕΤΑΒΙΒΑΣΤΕΙ ΣΤΟ ΔΗΜΟ ΤΗΝΟΥ|ΑΦΜ\W*800302968|800302968")
+_TINOS_PROJECT = re.compile(r"ΔΗΜΟΥ ΤΗΝΟΥ|ΔΗΜΟ ΤΗΝΟΥ|ΔΗΜΟΣ ΤΗΝΟΥ")
+
+
+def read_region(text: str, subject: str | None, family: str) -> tuple[list[GrantAmount], str, str]:
+    """The amount a Region of South Aegean document gives a Tinos body: (amounts, status, family).
+
+    ``region_payment``: the payment order's amount, validated when its words equal its figures,
+    for a Tinos payee (by ΑΦΜ); its purpose line refines the family: a water bill the Region pays
+    the municipality is ``region_utility_payment`` (a sale, not a grant), a payment under a
+    programme agreement ``region_agreement_payment``. ``region_credit``: the amount the subject
+    states, validated when the text gives it in words and figures and names the municipality as
+    recipient or project owner. Other families are listed, not read.
+    """
+    flat = fold(" ".join(text.translate(_SYMBOLS).split()))
+    if family == "region_payment":
+        order = _ORDER_AMOUNT.search(flat)
+        payee = _ORDER_PAYEE.search(flat)
+        if not order or not payee:
+            return [], "not_found", family
+        if payee.group("afm") not in TINOS_AFMS:
+            return [], "absent", family
+        purpose = (_ORDER_PURPOSE.search(flat) or {"purpose": ""})["purpose"] if _ORDER_PURPOSE.search(flat) else ""
+        refined = ("region_utility_payment" if _UTILITY.search(purpose)
+                   else "region_agreement_payment" if "ΠΡΟΓΡΑΜΜΑΤΙΚ" in purpose else family)
+        fig, words = cents(order.group("fig")), words_to_cents(order.group("words"))
+        return [GrantAmount(fig, fig, "payment_order", "words_and_figures" if words == fig else None,
+                            f"payee ΑΦΜ {payee.group('afm')}, figures {fig / 100:.2f}, words "
+                            f"{words / 100 if words is not None else None}, for: {purpose[:120]}")], "read", refined
+    if family == "region_credit":
+        stated = [cents(a) for a in AMOUNT.findall(subject or "")]
+        if not stated:
+            return [], "not_found", family
+        target = stated[0]
+        spelled = [m for m in _CREDIT_AMOUNT.finditer(flat) if cents(m.group("fig")) == target]
+        to_tinos = bool(_TO_TINOS.search(flat))
+        if not (to_tinos or _TINOS_PROJECT.search(flat)):
+            return [], "absent", family
+        ok = any(words_to_cents(m.group("words")) == target for m in spelled)
+        return [GrantAmount(target, target, "credit", "words_and_figures" if ok else None,
+                            f"stated {target / 100:.2f} in the subject; words and figures "
+                            f"{'agree' if ok else 'not found'}; transferred to "
+                            f"{'Δήμος Τήνου (ΑΦΜ 800302968)' if to_tinos else 'the project account, a Δήμος Τήνου project'}")], \
+            "read", family
+    return [], "listed", family
 
 
 def budget_year(subject: str | None, issued: int) -> int:
