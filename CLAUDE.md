@@ -26,7 +26,7 @@ Phase 1 done: Diavgeia ingester (`tinos backfill`), full corpus in `data/raw`
 `releases/tinos.duckdb`, `tinos summary` -> `SUMMARY.md`). Read the
 docstring of `src/tinos/curated.py` before touching any money figure: it
 lists the flags (remittance, suspect, reversal, payroll kinds) and why.
-Phase 3 in progress (2026-09-25): ΚΗΜΔΗΣ ingester (`tinos khmdhs-backfill`,
+Phase 3 done (2026-09-25): ΚΗΜΔΗΣ ingester (`tinos khmdhs-backfill`,
 `tinos khmdhs-doctor`); 24,238 records (2017-2026, 8 bodies) in `data/raw/khmdhs`, curated as `procurement`
 and `procurement_party` (`src/tinos/curated_khmdhs.py`; PRIVACY.md Q6: no
 officials, emails or addresses). Act PDFs via `tinos fetch-doc` (ask before
@@ -45,6 +45,6 @@ redacted at ingestion). 558 Interior Ministry decisions (uids in `entities.yaml`
 `grantors`), 447 PDFs, amounts read and validated by `tinos.extract.grants` into
 `grant_decision` / `grant_line`; `v_grant_reconciliation` sets them against the
 revenue lines of the statements (FINDINGS F8). Subsidiaries' December statements
-parsed for five bodies (24). Next: the 11 monthly ΚΑΠ PDFs the index misses and the
-two port-authority x100 candidates of F7 (ask before downloading); the Region of
-South Aegean as the next grantor; monthly statements.
+parsed for five bodies (24). Next: the 11 monthly ΚΑΠ PDFs the index misses (ADAs
+in FINDINGS F8) and the two port-authority x100 candidates (F7), 13 PDFs, ask before
+downloading; the Region of South Aegean (5011) as the next grantor; monthly statements.
