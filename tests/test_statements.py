@@ -159,3 +159,45 @@ class RealDocument(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# The 2026 layout (new chart of accounts), cut down from the March 2026 statement ΨΝΟΧΩΗ6-Λ10: 3-digit services, 7-digit
+# codes (10 with a spending sub-account), titles wrapped over several lines, and one row whose wrapped title carries the
+# paid figure (22.400,37) above the warranted one (32.941,37).
+NEW_2026 = """\
+                  ΚΑΤΑΣΤΑΣΗ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛΟΓΙΣΜΟΥ ΕΣΟΔΩΝ ΕΩΣ 31/3/2026
+010.1310101       ΚΑΠ για την κάλυψη γενικών αναγκών                                            2.552.090,28         621.753,69            621.753,69
+025.1310108       ΚΑΠ για λοιπούς σκοπούς                                                         433.025,00                0,00                  0,00
+515.1390904       Έσοδα για την αποπληρωμή δανείων από το Ταμείο Παρακαταθηκών και Δανείων 305.444,24
+                                                                                           χρηματοδοτούμενων από τον
+                                                                                                                 0,00κρατικό προϋπολογισμό
+                                                                                                                                     0,00
+                                     ΓΕΝΙΚΟ ΣΥΝΟΛΟ:                                       3.290.559,52       621.753,69          621.753,69
+                 ΚΑΤΑΣΤΑΣΗ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛΟΓΙΣΜΟΥ ΔΑΠΑΝΩΝ ΕΩΣ 31/3/2026
+000.2250905       Εισοδηματικές ενισχύσεις οικογενειών με χαμηλά εισοδήματα                     10.000,00              0,00               0,00
+255.2130102001   Αμοιβές προσωπικού με σχέση εργασίας ιδιωτικού δικαίου ορισμένου χρόνου (ΙΔΟΧ)
+                                                                                              127.844,00
+                                                                                                ενιαίου μισθολογίου (συμπεριλαμβάνεται 22.400,37
+                                                                                                                  32.941,37            και το εποχικό
+                                     ΓΕΝΙΚΟ ΣΥΝΟΛΟ:                                        137.844,00        32.941,37          22.400,37
+"""
+
+
+class Layout2026(unittest.TestCase):
+    def test_new_chart_rows_services_and_column_order(self):
+        st = parse_statement(NEW_2026)
+        self.assertEqual((st.layout, st.period_end), ("2026", date(2026, 3, 31)))
+        by = {(ln.side, ln.service, ln.kae): ln for ln in st.lines}
+        kap = by[("revenue", "010", "1310101")]
+        self.assertEqual((kap.budgeted, kap.collected_or_paid, kap.description),
+                         (255209028, 62175369, "ΚΑΠ για την κάλυψη γενικών αναγκών"))
+        loans = by[("revenue", "515", "1390904")]
+        self.assertEqual((loans.budgeted, loans.assessed_or_warranted, loans.collected_or_paid), (30544424, 0, 0))
+        # the paid figure printed above the warranted one is still the paid column
+        pay = by[("spending", "255", "2130102001")]
+        self.assertEqual((pay.budgeted, pay.assessed_or_warranted, pay.collected_or_paid), (12784400, 3294137, 2240037))
+
+    def test_both_charts_in_one_statement_is_refused(self):
+        mixed = NEW_2026.replace("000.2250905 ", "6031        ", 1)
+        with self.assertRaises(StatementError):
+            parse_statement(mixed)

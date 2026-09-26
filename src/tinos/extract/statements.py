@@ -16,6 +16,14 @@ Input is the text ``pdftotext -layout`` makes of the stored PDF. Layouts seen:
   ΚΑΕ (``00-6031``; the reserve 9111 has no service); a row's amounts may
   continue on its description line;
   one «ΓΕΝΙΚΟ ΣΥΝΟΛΟ:» per side.
+- ``2026`` (January 2026 on): the same software and page, with the new chart of
+  accounts (the state's economic classification): every row is a 3-digit service,
+  a dot and a 7-digit code, spending codes with a 3-digit sub-account
+  («010.1310101 ΚΑΠ για την κάλυψη γενικών αναγκών», «010.2120101001»). The
+  service is kept in ``service`` and the code as printed in ``kae``. A wrapped
+  title can carry a row's last column above its middle one (the paid figure glued
+  to the title, the warranted figure on the next line), so a row's three amounts
+  are ordered by the column where each ends, not by reading order.
 - ``apologistika`` (February to June 2015): «ΑΠΟΛΟΓΙΣΤΙΚΑ ΣΤΟΙΧΕΙΑ», «Περίοδος:
   <μήνας> <έτος>», cumulative like ``standard``, but with rows at every level
   of the chart (0, 01, 011, 0111, sub-accounts 0111.0001) and spending listed
@@ -55,6 +63,9 @@ _NEW_SECTION = re.compile(r"ΚΑΤΑΣΤΑΣΗ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛ
 # reserve (9111) has no service prefix.
 _NEW_REVENUE = re.compile(r"^(\d{4})\s")
 _NEW_SPENDING = re.compile(r"^(?:(\d{2})-)?(\d{4})\s")
+# The chart of accounts of 2026 (the state's economic classification): a 3-digit service, a dot and a 7-digit code,
+# spending codes with 3 more digits for the sub-account: «010.1310101», «010.2120101001».
+_CHART_2026_ROW = re.compile(r"^(\d{3})\.(\d{7}(?:\d{3})?)\s")
 
 
 class StatementError(Exception):
@@ -64,8 +75,8 @@ class StatementError(Exception):
 @dataclass(frozen=True)
 class Line:
     side: str  # 'revenue' | 'spending'
-    service: str | None  # service prefix where the layout has one ('00' ...)
-    kae: str  # 4-digit ΚΑΕ
+    service: str | None  # service prefix where the layout has one ('00' ...; from 2026 '010' ...)
+    kae: str  # 4-digit ΚΑΕ; from 2026 the new chart's 7-digit code (10 with a spending sub-account)
     budgeted: int  # cents: Προϋπολογισθέντα / τελικός προϋπολογισμός
     assessed_or_warranted: int  # cents: Βεβαιωθέντα (revenue) / Ενταλματοποιηθέντα (spending)
     collected_or_paid: int  # cents: Εισπραχθέντα (revenue) / Πληρωθέντα (spending)
@@ -178,10 +189,11 @@ def _parse_apologistika(text: str) -> Statement:
 def _parse_2025(text: str) -> Statement:
     side: str | None = None
     period_end: date | None = None
-    records: list[tuple[str, str | None, str, list[int], list[str]]] = []
-    current: list[int] | None = None
+    records: list[tuple[str, str | None, str, list[tuple[int, int]], list[str], bool]] = []
+    current: list[tuple[int, int]] | None = None  # (column where the amount ends, cents)
     names: list[str] = []
     totals: dict[str, tuple[int, int, int]] = {}
+    charts: set[str] = set()
     for raw in text.splitlines():
         if s := _NEW_SECTION.search(raw):
             side = "revenue" if s.group(1) == "ΕΣΟΔΩΝ" else "spending"
@@ -200,23 +212,39 @@ def _parse_2025(text: str) -> Statement:
             current = None
             continue
         start = (_NEW_REVENUE if side == "revenue" else _NEW_SPENDING).match(raw)
-        if start:
-            service, kae = (None, start.group(1)) if side == "revenue" else (start.group(1), start.group(2))
+        new = None if start else _CHART_2026_ROW.match(raw)
+        offset = 0
+        if start or new:
+            if new:
+                (service, kae), start = new.groups(), new
+                charts.add("2026")
+            else:
+                service, kae = (None, start.group(1)) if side == "revenue" else (start.group(1), start.group(2))
+                charts.add("2025")
             current, names = [], []
-            records.append((side, service, kae, current, names))
-            raw = raw[start.end():]
+            records.append((side, service, kae, current, names, bool(new)))
+            offset = start.end()
         if current is not None:
             # The name is the first text on the row, or on the next line when the row has none;
             # text after all three amounts (page footers, headers) is not part of it.
-            text = " ".join(AMOUNT.sub(" ", raw).split())
+            rest = raw[offset:]
+            text = " ".join(AMOUNT.sub(" ", rest).split())
             if text and not names and len(current) < 3:
                 names.append(text)
-            current.extend(cents(a) for a in AMOUNT.findall(raw))
+            current.extend((offset + m.end(), cents(m.group())) for m in AMOUNT.finditer(rest))
     lines = []
-    for rside, service, kae, amounts, name in records:
-        if len(amounts) != 3:
-            raise StatementError(f"{rside} {service or ''}-{kae}: {len(amounts)} amounts, expected 3")
+    for rside, service, kae, found, name, chart_2026 in records:
+        if len(found) != 3:
+            raise StatementError(f"{rside} {service or ''}-{kae}: {len(found)} amounts, expected 3")
+        # 2026: a wrapped title can carry the row's last column above its middle one («... ορισμένου χρόνου598,56»
+        # over «897,84»), so the columns are read left to right by where each amount ends. Not in the 2025 chart,
+        # whose wrapped amounts run into the title text at positions that say nothing of their column
+        # («παρ. 5 του άρ.4.329.159,47»); there reading order is the column order.
+        ends = {e for e, _ in found}
+        amounts = [v for _, v in (sorted(found) if chart_2026 and len(ends) == 3 else found)]
         lines.append(Line(rside, service, kae, *amounts, name[0] if name else ""))
     if period_end is None:
         raise StatementError("no section header with a period end")
-    return Statement("2025", period_end, tuple(lines), totals)
+    if len(charts) > 1:
+        raise StatementError("rows of both charts of accounts in one statement")
+    return Statement("2026" if charts == {"2026"} else "2025", period_end, tuple(lines), totals)
