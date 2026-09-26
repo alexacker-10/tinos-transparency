@@ -66,6 +66,11 @@ class Standard(unittest.TestCase):
         self.assertEqual(st.totals["spending"][2], 151685834)
         self.assertEqual(st.lines[0].description, "Μισθώματα από αστικά ακίνητα")
 
+    def test_symbols_standing_for_greek_letters(self):
+        # «∆» (increment) and «µ» (micro) as the port authority's 2016-2017 statements print them.
+        text = STANDARD.replace("Προϋπολογισμού", "Προϋπολογισ\u00b5ού").replace("Δεκέμβριος", "\u2206εκέ\u00b5βριος")
+        self.assertEqual(parse_statement(text).period_end, date(2024, 12, 31))
+
     def test_totals_that_do_not_add_up_are_refused(self):
         with self.assertRaises(StatementError):
             parse_statement(STANDARD.replace("1.516.858,34", "1.516.858,35"))
@@ -102,6 +107,7 @@ class Refusals(unittest.TestCase):
     def test_statement_acts_are_recognised_through_look_alikes(self):
         # Latin E and O among the Greek capitals, as clerks sometimes type them.
         self.assertTrue(is_execution_statement("Β.3", "ΔΗΜΟΣΙΕΥΣΗ ΣΤΟΙΧΕΙΩΝ EΚΤΕΛΕΣΗΣ ΠΡOΫΠΟΛΟΓΙΣΜΟΥ Μ.ΔΕΚΕΜΒΡΙΟΥ"))
+        self.assertTrue(is_execution_statement("Β.3", "ΣΤΟΙΧΕΙΑ ΕΚΤΕΛΕΣΗΣ Π/Υ ΔΙΙΑΤ ΤΗΝΟΥ ΜΗΝΟΣ ΔΕΚΕΜΒΡΙΟΥ"))
         self.assertFalse(is_execution_statement("Β.3", "ΙΣΟΛΟΓΙΣΜΟΣ ΧΡΗΣΗΣ 2021"))
         self.assertFalse(is_execution_statement("Β.2.2", "ΔΗΜΟΣΙΕΥΣΗ ΣΤΟΙΧΕΙΩΝ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛΟΓΙΣΜΟΥ"))
 

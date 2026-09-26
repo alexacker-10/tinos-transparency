@@ -34,6 +34,16 @@ works. Most of those payments did not disappear: they are recorded in ΚΗΜΔΗ
 national procurement register, instead of Diavgeia (66 to 87% of each year's gap
 since 2019). Treat any payment total from Diavgeia alone, from 2019 on, as a floor.
 
+## The subsidiaries' own reports
+
+We now read the year-end reports of five of the municipality's bodies: the port fund (2016-2025),
+the Tsoklis museum, the Panormos cultural centre, the Gyrlas foundation and the municipal legal
+entity (a few years each). The port fund's payment decisions on Diavgeia show nearly everything it
+paid until 2021 and about a fifth since 2022, the same drop the municipality shows from 2019. The
+smaller bodies rarely record which budget line a payment belongs to, so only their yearly totals can
+be compared. Two port-fund payments look like amounts typed in cents (100 times too large); they
+are listed in FINDINGS.md F7 and not yet checked against their documents.
+
 ## Direct awards vanished from Diavgeia in 2021, not from reality
 
 The municipality published about 350 direct-award decisions a year until 2020

@@ -562,12 +562,26 @@ excess_in_diavgeia > 20000` (20 rows left): 2022 ΚΑΕ 8211 is 131,814 over wit
 against 9,718 paid; a 2018 payment coded under a revenue ΚΑΕ (0718, 50,000.00); Β.2.2 lines with
 no parseable ΚΑΕ (63-81k a year in 2015, 2016 and 2019).
 
-The subsidiaries have no parsed statements yet. The port authority's two largest supplier
-lines stood out anyway, round sums 24-37 times its 99th-percentile line (19,326) that made
+**Subsidiaries' statements (added 2026-09-26).** 24 December statements of five subsidiaries were
+fetched with the owner's approval and parse to the cent: the port authority 2016-2025 (its 2016-2017
+statements print `∆` and `µ` for Δ and μ, now normalised), the Tsoklis museum 2019-2021 and 2023, the
+Panormos cultural centre 2016-2020 and 2023, 53404 2015 and 2022, the Gyrlas foundation 2017 and 2025
+(its subjects abbreviate the budget «Π/Υ», which hid them from the statement filter)
+(`v_payment_coverage` and `v_kae_reconciliation` cover them unchanged, being keyed by entity). The
+port authority's payment decisions carry 90-104% of what it paid in 2016-2021, then 21-22% in 2022,
+2023 and 2025 (83% in 2024): the municipality's pattern of F6, three years later. The smaller bodies'
+payment lines mostly carry no ΚΑΕ, so only their totals compare. Two port-authority lines explain
+their ΚΑΕ's excess over the statement exactly, the x100 signature above; **candidates, PDFs not yet
+fetched**: Ψ4ΡΕΟΡ07-ΩΣΝ (2017-06-29, withholdings to ΙΚΑ, 00.8231, 115,324.00; excess 114,170.76 =
+115,324.00 − 1,153.24, against a median line of 286.89) and Ψ07ΘΟΡ07-ΡΙ8 (2019-12-12, telephone
+bill, 00.6222, 58,800.00; excess 58,212.00 = 58,800.00 − 588.00; the whole year's 6222 was 3,186.00).
+ΨΜ32ΟΡ07-09Τ (2020, 115,996.48 to the municipality under 6731, which the statement does not use)
+looks like a coding difference, not an amount error.
+
+Before the statements were parsed, the port authority's two largest supplier lines stood out, round sums 24-37 times its 99th-percentile line (19,326) that made
 its only two spike years, and their PDFs (`data/raw/diavgeia/docs/50256/`) confirm both as
 x100: 61ΟΛΟΡ07-ΕΡ4 (2019, 30.7333.0004) 708,102.00 for 7,081.02, and ΩΤΣΜΟΡ07-ΥΛ7 (2016,
-20.6117.0010) 466,638.00 for 4,666.38. Flagged; together 1.16M overstated. Its year-end
-statements would check the rest.
+20.6117.0010) 466,638.00 for 4,666.38. Flagged; together 1.16M overstated.
 
 Corpus-wide, 37 groups of payment lines share entity, date, ΚΑΕ, amount and payee under two
 or more ADAs (amount ≥ 1,000; 0.49M counted more than once if all are duplicates). Some are

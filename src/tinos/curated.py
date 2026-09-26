@@ -671,9 +671,10 @@ _LOOKALIKE = str.maketrans("ABEHIKMNOPTXYZ", "ΑΒΕΗΙΚΜΝΟΡΤΧΥΖ")
 
 
 def is_execution_statement(type_id: str | None, subject: str | None) -> bool:
-    """Β.3 «ΔΗΜΟΣΙΕΥΣΗ ΣΤΟΙΧΕΙΩΝ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛΟΓΙΣΜΟΥ ...», Latin look-alikes folded."""
+    """Β.3 «ΔΗΜΟΣΙΕΥΣΗ ΣΤΟΙΧΕΙΩΝ ΕΚΤΕΛΕΣΗΣ ΠΡΟΫΠΟΛΟΓΙΣΜΟΥ ...», Latin look-alikes folded; the budget may
+    be abbreviated «Π/Υ» (the Gyrlas foundation's statements)."""
     s = strip_accents(subject).upper().translate(_LOOKALIKE)
-    return type_id == "Β.3" and "ΕΚΤΕΛΕΣ" in s and "ΠΡΟΥΠΟΛΟΓΙΣΜ" in s
+    return type_id == "Β.3" and "ΕΚΤΕΛΕΣ" in s and ("ΠΡΟΥΠΟΛΟΓΙΣΜ" in s or "Π/Υ" in s)
 
 
 def pdftotext_version() -> str | None:

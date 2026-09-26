@@ -82,7 +82,13 @@ def cents(s: str) -> int:
     return -v if neg else v
 
 
+# Symbols some PDFs print for Greek letters: ∆ (U+2206) for Δ, µ (micro, U+00B5) for μ, Ω (ohm,
+# U+2126) for Ω. The port authority's 2016-2017 statements write «Περίοδος: ∆εκέµβριος 2017».
+_SYMBOLS = str.maketrans({"\u2206": "Δ", "\u00b5": "μ", "\u2126": "Ω"})
+
+
 def parse_statement(text: str) -> Statement:
+    text = text.translate(_SYMBOLS)
     if "Στοιχεία Εκτέλεσης Προϋπολογισμού" in text and _STD_PERIOD.search(text):
         st = _parse_standard(text)
     elif _NEW_SECTION.search(text):
