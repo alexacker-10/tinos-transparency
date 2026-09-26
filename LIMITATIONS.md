@@ -34,6 +34,32 @@ works. Most of those payments did not disappear: they are recorded in ΚΗΜΔΗ
 national procurement register, instead of Diavgeia (66 to 87% of each year's gap
 since 2019). Treat any payment total from Diavgeia alone, from 2019 on, as a floor.
 
+## Money given to Tinos: what we can and cannot see
+
+The Interior Ministry sends the municipality most of its outside money: a monthly share of the
+central funds for municipalities (ΚΑΠ), a quarterly investment share, money for schools, fire
+protection, desalination and other set purposes, and occasional extra grants. We find these
+decisions by searching Diavgeia's full text for «ΤΗΝΟΥ», read the amount for Tinos from each
+decision's PDF, and count it only if the document confirms it: its table must add up to its own
+total, or the letter must state the amount, or spell it out in words to the same figure.
+
+- **What we found.** At least 26.5 million euros from the ministry in 2015-2025, from 1.5 million
+  in 2015 to 4.1 million in 2025. Where the municipality's own year-end report has a line for the
+  same money, the two agree to the cent in most years. In some years the municipality booked
+  exactly 0.15% less than the ministry allocated; we do not know which charge that is.
+- **What we miss.** The search cannot find a decision whose text was never indexed. That happens:
+  before November 2015 only titles are searchable, and eleven monthly instalments of 2017, 2021 and
+  2022 are searchable by title only, so our totals for those years are too low. We list them; we
+  have not fetched them yet. «At least» means exactly that.
+- **One ministry among several.** Money from other ministries, the Region of South Aegean and EU
+  programmes reaches the same revenue lines, so for investment money and extra grants our figure is
+  the Interior Ministry's share, not the whole. The property levy (ΤΑΠ) is mostly collected through
+  electricity bills, so the ministry's allocation is only a small part of what the municipality
+  receives from it.
+- **Two decisions were published twice** (2018, 2022). We count each once.
+- **Allocated is not the same as received.** An allocation decided in late December is sometimes
+  booked the next year (29,762.12 euros decided on 28 December 2018 appear in 2019).
+
 ## The subsidiaries' own reports
 
 We now read the year-end reports of five of the municipality's bodies: the port fund (2016-2025),

@@ -73,16 +73,11 @@ cheap.
 Read-only checks by a research pass; **re-checked** marks what was confirmed again before
 writing it here. Ranked by what they would add.
 
-- **Diavgeia full-text search ("luminapi")** — `https://opendata.diavgeia.gov.gr/luminapi/api/search`
-  with `q="ΤΗΝΟΥ"` and `fq=organizationUid:"<issuer>"`, `fq=issueDate:[DT(..) TO DT(..)]`. No key,
-  JSON, 100 results a page. **Re-checked**: Interior Ministry (uid 100054492) acts naming ΤΗΝΟΥ,
-  1-10 Nov 2024, returns exactly 2 (ΡΟ0946ΜΤΛ6-ΣΚ8, 9ΩΖΥ46ΜΤΛ6-ΡΩΗ); no `info.query` echo, so
-  any use must be checked by counts. The route to money *given to* Tinos (ΚΑΠ, «Φιλόδημος ΙΙ»,
-  grants): decisions of other issuers whose annexes list the municipality (the pass found 64
-  Interior Ministry acts naming Tinos in 2024; ΡΟ0946ΜΤΛ6-ΣΚ8's annex gives ΤΗΝΟΥ 236,601.93).
-  Amounts sit in PDF annexes; results also hit acts about private persons, so whitelist issuers
-  and subjects. The revenue side of the execution statements (`budget_line`, side `revenue`)
-  already gives the totals by category to reconcile against.
+- **Diavgeia full-text search ("luminapi")** — **ingested 2026-09-26** for the Interior Ministry
+  (`tinos fulltext-backfill`; contract in FINDINGS.md "Diavgeia full-text search", results in F8,
+  privacy rule PRIVACY.md Q7). The 2024 re-check here (64 ministry acts naming Tinos;
+  ΡΟ0946ΜΤΛ6-ΣΚ8 gives ΤΗΝΟΥ 236,601.93) holds: the backfill found the same 64 and read the same
+  figure from the PDF. Next grantor: the Region of South Aegean (5011), 708 acts naming ΤΗΝΟΥ in 2024.
 - **Local-government indicators, Interior Ministry** — `https://deiktesota.gov.gr/reports/1008/view/`,
   Power BI, no export, reuse with attribution. 2024 row for Tinos (reported): financial
   independence 28.33%, direct awards 98.54% of contracts (consistent with ΚΗΜΔΗΣ: 358 of 364

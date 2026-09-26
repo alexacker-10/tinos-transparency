@@ -12,6 +12,7 @@ Audience: residents, local journalists, councillors. Everything published must b
 
 - Diavgeia (`diavgeia.gov.gr/opendata`): decisions of all 11 entities in `entities.yaml`. Primary source for payments (Β.2.2), commitments (Β.1.3), awards to 2020 (Δ.1/Δ.2.2), budgets (Β.1.1) and monthly execution statements (Β.3).
 - ΚΗΜΔΗΣ (`cerpp.eprocurement.gov.gr/khmdhs-opendata`): procurement register, same org uid, CC BY 4.0. Primary source for awards from 2021; contract rows carry `diavgeiaADA`.
+- Diavgeia full-text search (`opendata.diavgeia.gov.gr/luminapi`): other bodies' decisions about Tinos, i.e. money given to it (grants and allocations), read from the decisions' PDFs. No query echo: proved by counts. Hits about private people are redacted at ingestion (PRIVACY.md Q7).
 - Council video: YouTube `@dimostinouwebtv`, 205 sessions / 472 h.
 - Municipal sites: `dimostinou.gr` (WordPress, wp-json open), `dimostinou.eu` (legacy Blogger, HTTP only).
 - Local media (tinosnews.gr, tinostoday.gr): link and cite only.
@@ -21,7 +22,7 @@ Audience: residents, local journalists, councillors. Everything published must b
 Layers, each derived from the one below and never hand-edited:
 
 1. `data/raw/` — exact bytes fetched, append-only, content-hashed, with `manifests/ingest_log.jsonl` recording every call and its echoed query.
-2. `data/curated/*.parquet` — pure functions of raw. Tables: `act`, `payment` (one row per Β.2.2 sponsor line), `commitment` (per ΚΑΕ line), `award` (per awardee), `counterparty` (per ΑΦΜ), `entity`. Every row carries `source_ada`, `source_sha256`, `derived_at`, `pipeline_version`.
+2. `data/curated/*.parquet` — pure functions of raw. Tables: `act`, `payment` (one row per Β.2.2 sponsor line), `commitment` (per ΚΑΕ line), `award` (per awardee), `counterparty` (per ΑΦΜ), `entity`, `budget_line` (execution statements), `procurement`, `procurement_party` (ΚΗΜΔΗΣ), `grant_decision`, `grant_line` (money given to Tinos, validated against each PDF). Every row carries `source_ada`, `source_sha256`, `derived_at`, `pipeline_version`.
 3. `releases/tinos.duckdb` — the curated tables plus `v_*` views that apply status, suspect and reversal filters.
 4. `SUMMARY.md` and the site — generated only; nothing typed by hand except reference rows that cite an ADA.
 5. `data/manual/` — the only human input: documented corrections (`amount_review.yaml`), each citing the document and its hash.

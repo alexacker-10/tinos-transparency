@@ -38,5 +38,13 @@ double-posted amounts), `v_payment_combined` and `v_supplier_year_combined`
 ΚΗΜΔΗΣ, FINDINGS F6/F3). Verified amount errors live in
 `data/manual/amount_review.yaml` (`mismatch` by line, `duplicate`). Tests:
 `.venv/bin/python -m unittest discover -s tests`.
-Next: statements for the subsidiaries (port authority suspects in F7);
-monthly statements; the income side (grants to the municipality).
+Phase 4 (2026-09-26): money given TO Tinos. Diavgeia full-text search
+(`tinos fulltext-backfill`, `tinos fulltext-doctor`, `tinos fulltext-status`; no
+query echo: every window is proved by counts; PRIVACY.md Q7: hits about people are
+redacted at ingestion). 558 Interior Ministry decisions (uids in `entities.yaml`
+`grantors`), 447 PDFs, amounts read and validated by `tinos.extract.grants` into
+`grant_decision` / `grant_line`; `v_grant_reconciliation` sets them against the
+revenue lines of the statements (FINDINGS F8). Subsidiaries' December statements
+parsed for five bodies (24). Next: the 11 monthly ΚΑΠ PDFs the index misses and the
+two port-authority x100 candidates of F7 (ask before downloading); the Region of
+South Aegean as the next grantor; monthly statements.

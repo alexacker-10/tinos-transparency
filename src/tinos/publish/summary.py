@@ -333,6 +333,107 @@ def write_summary(settings: Settings) -> Path:
           "from Diavgeia by design.")
         w("")
 
+    # ---- money given to Tinos: Interior Ministry allocations, against the revenue side
+    grants = q("""SELECT year, sum(n_decisions),
+                         sum(allocated) FILTER (WHERE category = 'kap_general'),
+                         sum(allocated) FILTER (WHERE category = 'kap_investment'),
+                         sum(allocated) FILTER (WHERE category IN ('kap_schools', 'school_rents', 'school_repairs', 'school_cleaners')),
+                         sum(allocated) FILTER (WHERE category IN ('fire_protection', 'home_help', 'kap_other', 'welfare')),
+                         sum(allocated) FILTER (WHERE category = 'state_grants'),
+                         sum(allocated) FILTER (WHERE category = 'investment_programmes'),
+                         sum(allocated) FILTER (WHERE category IN ('advertising_fee', 'property_tax')),
+                         sum(allocated)
+                  FROM v_grant_year WHERE year BETWEEN 2015 AND 2025 GROUP BY 1 ORDER BY 1""")
+    if grants:
+        counts = dict(q("SELECT read_status, count(*) FROM grant_decision GROUP BY 1"))
+        n_lines = q("""SELECT count(*), count(*) FILTER (WHERE validation IS NOT NULL) FROM grant_line
+                       WHERE category IS NOT NULL AND status = 'PUBLISHED' AND duplicate_of IS NULL""")[0]
+        w("## Money given to Tinos by the Interior Ministry, 2015-2025")
+        w("")
+        w(f"Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (and, for 2015, whose annexes are not "
+          f"indexed, for «ΑΥΤΟΤΕΛΕΙΣ»): {sum(counts.values()):,} decisions kept, {counts.get('read', 0):,} with an "
+          f"amount for Δήμος Τήνου read from their PDF, {counts.get('absent', 0):,} whose validated table shows Tinos "
+          f"was not a recipient. {n_lines[1]:,} of {n_lines[0]:,} amounts are validated against the document itself: "
+          "the table's column sums its own total line, or the letter states the amount, or spells it in words. "
+          "Only validated amounts are counted below, each once (two decisions posted twice are counted once). "
+          "Year = the year the allocation is for.")
+        w("")
+        w(_table(["Year", "Decisions", "ΚΑΠ general €", "ΚΑΠ investment €", "Schools €", "Other targeted €",
+                  "State grants €", "Investment programmes €", "Fees collected centrally €", "Total €"],
+                 [[y, n, _eur(a), _eur(b), _eur(c), _eur(d), _eur(e), _eur(f), _eur(g), _eur(t)]
+                  for y, n, a, b, c, d, e, f, g, t in grants], 1))
+        w("")
+        labels = {
+            "kap_general": "ΚΑΠ, general needs (0611)",
+            "kap_investment": "ΚΑΠ, investment «ΣΑΤΑ» (1311, 0612 from 2023)",
+            "kap_schools": "ΚΑΠ, schools' running costs (0614, 4311, 0616)",
+            "school_rents": "ΚΑΠ, school rents (0612 to 2021)",
+            "school_repairs": "School repairs (1312, 0615 from 2023)",
+            "fire_protection": "Fire protection (1214, 0614 from 2023)",
+            "home_help": "«Βοήθεια στο Σπίτι» (0624)",
+            "advertising_fee": "Advertising fee, category Δ (0715)",
+            "kap_other": "ΚΑΠ, other purposes (0619)",
+            "school_cleaners": "School cleaners' pay (0621 from 2023)",
+            "state_grants": "State grants (1211, 1215, 1219)",
+            "investment_programmes": "Investment programmes (1314, 1315, 1322)",
+            "property_tax": "Property levy ΤΑΠ, the ministry's share (0441)",
+            "welfare": "Welfare benefits (0621 in 2015)",
+        }
+        rec = q("""SELECT category, year, allocated, assessed FROM v_grant_reconciliation
+                   WHERE year BETWEEN 2015 AND 2025 AND category IS NOT NULL""")
+        cells: dict[str, dict[int, str]] = {}
+        for cat, year, alloc, booked in rec:
+            if not alloc and not booked:
+                continue
+            diff = (alloc or 0) - (booked or 0)
+            if abs(diff) < 0.005:
+                cell = "="
+            elif alloc and booked and abs(diff / alloc - 0.0015) < 0.00002:
+                cell = "≈ 0.15%"
+            else:
+                cell = f"{diff:+,.0f}"
+            cells.setdefault(cat, {})[year] = cell
+        years = list(range(2015, 2026))
+        w("**Against the municipality's own books.** Each cell is allocated minus booked for that revenue line in the "
+          "year-end statement (`v_grant_reconciliation`): «=» to the cent, «≈ 0.15%» booked exactly 0.15% less than "
+          "allocated, otherwise the difference in euros (positive: allocated but not booked there).")
+        w("")
+        w(_table(["Revenue line"] + [str(y) for y in years],
+                 [[labels.get(cat, cat)] + [cells[cat].get(y, "") for y in years]
+                  for cat in labels if cat in cells], 1))
+        w("")
+        w("Where the two sources meet line for line they agree to the cent, or differ by exactly 0.15%: school "
+          "repairs and fire protection in every year whose decision was found, the advertising fee in 2016 and "
+          "2018-2025, «Βοήθεια στο Σπίτι» 2023-2025, the general ΚΑΠ in 2015-2016, 2020 and 2023-2024 (2025 within "
+          "25 €). The general ΚΑΠ gaps of 2017, 2021 and 2022 are monthly instalments that the search index holds by "
+          "subject only, so a search for ΤΗΝΟΥ cannot find them (11 decisions, FINDINGS.md F8). 2018 and 2019 are one "
+          "supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy "
+          "(ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 "
+          "by construction; the investment-programme and state-grant lines also receive money from other ministries "
+          "and the EU. Allocations and booked revenue are two views of the same transfers: compare them, never add "
+          "them.")
+        w("")
+
+    # ---- the subsidiaries' own statements
+    # Totals, not per ΚΑΕ group: the smaller bodies' payment lines mostly carry no ΚΑΕ.
+    sub = q("""WITH s AS (SELECT entity, year, sum(paid_per_statement) AS paid FROM v_payment_coverage
+                          WHERE entity <> '6296' GROUP BY 1, 2),
+                    p AS (SELECT entity, year, sum(amount) AS pub FROM payment
+                          WHERE act_status = 'PUBLISHED' AND NOT amount_suspect AND amount IS NOT NULL GROUP BY 1, 2)
+               SELECT s.entity, s.year, s.paid, coalesce(p.pub, 0) FROM s LEFT JOIN p USING (entity, year)
+               ORDER BY 1, 2""")
+    if sub:
+        w("## How much of what the subsidiaries paid Diavgeia shows")
+        w("")
+        w(_table(["Entity", "Name", "Year", "Paid, per the year-end statement €", "With a Diavgeia payment line €", "Share"],
+                 [[e, names.get(e, ""), y, _eur(s), _eur(d), f"{d / s:.0%}" if s else ""] for e, y, s, d in sub], 3))
+        w("")
+        w("Only the December statements that parse to the cent are used, one per body and year where one was "
+          "found. Every payment line with an amount counts, with or without a ΚΑΕ, so a share above 100% can also "
+          "be a payment of the previous year's bills; the ΚΑΕ-by-ΚΑΕ check is `v_kae_reconciliation` "
+          "(FINDINGS.md F7, where two port-authority lines stand out as probable x100 entries).")
+        w("")
+
     # ---- method
     w("## Method")
     w("")

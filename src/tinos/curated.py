@@ -25,6 +25,12 @@ procurement, procurement_party
              and the contractors and payees they name; see
              ``tinos.curated_khmdhs`` (PRIVACY.md Q6: no officials' names or
              emails, no addresses; natural persons masked as here).
+grant_decision, grant_line
+             other bodies' decisions giving money to Tinos, found by
+             full-text search, and the amounts their PDFs give Δήμος Τήνου,
+             each with how it was validated; see ``tinos.curated_grants``.
+             ``budget_line.grant_category`` sorts revenue lines into the same
+             categories (``tinos.extract.grants.revenue_category``).
 
 DO NOT SUM ACROSS TABLES. ``payment`` (money that left the account),
 ``commitment`` (budget reserved) and ``award`` (contract value decided)
@@ -138,7 +144,8 @@ import pyarrow.parquet as pq
 from tinos import __version__
 from tinos.config import Settings, load_registry
 
-CURATED_SCHEMA_VERSION = 4  # 2: budget_line; 3: procurement, procurement_party; 4: budget_line.description
+CURATED_SCHEMA_VERSION = 5  # 2: budget_line; 3: procurement, procurement_party; 4: budget_line.description;
+#                              5: grant_decision, grant_line, budget_line.grant_category
 PIPELINE_VERSION = f"{__version__}+curated{CURATED_SCHEMA_VERSION}"
 ATHENS = ZoneInfo("Europe/Athens")
 UTC = timezone.utc
@@ -695,6 +702,7 @@ def budget_rows(raw_dir: Path, statements: dict[str, tuple[str, date | None]],
     ignored. Returns the rows and {ADA: reason} for statements refused by the
     parser (unsupported layout, or columns that do not sum to the document).
     """
+    from tinos.extract.grants import revenue_category
     from tinos.extract.statements import StatementError, parse_statement
 
     rows: list[dict[str, Any]] = []
@@ -721,6 +729,7 @@ def budget_rows(raw_dir: Path, statements: dict[str, tuple[str, date | None]],
                 "period_month": st.period_end.month, "is_year_end": year_end, "layout": st.layout,
                 "side": ln.side, "service": ln.service, "kae": ln.kae, "kae_group": ln.kae[:2],
                 "description": ln.description,
+                "grant_category": revenue_category(ln.kae, ln.description) if ln.side == "revenue" else None,
                 "budgeted": ln.budgeted / 100, "assessed_or_warranted": ln.assessed_or_warranted / 100,
                 "collected_or_paid": ln.collected_or_paid / 100,
                 "source_ada": ada, "source_sha256": sha, **stamp,
@@ -803,7 +812,8 @@ SCHEMAS: dict[str, pa.Schema] = {
         pa.field("statement_ada", S()), pa.field("entity", S()), pa.field("statement_date", pa.date32()),
         pa.field("period_end", pa.date32()), pa.field("period_year", pa.int32()), pa.field("period_month", pa.int32()),
         pa.field("is_year_end", pa.bool_()), pa.field("layout", S()), pa.field("side", S()), pa.field("service", S()),
-        pa.field("kae", S()), pa.field("kae_group", S()), pa.field("description", S()), pa.field("budgeted", pa.float64()),
+        pa.field("kae", S()), pa.field("kae_group", S()), pa.field("description", S()), pa.field("grant_category", S()),
+        pa.field("budgeted", pa.float64()),
         pa.field("assessed_or_warranted", pa.float64()), pa.field("collected_or_paid", pa.float64()),
         pa.field("source_ada", S()), pa.field("source_sha256", S()), *_stamp_fields(),
     ]),
@@ -816,6 +826,24 @@ SCHEMAS: dict[str, pa.Schema] = {
         pa.field("contract_refs", L(S())), pa.field("auction_refs", L(S())), pa.field("notice_refs", L(S())),
         pa.field("request_refs", L(S())), pa.field("payment_refs", L(S())), pa.field("diavgeia_adas", L(S())),
         pa.field("cpv", L(S())), pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),
+    ]),
+    "grant_decision": pa.schema([
+        pa.field("ada", S()), pa.field("issuer", S()), pa.field("issuer_label", S()), pa.field("co_issuers", L(S())),
+        pa.field("date", pa.date32()), pa.field("year", pa.int32()), pa.field("budget_year", pa.int32()),
+        pa.field("decision_type", S()), pa.field("status", S()), pa.field("subject", S()), pa.field("family", S()),
+        pa.field("category", S()), pa.field("protocol_number", S()), pa.field("submission_ts", S()),
+        pa.field("read_status", S()), pa.field("n_amounts", pa.int32()),
+        pa.field("n_validated", pa.int32()), pa.field("duplicate_of", S()), pa.field("pdf_sha256", S()),
+        pa.field("source_ada", S()), pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),
+    ]),
+    "grant_line": pa.schema([
+        pa.field("grant_line_id", S()), pa.field("line_no", pa.int32()), pa.field("ada", S()), pa.field("issuer", S()),
+        pa.field("recipient_tpd_code", S()), pa.field("recipient_entity", S()), pa.field("date", pa.date32()),
+        pa.field("year", pa.int32()), pa.field("budget_year", pa.int32()), pa.field("status", S()),
+        pa.field("family", S()), pa.field("category", S()), pa.field("amount", pa.float64()),
+        pa.field("net_paid", pa.float64()), pa.field("method", S()), pa.field("validation", S()), pa.field("detail", S()),
+        pa.field("duplicate_of", S()),
+        pa.field("source_ada", S()), pa.field("source_path", S()), pa.field("source_sha256", S()), *_stamp_fields(),
     ]),
     "procurement_party": pa.schema([
         pa.field("ref", S()), pa.field("endpoint", S()), pa.field("entity", S()),
@@ -832,6 +860,7 @@ SORT_KEYS = {
     "counterparty": ("afm",), "entity": ("uid",),
     "budget_line": ("entity", "period_end", "side", "service", "kae"),
     "procurement": ("entity", "endpoint", "ref"), "procurement_party": ("entity", "endpoint", "ref", "role", "afm"),
+    "grant_decision": ("date", "ada"), "grant_line": ("date", "grant_line_id"),
 }
 
 
@@ -898,6 +927,8 @@ def build_curated(settings: Settings) -> BuildResult:
         print("warning: pdftotext not installed; budget_line is empty", file=sys.stderr)
     from tinos.curated_khmdhs import procurement_rows
     procurement, parties = procurement_rows(settings.raw_dir, stamp)
+    from tinos.curated_grants import grant_rows
+    grant_decisions, grant_lines = grant_rows(settings.raw_dir, stamp) if pdftotext else ([], [])
     tables = {
         "act": to_table("act", acts),
         "payment": to_table("payment", payments),
@@ -908,6 +939,8 @@ def build_curated(settings: Settings) -> BuildResult:
         "budget_line": to_table("budget_line", budget),
         "procurement": to_table("procurement", procurement),
         "procurement_party": to_table("procurement_party", parties),
+        "grant_decision": to_table("grant_decision", grant_decisions),
+        "grant_line": to_table("grant_line", grant_lines),
     }
     out = settings.curated_dir
     out.mkdir(parents=True, exist_ok=True)
@@ -926,6 +959,14 @@ def build_curated(settings: Settings) -> BuildResult:
             "parties": dict(Counter(r["role"] for r in parties)),
             "natural_person_parties_masked": sum(r["is_natural_person"] for r in parties),
             "never_carried": "authorEmail, signers and officials' names, street address and postcode",
+        },
+        "grants": {
+            "decisions": len(grant_decisions),
+            "read_status": dict(Counter(r["read_status"] for r in grant_decisions)),
+            "lines": len(grant_lines),
+            "lines_by_validation": dict(Counter(str(r["validation"]) for r in grant_lines)),
+            "validation": "a table column summing to the document's own total (within half a cent per row), "
+                          "an amount the text states, or an amount written in words and figures",
         },
         "budget_statements": {
             "parsed": len({r["statement_ada"] for r in budget}),

@@ -1,6 +1,6 @@
 # Tinos Transparency — summary
 
-Generated 2026-09-25T18:10:23+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated3`, curated at 2026-09-25T18:10:03+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
+Generated 2026-09-26T08:34:09+00:00 by `tinos summary` from `releases/tinos.duckdb` (pipeline `0.1.0+curated5`, curated at 2026-09-26T08:33:05+00:00, 76,785 source acts, source digest `d29344da25882189…`). Every figure below is a query over the release; nothing is hand-typed except the FY2024 reference row, which cites its ADA.
 
 **Read this first.** Payments, commitments and awards are three different measures of the same spending. The same euro is reserved (Β.1.3), then awarded (Δ.1), then paid (Β.2.2). They are shown side by side but must never be added together. Payroll payments have no counterparty by design and are counted, never itemised.
 
@@ -232,6 +232,76 @@ The December execution statement (6ΝΠΘΩΗ6-Β64) is the denominator: what th
 | 2025 | 16,577,096.88 | 5,581,968.89 | 34% | 41% | Ψ1ΖΜΩΗ6-Τ8Β |
 
 The year-end execution statement is the municipality's own account of what it paid, parsed from its PDF with every column equal to the document's totals. Until 2018 Diavgeia's payment decisions carried nearly all non-staff payments; from 2019 most supplier payments are recorded in ΚΗΜΔΗΣ instead (FINDINGS.md F6). A share above 100% means some Diavgeia amount cannot be right (FINDINGS.md F7). Staff pay is withheld from Diavgeia by design.
+
+## Money given to Tinos by the Interior Ministry, 2015-2025
+
+Found by full-text search of the ministry's decisions for «ΤΗΝΟΥ» (and, for 2015, whose annexes are not indexed, for «ΑΥΤΟΤΕΛΕΙΣ»): 558 decisions kept, 391 with an amount for Δήμος Τήνου read from their PDF, 10 whose validated table shows Tinos was not a recipient. 365 of 368 amounts are validated against the document itself: the table's column sums its own total line, or the letter states the amount, or spells it in words. Only validated amounts are counted below, each once (two decisions posted twice are counted once). Year = the year the allocation is for.
+
+| Year | Decisions | ΚΑΠ general € | ΚΑΠ investment € | Schools € | Other targeted € | State grants € | Investment programmes € | Fees collected centrally € | Total € |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 2015 | 20 | 1,172,467.43 |  | 67,933.02 | 244,824.82 |  | 29,700.00 |  | 1,514,925.27 |
+| 2016 | 34 | 1,296,978.96 | 245,610.00 | 88,560.00 | 262,129.94 | 228,743.11 | 9,808.64 | 34,280.00 | 2,166,110.65 |
+| 2017 | 24 | 1,080,815.80 | 163,740.00 | 87,640.00 | 128,950.00 |  | 119,313.47 | 29,320.00 | 1,609,779.27 |
+| 2018 | 27 | 1,325,237.94 | 245,610.00 | 109,190.00 | 227,440.00 |  |  | 40,460.00 | 1,947,937.94 |
+| 2019 | 33 | 1,362,098.25 | 245,610.00 | 117,725.00 | 219,855.00 | 18,660.00 | 205,756.11 | 39,570.00 | 2,209,274.36 |
+| 2020 | 39 | 1,382,134.96 | 122,805.00 | 148,472.80 | 418,716.94 | 507,722.07 | 294,830.16 | 36,590.00 | 2,911,271.93 |
+| 2021 | 30 | 964,836.17 | 184,207.50 | 234,071.30 | 145,270.00 |  | 147,848.01 | 18,290.00 | 1,694,522.98 |
+| 2022 | 33 | 1,085,989.47 | 122,805.00 | 214,835.00 | 34,800.00 | 303,520.53 | 169,437.57 | 42,070.00 | 1,973,457.57 |
+| 2023 | 48 | 1,627,130.78 | 245,610.00 | 210,788.00 | 373,181.11 | 162,998.37 | 175,290.27 | 50,785.04 | 2,845,783.57 |
+| 2024 | 39 | 2,371,590.44 | 245,610.00 | 239,570.20 | 402,956.23 | 246,261.93 | 3,087.60 | 57,129.88 | 3,566,206.28 |
+| 2025 | 37 | 2,692,510.41 | 245,610.00 | 184,098.00 | 560,979.57 | 258,054.70 | 52,622.76 | 57,129.88 | 4,051,005.32 |
+
+**Against the municipality's own books.** Each cell is allocated minus booked for that revenue line in the year-end statement (`v_grant_reconciliation`): «=» to the cent, «≈ 0.15%» booked exactly 0.15% less than allocated, otherwise the difference in euros (positive: allocated but not booked there).
+
+| Revenue line | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| ΚΑΠ, general needs (0611) | ≈ 0.15% | ≈ 0.15% | -215,615 | +29,760 | -29,664 | = | -540,246 | -460,700 | = | = | +25 |
+| ΚΑΠ, investment «ΣΑΤΑ» (1311, 0612 from 2023) | -245,610 | = | -81,870 | = | = | -122,805 | -61,402 | -122,805 | = | = | = |
+| ΚΑΠ, schools' running costs (0614, 4311, 0616) | +49 | = | +27 | +3,670 | -3,654 | = | -21,810 | = | -22,700 | +71,490 | = |
+| ΚΑΠ, school rents (0612 to 2021) | -1,917 | ≈ 0.15% | ≈ 0.15% |  |  | = | +2 |  |  |  |  |
+| School repairs (1312, 0615 from 2023) | -17,274 | ≈ 0.15% | = | ≈ 0.15% | ≈ 0.15% | = | = | = | = | = | = |
+| Fire protection (1214, 0614 from 2023) | ≈ 0.15% | ≈ 0.15% | ≈ 0.15% | = | = | = | -29,700 | ≈ 0.15% | = | = | = |
+| «Βοήθεια στο Σπίτι» (0624) |  | +17,305 |  |  |  |  |  |  | = | = | ≈ 0.15% |
+| Advertising fee, category Δ (0715) | -17,464 | ≈ 0.15% | -13 | ≈ 0.15% | ≈ 0.15% | ≈ 0.15% | = | = | = | = | = |
+| ΚΑΠ, other purposes (0619) | -63,929 | -270,171 | -98,952 | +99,018 | +138 | +184,732 | -69,170 | -225,485 | = | -186,471 | = |
+| School cleaners' pay (0621 from 2023) |  |  |  |  |  | +32,960 | +126,300 | +76,860 | +14,028 | +10,800 | -45,744 |
+| State grants (1211, 1215, 1219) | -248,305 | +228,743 |  | -98,722 | = | +214,906 | -214,098 | -157,660 | -25,880 | -109,709 | -21,003 |
+| Investment programmes (1314, 1315, 1322) | -7,517 | -36,485 | +59,343 | -206,488 | -13,094 | = | -202,967 | -460,985 | -19,874 | -68,195 | -615,907 |
+| Property levy ΤΑΠ, the ministry's share (0441) | -111,627 | -120,192 | -111,005 | -109,865 | -108,798 | -114,518 | -152,541 | -147,055 | -170,220 | -172,113 | -178,403 |
+| Welfare benefits (0621 in 2015) | -4,696 |  |  |  |  |  |  |  |  |  |  |
+
+Where the two sources meet line for line they agree to the cent, or differ by exactly 0.15%: school repairs and fire protection in every year whose decision was found, the advertising fee in 2016 and 2018-2025, «Βοήθεια στο Σπίτι» 2023-2025, the general ΚΑΠ in 2015-2016, 2020 and 2023-2024 (2025 within 25 €). The general ΚΑΠ gaps of 2017, 2021 and 2022 are monthly instalments that the search index holds by subject only, so a search for ΤΗΝΟΥ cannot find them (11 decisions, FINDINGS.md F8). 2018 and 2019 are one supplementary allocation, 29,762.12 € decided on 28 December 2018 and booked in 2019. The property levy (ΤΑΠ) is mostly collected through electricity bills, so the ministry's share is a small part of line 0441 by construction; the investment-programme and state-grant lines also receive money from other ministries and the EU. Allocations and booked revenue are two views of the same transfers: compare them, never add them.
+
+## How much of what the subsidiaries paid Diavgeia shows
+
+| Entity | Name | Year | Paid, per the year-end statement € | With a Diavgeia payment line € | Share |
+|---|---|---|---:|---:|---:|
+| 100011442 | ΔΗΜΟΤΙΚΟ ΙΕΡΟ ΙΔΡΥΜΑ ΑΓΙΑΣ ΤΡΙΑΔΟΣ ΓΥΡΛΑΣ | 2017 | 43,449.85 | 43,449.85 | 100% |
+| 100011442 | ΔΗΜΟΤΙΚΟ ΙΕΡΟ ΙΔΡΥΜΑ ΑΓΙΑΣ ΤΡΙΑΔΟΣ ΓΥΡΛΑΣ | 2025 | 68,070.40 | 74,270.40 | 109% |
+| 100032995 | ΜΟΥΣΕΙΟ ΚΩΣΤΑ ΤΣΟΚΛΗ | 2019 | 17,602.40 | 17,199.30 | 98% |
+| 100032995 | ΜΟΥΣΕΙΟ ΚΩΣΤΑ ΤΣΟΚΛΗ | 2020 | 29,793.53 | 29,793.53 | 100% |
+| 100032995 | ΜΟΥΣΕΙΟ ΚΩΣΤΑ ΤΣΟΚΛΗ | 2021 | 41,196.22 | 18,019.90 | 44% |
+| 100032995 | ΜΟΥΣΕΙΟ ΚΩΣΤΑ ΤΣΟΚΛΗ | 2023 | 27,055.90 | 12,771.13 | 47% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2016 | 781,953.36 | 714,047.27 | 91% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2017 | 704,435.52 | 735,956.65 | 104% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2018 | 809,191.15 | 733,370.57 | 91% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2019 | 1,052,585.55 | 1,058,776.26 | 101% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2020 | 993,651.29 | 970,015.66 | 98% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2021 | 837,314.93 | 818,295.92 | 98% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2022 | 920,472.12 | 203,521.20 | 22% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2023 | 682,967.26 | 143,602.06 | 21% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2024 | 2,315,069.26 | 1,931,484.48 | 83% |
+| 50256 | ΔΗΜΟΤΙΚΟ ΛΙΜΕΝΙΚΟ ΤΑΜΕΙΟ ΤΗΝΟΥ | 2025 | 830,074.87 | 178,350.25 | 21% |
+| 53404 | ΔΗΜΟΤΙΚΟ ΝΟΜΙΚΟ ΠΡΟΣΩΠΟ ΔΗΜΟΥ ΤΗΝΟΥ | 2015 | 173,758.37 | 48,099.30 | 28% |
+| 53404 | ΔΗΜΟΤΙΚΟ ΝΟΜΙΚΟ ΠΡΟΣΩΠΟ ΔΗΜΟΥ ΤΗΝΟΥ | 2022 | 280,223.65 | 107,082.26 | 38% |
+| 55049 | ΠΝΕΥΜΑΤΙΚΟ ΕΚΠΟΛΙΤΙΣΤΙΚΟ ΚΕΝΤΡΟ ΠΑΝΟΡΜΟΥ «ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ» | 2016 | 56,093.34 | 55,111.16 | 98% |
+| 55049 | ΠΝΕΥΜΑΤΙΚΟ ΕΚΠΟΛΙΤΙΣΤΙΚΟ ΚΕΝΤΡΟ ΠΑΝΟΡΜΟΥ «ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ» | 2017 | 76,590.18 | 49,711.84 | 65% |
+| 55049 | ΠΝΕΥΜΑΤΙΚΟ ΕΚΠΟΛΙΤΙΣΤΙΚΟ ΚΕΝΤΡΟ ΠΑΝΟΡΜΟΥ «ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ» | 2018 | 85,147.26 | 81,855.52 | 96% |
+| 55049 | ΠΝΕΥΜΑΤΙΚΟ ΕΚΠΟΛΙΤΙΣΤΙΚΟ ΚΕΝΤΡΟ ΠΑΝΟΡΜΟΥ «ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ» | 2019 | 61,644.13 | 61,820.06 | 100% |
+| 55049 | ΠΝΕΥΜΑΤΙΚΟ ΕΚΠΟΛΙΤΙΣΤΙΚΟ ΚΕΝΤΡΟ ΠΑΝΟΡΜΟΥ «ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ» | 2020 | 37,585.10 | 37,583.78 | 100% |
+| 55049 | ΠΝΕΥΜΑΤΙΚΟ ΕΚΠΟΛΙΤΙΣΤΙΚΟ ΚΕΝΤΡΟ ΠΑΝΟΡΜΟΥ «ΓΙΑΝΝΟΥΛΗΣ ΧΑΛΕΠΑΣ» | 2023 | 83,978.07 | 15,942.08 | 19% |
+
+Only the December statements that parse to the cent are used, one per body and year where one was found. Every payment line with an amount counts, with or without a ΚΑΕ, so a share above 100% can also be a payment of the previous year's bills; the ΚΑΕ-by-ΚΑΕ check is `v_kae_reconciliation` (FINDINGS.md F7, where two port-authority lines stand out as probable x100 entries).
 
 ## Method
 

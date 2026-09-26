@@ -26,6 +26,13 @@ casual reader gets the right numbers by default:
   supplier payments are published only there, FINDINGS F6). A floor: a ΚΗΜΔΗΣ
   payment to a payee Diavgeia also shows nearby is assumed to be already in.
   ``v_supplier_year_combined`` is the supplier series on it (F3).
+- ``v_grant_line`` is every amount another body's decision gives Δήμος Τήνου
+  that was validated against the document (column totals, a stated amount, or
+  words and figures), published decisions only. ``v_grant_year`` sums it per
+  budget year, category and family; ``v_revenue_grant_year`` is the revenue
+  side of the year-end statements in the same categories; and
+  ``v_grant_reconciliation`` sets them side by side. Allocations decided and
+  revenue booked are two views of the same transfers: compare, never add.
 """
 
 from __future__ import annotations
@@ -38,7 +45,7 @@ import duckdb
 from tinos.config import Settings
 
 TABLES = ("act", "payment", "commitment", "award", "counterparty", "entity", "budget_line",
-          "procurement", "procurement_party")
+          "procurement", "procurement_party", "grant_decision", "grant_line")
 
 VIEWS = {
     "v_act": "SELECT * FROM act",
@@ -162,6 +169,41 @@ VIEWS = {
         ORDER BY 1, 2, 3
     """,
     "v_procurement": "SELECT * FROM procurement WHERE NOT cancelled",
+    "v_grant_line": """
+        SELECT l.*, d.subject, d.decision_type, d.issuer_label
+        FROM grant_line l JOIN grant_decision d USING (ada)
+        WHERE l.status = 'PUBLISHED' AND l.validation IS NOT NULL AND l.amount IS NOT NULL AND l.duplicate_of IS NULL
+    """,
+    "v_grant_year": """
+        SELECT budget_year AS year, category, family, count(DISTINCT ada) AS n_decisions, count(*) AS n_lines,
+               sum(amount) AS allocated, sum(net_paid) AS net_paid
+        FROM v_grant_line WHERE category IS NOT NULL GROUP BY 1, 2, 3 ORDER BY 1, 2, 3
+    """,
+    "v_revenue_grant_year": """
+        WITH s AS (
+            SELECT DISTINCT entity, statement_ada, period_end, statement_date FROM budget_line WHERE is_year_end),
+        pick AS (
+            SELECT entity, statement_ada FROM s
+            QUALIFY row_number() OVER (PARTITION BY entity, period_end ORDER BY statement_date DESC, statement_ada) = 1)
+        SELECT b.entity, b.period_year AS year, b.grant_category AS category, any_value(b.statement_ada) AS statement_ada,
+               string_agg(b.kae, ', ' ORDER BY b.kae) AS kae_lines, sum(b.budgeted) AS budgeted,
+               sum(b.assessed_or_warranted) AS assessed, sum(b.collected_or_paid) AS collected
+        FROM budget_line b JOIN pick USING (entity, statement_ada)
+        WHERE b.side = 'revenue' AND b.grant_category IS NOT NULL
+        GROUP BY 1, 2, 3 ORDER BY 1, 2, 3
+    """,
+    "v_grant_reconciliation": """
+        WITH g AS (
+            SELECT year, category, sum(n_decisions) AS n_decisions, sum(allocated) AS allocated
+            FROM v_grant_year GROUP BY 1, 2),
+        r AS (SELECT year, category, kae_lines, assessed, collected, statement_ada FROM v_revenue_grant_year WHERE entity = '6296')
+        SELECT coalesce(g.year, r.year) AS year, coalesce(g.category, r.category) AS category,
+               coalesce(g.n_decisions, 0) AS n_decisions, coalesce(g.allocated, 0) AS allocated,
+               r.assessed, r.collected, r.kae_lines, r.statement_ada,
+               coalesce(g.allocated, 0) - coalesce(r.assessed, 0) AS allocated_minus_assessed
+        FROM g FULL JOIN r ON g.year = r.year AND g.category = r.category
+        ORDER BY 1, 2
+    """,
     "v_direct_award_year": """
         SELECT entity, year, count(*) AS n_awards, sum(total_cost_without_vat) AS value_without_vat
         FROM procurement WHERE endpoint = 'auction' AND NOT cancelled AND procedure_type LIKE 'Απευθείας%'
